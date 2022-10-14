@@ -8,7 +8,7 @@ use elementary::*;
 use geometric::*;
 
 pub trait Transformation {
-    fn apply<'a>(&self, image: &'a mut RgbImage) -> &'a mut RgbImage;
+    fn apply(&self, image: &mut RgbImage);
 }
 
 pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String> {

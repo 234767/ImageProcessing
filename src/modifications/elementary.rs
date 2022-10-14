@@ -1,16 +1,15 @@
-use crate::parsing::Args;
 use crate::modifications::Transformation;
-use image::{RgbImage,Pixel};
+use crate::parsing::Args;
+use image::{Pixel, RgbImage};
 use num;
 
 pub struct Negative {}
 
 impl Transformation for Negative {
-    fn apply<'a>(&self, image: &'a mut RgbImage) -> &'a mut RgbImage {
+    fn apply(&self, image: &mut RgbImage) {
         for (_x, _y, pixel) in image.enumerate_pixels_mut() {
             *pixel = pixel.map(|x| 255 - x);
         }
-        image
     }
 }
 
@@ -32,11 +31,10 @@ impl Brightness {
 }
 
 impl Transformation for Brightness {
-    fn apply<'a>(&self, image: &'a mut RgbImage) -> &'a mut RgbImage {
+    fn apply(&self, image: &mut RgbImage) {
         for (_x, _y, pixel) in image.enumerate_pixels_mut() {
             *pixel = pixel.map(|c| num::clamp(c as i32 + self.amount, 0, u8::MAX as i32) as u8);
         }
-        image
     }
 }
 
@@ -58,10 +56,15 @@ impl Contrast {
 }
 
 impl Transformation for Contrast {
-    fn apply<'a>(&self, image: &'a mut RgbImage) -> &'a mut RgbImage {
+    fn apply(&self, image: &mut RgbImage) {
         for (_x, _y, pixel) in image.enumerate_pixels_mut() {
-            *pixel = pixel.map(|c| num::clamp((c as f64 - 128f64) * self.factor + 128f64, 0f64, u8::MAX as f64) as u8);
+            *pixel = pixel.map(|c| {
+                num::clamp(
+                    (c as f64 - 128f64) * self.factor + 128f64,
+                    0f64,
+                    u8::MAX as f64,
+                ) as u8
+            });
         }
-        image
     }
 }
