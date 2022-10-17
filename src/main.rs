@@ -1,4 +1,4 @@
-use modifications::{Transformation,get_transformation};
+use modifications::{get_transformation, Transformation};
 
 mod analysis;
 mod modifications;
@@ -15,7 +15,7 @@ fn main() {
 
     println!("{:#?}", args);
 
-    let mut img = image::io::Reader::open(&args.input_file)
+    let img = image::io::Reader::open(&args.input_file)
         .unwrap()
         .decode()
         .unwrap()
@@ -28,12 +28,20 @@ fn main() {
         Err(e) => {
             eprintln!("Error: {}", e);
             return ();
-        },
+        }
     };
 
-    transformation.apply(&mut img);
+    let mut altered_image = img.clone();
+    transformation.apply(&mut altered_image);
+
+    let comparer = analysis::get_analyzers(&args);
+    let comparison_result = comparer.compare(&img, &altered_image);
+    match comparison_result {
+        Ok(result) => println!("{}", result),
+        Err(e) => eprintln!("Error: {}", e),
+    }
 
     if let Some(output_path) = args.args.get("-o") {
-        _ = img.save(output_path);
+        let _ = altered_image.save(output_path);
     }
 }
