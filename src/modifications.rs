@@ -18,6 +18,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--contrast" => Ok(Box::new(Contrast::try_new(args)?)),
         "--hflip" => Ok(Box::new(HorizontalFlip {})),
         "--vflip" => Ok(Box::new(VerticalFlip {})),
+        "--dflip" => Ok(Box::new(DiagonalFlip{})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

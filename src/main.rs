@@ -34,6 +34,6 @@ fn main() {
     transformation.apply(&mut img);
 
     if let Some(output_path) = args.args.get("-o") {
-        _ = img.save(output_path);
+        let _ = img.save(output_path);
     }
 }

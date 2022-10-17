@@ -37,3 +37,12 @@ impl Transformation for VerticalFlip {
         VerticalFlip::apply(image)
     }
 }
+
+pub struct DiagonalFlip {}
+
+impl Transformation for DiagonalFlip {
+    fn apply(&self, image: &mut RgbImage) {
+        HorizontalFlip{}.apply(image);
+        VerticalFlip{}.apply(image);
+    }
+}
