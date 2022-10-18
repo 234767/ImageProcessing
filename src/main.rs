@@ -1,3 +1,5 @@
+extern crate core;
+
 use modifications::{get_transformation, Transformation};
 
 mod analysis;
