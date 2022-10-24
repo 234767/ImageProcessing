@@ -1,5 +1,4 @@
-extern crate core;
-
+use image::RgbImage;
 use modifications::{get_transformation, Transformation};
 
 mod analysis;
@@ -33,7 +32,7 @@ fn main() {
         }
     };
 
-    let mut altered_image = img.clone();
+    let mut altered_image: RgbImage = img.clone();
     transformation.apply(&mut altered_image);
 
     let comparer = analysis::get_analyzers(&args);
@@ -44,6 +43,10 @@ fn main() {
     }
 
     if let Some(output_path) = args.args.get("-o") {
-        let _ = altered_image.save(output_path);
+        let save_result = altered_image.save(output_path);
+        match save_result {
+            Ok(_) => println!("Saved modified image to {}", output_path),
+            Err(error) => eprintln!("Error while saving image: {}", error),
+        }
     }
 }
