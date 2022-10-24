@@ -1,5 +1,6 @@
 use crate::modifications::Transformation;
 use image::{ImageBuffer, RgbImage};
+use crate::parsing::Args;
 
 pub struct HorizontalFlip {}
 
@@ -66,13 +67,27 @@ impl Transformation for Scale {
     }
 }
 
+fn get_scale(args: &Args) -> Result<f64,String> {
+    let amount = args.args.get("-factor");
+    match amount {
+        Some(amount) => match amount.parse::<f64>() {
+            Ok(factor) if factor >= 0.0 => Ok(factor),
+            _ => Err(format!("Factor {} is not a positive number", amount)),
+        },
+        None => Err(String::from("Missing -factor argument")),
+    }
+}
+
 impl Scale {
-    pub fn try_new_enlarge() -> Result<Self, String> {
-        Ok (Self {factor_x: 2.0, factor_y: 2.0})
+
+    pub fn try_new_enlarge(args: &Args) -> Result<Self, String> {
+        let factor = get_scale(args)?;
+        Ok (Self {factor_x: factor, factor_y: factor})
     }
 
-    pub fn try_new_shrink() -> Result<Self,String> {
-        Ok (Self {factor_x: 0.5, factor_y: 0.5})
+    pub fn try_new_shrink(args: &Args) -> Result<Self,String> {
+        let factor = 1f64 / get_scale(args)?;
+        Ok (Self {factor_x: factor, factor_y: factor})
     }
 
     fn src_pixel_from_target(&self, target_x: u32, target_y: u32) -> (u32, u32) {
