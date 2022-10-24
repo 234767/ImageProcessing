@@ -1,10 +1,24 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Args {
     pub command: String,
     pub args: HashMap<String, String>,
     pub input_file: String,
+}
+
+impl Args {
+    pub fn try_get_arg<T: FromStr>(&self, arg_name: &str) -> Result<T, String> {
+        let value_text_option = self.args.get(arg_name);
+        match value_text_option {
+            Some(value_text) => match value_text.parse::<T>() {
+                Ok(value) => Ok(value),
+                _ => Err(format!("Value {} is not a positive number", value_text)),
+            },
+            None => Err(format!("Missing {} argument", arg_name)),
+        }
+    }
 }
 
 pub fn parse_args() -> Option<Args> {
