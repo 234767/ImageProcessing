@@ -19,8 +19,8 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--hflip" => Ok(Box::new(HorizontalFlip {})),
         "--vflip" => Ok(Box::new(VerticalFlip {})),
         "--dflip" => Ok(Box::new(DiagonalFlip {})),
-        "--shrink" => Ok(Box::new(Shrink {amount: 5.0})),
-        "--enlarge" => Ok(Box::new(Enlarge { amount: 5.0 })),
+        "--shrink" => Ok(Box::new(Scale::try_new_shrink()?)),
+        "--enlarge" => Ok(Box::new(Scale::try_new_enlarge()?)),
         // "--median"=> Ok(Box::new(Median{})),
         _ => Err(format!("Command {} undefined", args.command)),
     }

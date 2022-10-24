@@ -47,58 +47,38 @@ impl Transformation for DiagonalFlip {
     }
 }
 
-pub struct Shrink {
-    pub amount: f64,
+pub struct Scale {
+    pub factor_x: f64,
+    pub factor_y: f64
 }
 
-impl Shrink {
-    fn src_pixel_from_target(&self, target_x: u32, target_y: u32) -> (u32, u32) {
-        (
-            (target_x as f64 * self.amount) as u32,
-            (target_y as f64 * self.amount) as u32,
-        )
-    }
-}
-
-impl Transformation for Shrink {
+impl Transformation for Scale {
     fn apply(&self, image: &mut RgbImage) {
         let mut new_image: RgbImage = ImageBuffer::new(
-            (image.width() as f64 / self.amount) as u32,
-            (image.height() as f64 / self.amount) as u32,
+            (image.width() as f64 * self.factor_x) as u32,
+            (image.height() as f64 * self.factor_y) as u32,
         );
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
             let (src_x, src_y) = self.src_pixel_from_target(x, y);
             *pixel = *image.get_pixel(src_x, src_y);
         }
         *image = new_image;
-        println!("After {}x{}", image.width(), (*image).height());
     }
 }
 
-pub struct Enlarge {
-    pub amount: f64,
-}
+impl Scale {
+    pub fn try_new_enlarge() -> Result<Self, String> {
+        Ok (Self {factor_x: 2.0, factor_y: 2.0})
+    }
 
-impl Enlarge {
+    pub fn try_new_shrink() -> Result<Self,String> {
+        Ok (Self {factor_x: 0.5, factor_y: 0.5})
+    }
+
     fn src_pixel_from_target(&self, target_x: u32, target_y: u32) -> (u32, u32) {
         (
-            (target_x as f64 / self.amount) as u32,
-            (target_y as f64 / self.amount) as u32,
+            (target_x as f64 / self.factor_x) as u32,
+            (target_y as f64 / self.factor_y) as u32,
         )
-    }
-}
-
-impl Transformation for Enlarge {
-    fn apply(&self, image: &mut RgbImage) {
-        let mut new_image: RgbImage = ImageBuffer::new(
-            (image.width() as f64 * self.amount) as u32,
-            (image.height() as f64 * self.amount) as u32,
-        );
-        for (x, y, pixel) in new_image.enumerate_pixels_mut() {
-            let (src_x, src_y) = self.src_pixel_from_target(x, y);
-            *pixel = *image.get_pixel(src_x, src_y);
-        }
-        *image = new_image;
-        println!("After {}x{}", image.width(), (*image).height());
     }
 }
