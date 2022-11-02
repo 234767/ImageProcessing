@@ -50,7 +50,7 @@ impl Transformation for DiagonalFlip {
 
 pub struct Scale {
     pub factor_x: f64,
-    pub factor_y: f64
+    pub factor_y: f64,
 }
 
 impl Transformation for Scale {
@@ -67,27 +67,24 @@ impl Transformation for Scale {
     }
 }
 
-fn get_scale(args: &Args) -> Result<f64,String> {
-    let amount = args.args.get("-factor");
-    match amount {
-        Some(amount) => match amount.parse::<f64>() {
-            Ok(factor) if factor >= 0.0 => Ok(factor),
-            _ => Err(format!("Factor {} is not a positive number", amount)),
-        },
-        None => Err(String::from("Missing -factor argument")),
+fn get_scale(args: &Args) -> Result<f64, String> {
+    let amount = args.try_get_arg("amount")?;
+    if amount < 0.0 {
+        Err(format!("Number {} is not a positive number!", amount))
+    } else {
+        Ok(amount)
     }
 }
 
 impl Scale {
-
     pub fn try_new_enlarge(args: &Args) -> Result<Self, String> {
         let factor = get_scale(args)?;
-        Ok (Self {factor_x: factor, factor_y: factor})
+        Ok(Self { factor_x: factor, factor_y: factor })
     }
 
-    pub fn try_new_shrink(args: &Args) -> Result<Self,String> {
+    pub fn try_new_shrink(args: &Args) -> Result<Self, String> {
         let factor = 1f64 / get_scale(args)?;
-        Ok (Self {factor_x: factor, factor_y: factor})
+        Ok(Self { factor_x: factor, factor_y: factor })
     }
 
     fn src_pixel_from_target(&self, target_x: u32, target_y: u32) -> (u32, u32) {

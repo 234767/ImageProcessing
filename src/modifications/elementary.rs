@@ -19,13 +19,11 @@ pub struct Brightness {
 
 impl Brightness {
     pub fn try_new(args: &Args) -> Result<Self, String> {
-        let amount = args.args.get("-amount");
-        match amount {
-            Some(amount) => match amount.parse::<i32>() {
-                Ok(amount) => Ok(Self { amount }),
-                Err(_) => Err(format!("Amount {} is not an integer", amount)),
-            },
-            None => Err(String::from("Missing -amount argument")),
+        let amount: i32 = args.try_get_arg("amount")?;
+        if amount < 0 {
+            Err(format!("Number {} is not a positive integer!", amount))
+        } else {
+            Ok(Self { amount })
         }
     }
 }
@@ -44,13 +42,11 @@ pub struct Contrast {
 
 impl Contrast {
     pub fn try_new(args: &Args) -> Result<Self, String> {
-        let amount = args.args.get("-amount");
-        match amount {
-            Some(amount) => match amount.parse::<f64>() {
-                Ok(factor) if factor >= 0.0 => Ok(Self { factor }),
-                _ => Err(format!("Amount {} is not a positive number", amount)),
-            },
-            None => Err(String::from("Missing -amount argument")),
+        let factor: f64 = args.try_get_arg("amount")?;
+        if factor < 0.0 {
+            Err(format!("Number {} is not a positive integer!", factor))
+        } else {
+            Ok(Self { factor })
         }
     }
 }
