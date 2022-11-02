@@ -22,7 +22,7 @@ pub(crate) fn map_and_reduce<F1, F2>(original: &RgbImage, modified: &RgbImage, f
     where F1: Fn(u8, u8) -> i128,
           F2: Fn(i128, i128) -> i128
 {
-    let total = initial_state;
+    let mut total = initial_state;
     let iterator = DoubleImageIterator::new(original, modified);
     for (old_pixel, new_pixel) in iterator {
         for channel in 1..3 {

@@ -1,4 +1,4 @@
-use crate::analysis::util::{map_and_reduce, map_and_sum, DoubleImageIterator};
+use crate::analysis::util::{map_and_reduce, map_and_sum};
 use crate::analysis::Analyzer;
 use image::{Rgb, RgbImage};
 use std::cmp::max;
