@@ -9,6 +9,12 @@ pub struct Args {
 }
 
 impl Args {
+    /// Tries to get a value for a specified argument, cast to type parameter `T`
+    ///
+    /// ## Returns
+    /// Result<T, String>
+    /// * Ok - when value for specified argument is found and successfully parsed
+    /// * Err - when value was not found, or it was not a positive number
     pub fn try_get_arg<T: FromStr>(&self, arg_name: &str) -> Result<T, String> {
         let value_text_option = self.args.get(arg_name);
         match value_text_option {

@@ -87,6 +87,8 @@ impl Scale {
         Ok(Self { factor_x: factor, factor_y: factor })
     }
 
+    /// Returns a pair of `x,y` coordinates in the source image,
+    /// corresponding to the specified `x,y` coordinates in the target image
     fn src_pixel_from_target(&self, target_x: u32, target_y: u32) -> (u32, u32) {
         (
             (target_x as f64 / self.factor_x) as u32,
