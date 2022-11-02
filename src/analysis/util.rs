@@ -12,30 +12,37 @@ use image::buffer::Pixels;
 /// returns: Rgb<i128>
 /// Values for RGB channels respectively
 pub(crate) fn map_and_sum<F>(original: &RgbImage, modified: &RgbImage, function: F) -> Rgb<i128>
-where
-    F: Fn(u8, u8) -> i128,
+    where
+        F: Fn(u8, u8) -> i128,
 {
-    let mut total: [i128; 3] = [0, 0, 0];
+    map_and_reduce(original, modified, function, |a,b| a + b, Rgb([0,0,0]))
+}
+
+pub(crate) fn map_and_reduce<F1, F2>(original: &RgbImage, modified: &RgbImage, function: F1, folder: F2, initial_state: Rgb<i128>) -> Rgb<i128>
+    where F1: Fn(u8, u8) -> i128,
+          F2: Fn(i128, i128) -> i128
+{
+    let total = initial_state;
     let iterator = DoubleImageIterator::new(original, modified);
     for (old_pixel, new_pixel) in iterator {
         for channel in 1..3 {
             let value = function(old_pixel[channel], new_pixel[channel]);
-            total[channel] += value;
+            total[channel] = folder(total[channel], value);
         }
-    }
-    Rgb(total)
+    };
+    total
 }
 
 pub struct DoubleImageIterator<'a> {
     old_pixels: Pixels<'a, Rgb<u8>>,
-    new_pixels: Pixels<'a, Rgb<u8>>
+    new_pixels: Pixels<'a, Rgb<u8>>,
 }
 
 impl<'a> DoubleImageIterator<'a> {
     pub fn new(original: &'a RgbImage, modified: &'a RgbImage) -> Self {
         Self {
             old_pixels: original.pixels(),
-            new_pixels: modified.pixels()
+            new_pixels: modified.pixels(),
         }
     }
 }
