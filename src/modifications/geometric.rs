@@ -1,11 +1,11 @@
 use crate::modifications::Transformation;
-use image::{ImageBuffer, RgbImage};
 use crate::parsing::Args;
+use image::{ImageBuffer, RgbImage};
 
 pub struct HorizontalFlip {}
 
-impl Transformation for HorizontalFlip {
-    fn apply(&self, image: &mut RgbImage) {
+impl HorizontalFlip {
+    fn apply(image: &mut RgbImage) {
         image::imageops::flip_horizontal(image);
         let width = image.width();
         for y in 1..image.height() {
@@ -15,6 +15,12 @@ impl Transformation for HorizontalFlip {
                 image.put_pixel(width - x, y, left_pixel);
             }
         }
+    }
+}
+
+impl Transformation for HorizontalFlip {
+    fn apply(&self, image: &mut RgbImage) {
+        HorizontalFlip::apply(image);
     }
 }
 
@@ -35,7 +41,7 @@ impl VerticalFlip {
 
 impl Transformation for VerticalFlip {
     fn apply(&self, image: &mut RgbImage) {
-        VerticalFlip::apply(image)
+        VerticalFlip::apply(image);
     }
 }
 
@@ -43,8 +49,8 @@ pub struct DiagonalFlip {}
 
 impl Transformation for DiagonalFlip {
     fn apply(&self, image: &mut RgbImage) {
-        HorizontalFlip {}.apply(image);
-        VerticalFlip {}.apply(image);
+        HorizontalFlip::apply(image);
+        VerticalFlip::apply(image);
     }
 }
 
@@ -79,12 +85,18 @@ fn get_scale(args: &Args) -> Result<f64, String> {
 impl Scale {
     pub fn try_new_enlarge(args: &Args) -> Result<Self, String> {
         let factor = get_scale(args)?;
-        Ok(Self { factor_x: factor, factor_y: factor })
+        Ok(Self {
+            factor_x: factor,
+            factor_y: factor,
+        })
     }
 
     pub fn try_new_shrink(args: &Args) -> Result<Self, String> {
         let factor = 1f64 / get_scale(args)?;
-        Ok(Self { factor_x: factor, factor_y: factor })
+        Ok(Self {
+            factor_x: factor,
+            factor_y: factor,
+        })
     }
 
     /// Returns a pair of `x,y` coordinates in the source image,
