@@ -1,5 +1,6 @@
-use crate::analysis::{map_and_sum, Analyzer};
+use crate::analysis::Analyzer;
 use image::{Rgb, RgbImage};
+use crate::analysis::util::map_and_sum;
 
 pub struct MeanSquareError {}
 
