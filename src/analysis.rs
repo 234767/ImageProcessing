@@ -1,7 +1,6 @@
 use crate::parsing::Args;
 use image::RgbImage;
 
-
 use analyzers::*;
 
 mod analyzers;

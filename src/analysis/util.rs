@@ -1,5 +1,5 @@
-use image::{Rgb, RgbImage};
 use image::buffer::Pixels;
+use image::{Rgb, RgbImage};
 
 /// For each channel of RGB maps a given function, and sums the results
 ///
@@ -12,15 +12,22 @@ use image::buffer::Pixels;
 /// returns: Rgb<i128>
 /// Values for RGB channels respectively
 pub(crate) fn map_and_sum<F>(original: &RgbImage, modified: &RgbImage, function: F) -> Rgb<i128>
-    where
-        F: Fn(u8, u8) -> i128,
+where
+    F: Fn(u8, u8) -> i128,
 {
-    map_and_reduce(original, modified, function, |a,b| a + b, Rgb([0,0,0]))
+    map_and_reduce(original, modified, function, |a, b| a + b, Rgb([0, 0, 0]))
 }
 
-pub(crate) fn map_and_reduce<F1, F2>(original: &RgbImage, modified: &RgbImage, function: F1, folder: F2, initial_state: Rgb<i128>) -> Rgb<i128>
-    where F1: Fn(u8, u8) -> i128,
-          F2: Fn(i128, i128) -> i128
+pub(crate) fn map_and_reduce<F1, F2>(
+    original: &RgbImage,
+    modified: &RgbImage,
+    function: F1,
+    folder: F2,
+    initial_state: Rgb<i128>,
+) -> Rgb<i128>
+where
+    F1: Fn(u8, u8) -> i128,
+    F2: Fn(i128, i128) -> i128,
 {
     let mut total = initial_state;
     let iterator = DoubleImageIterator::new(original, modified);
@@ -29,7 +36,7 @@ pub(crate) fn map_and_reduce<F1, F2>(original: &RgbImage, modified: &RgbImage, f
             let value = function(old_pixel[channel], new_pixel[channel]);
             total[channel] = folder(total[channel], value);
         }
-    };
+    }
     total
 }
 
