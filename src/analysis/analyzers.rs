@@ -24,6 +24,25 @@ impl Analyzer for MeanSquareError {
     }
 }
 
+/// Peak mean-square-error
+pub struct PMSE {}
+
+impl PMSE {
+    fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
+        let mse = MeanSquareError::compare(original, modified);
+        let max_luminance = u8::MAX as f64;
+
+        mse / max_luminance
+    }
+}
+
+impl Analyzer for PMSE {
+    fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
+        let result = Self::compare(original, modified);
+        Ok(format!("Peak MSE: {}", result))
+    }
+}
+
 pub struct MaximumDifference {}
 
 impl MaximumDifference {
