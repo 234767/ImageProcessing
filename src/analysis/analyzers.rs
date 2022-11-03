@@ -27,7 +27,7 @@ impl Analyzer for MeanSquareError {
 pub struct MaximumDifference {}
 
 impl MaximumDifference {
-    fn compare(original: &RgbImage, modified: &RgbImage) -> Option<i128> {
+    fn compare(original: &RgbImage, modified: &RgbImage) -> i128 {
         let Rgb(results) = map_and_reduce(
             original,
             modified,
@@ -36,16 +36,54 @@ impl MaximumDifference {
             Rgb([0, 0, 0]),
         );
 
-        results.iter().max().map(|c| c.clone())
+        *results.iter().max().unwrap() // iterator cannot be empty, so it is safe to call unwrap()
     }
 }
 
 impl Analyzer for MaximumDifference {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
-        let result_opt = Self::compare(original, modified);
-        match result_opt {
-            Some(result) => Ok(format!("MD: {}", result)),
-            None => Err(String::from("Could not compute maximum difference"))
-        }
+        let result = Self::compare(original, modified);
+        Ok(format!("MD: {}", result))
+    }
+}
+
+/// Signal-to-noise ratio
+pub struct SNR {}
+
+impl SNR {
+    fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
+        let Rgb(luminance_sums) = map_and_sum(original, modified, |old, new| old as i128);
+        let mean_luminance = (luminance_sums.iter().sum::<i128>() as f64)
+            / ((3 * original.width() * original.height()) as f64);
+
+        let mse = MeanSquareError::compare(original, modified);
+
+        10f64 * f64::log10(mean_luminance / mse)
+    }
+}
+
+impl Analyzer for SNR {
+    fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
+        let result = Self::compare(original, modified);
+        Ok(format!("SNR: {}", result))
+    }
+}
+
+/// Peak signal-to-noise ratio
+pub struct PSNR {}
+
+impl PSNR {
+    fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
+        let max_luminance = u8::MAX as f64;
+        let mse = MeanSquareError::compare(original, modified);
+
+        10f64 * f64::log10(max_luminance / mse)
+    }
+}
+
+impl Analyzer for PSNR {
+    fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
+        let result = Self::compare(original, modified);
+        Ok(format!("Peak SNR: {}", result))
     }
 }
