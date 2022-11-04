@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use num::Num;
 
 #[derive(Debug)]
 pub struct Args {
@@ -13,13 +14,13 @@ impl Args {
     ///
     /// ## Returns
     /// Result<T, String>
-    /// * Ok - when value for specified argument is found and successfully parsed
+    /// * Ok - when value for specified argument is found and successfully parsed as a positive value
     /// * Err - when value was not found, or it was not a positive number
-    pub fn try_get_arg<T: FromStr>(&self, arg_name: &str) -> Result<T, String> {
+    pub fn try_get_arg<T: FromStr + Num + PartialOrd>(&self, arg_name: &str) -> Result<T, String>{
         let value_text_option = self.args.get(arg_name);
         match value_text_option {
             Some(value_text) => match value_text.parse::<T>() {
-                Ok(value) => Ok(value),
+                Ok(value) if value > T::zero() => Ok(value),
                 _ => Err(format!("Value {} is not a positive number", value_text)),
             },
             None => Err(format!("Missing {} argument", arg_name)),
