@@ -3,3 +3,4 @@ cargo.lock
 .idea/
 .vscode/
 .DS_Store
+*.bmp
