@@ -20,7 +20,7 @@ impl MeanSquareError {
 impl Analyzer for MeanSquareError {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
-        Ok(format!("MSE: {}", result))
+        Ok(format!("{:10} {:6.3}","MSE:", result))
     }
 }
 
@@ -39,7 +39,7 @@ impl PMSE {
 impl Analyzer for PMSE {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
-        Ok(format!("Peak MSE: {}", result))
+        Ok(format!("{:10} {:6.3}","Peak MSE:", result))
     }
 }
 
@@ -62,7 +62,7 @@ impl MaximumDifference {
 impl Analyzer for MaximumDifference {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
-        Ok(format!("MD: {}", result))
+        Ok(format!("{:3} {:9}","MD:", result))
     }
 }
 
@@ -84,7 +84,7 @@ impl SNR {
 impl Analyzer for SNR {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
-        Ok(format!("SNR: {}", result))
+        Ok(format!("{:10} {:6.3}","SNR:", result))
     }
 }
 
@@ -103,6 +103,6 @@ impl PSNR {
 impl Analyzer for PSNR {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
-        Ok(format!("Peak SNR: {}", result))
+        Ok(format!("{:10} {:6.3}","Peak SNR:", result))
     }
 }
