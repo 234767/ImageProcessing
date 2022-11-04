@@ -1,5 +1,6 @@
 use crate::parsing::Args;
 use image::RgbImage;
+use std::collections::HashMap;
 
 use analyzers::*;
 
@@ -11,10 +12,23 @@ pub trait Analyzer {
 }
 
 pub fn get_analyzers(args: &Args) -> Box<dyn Analyzer> {
+    let args: &HashMap<String, String> = &args.args;
     let mut composite = CompositeAnalyzer::new();
-    if args.args.contains_key("--mse") {
-        composite.analyzers.push(Box::new(MeanSquareError {}));
+
+    macro_rules! add_if_contains {
+        ($key:literal,$object:expr) => {
+            if (args.contains_key($key)) {
+                composite.analyzers.push(Box::new($object));
+            }
+        };
     }
+
+    add_if_contains!("--mse", MeanSquareError {});
+    add_if_contains!("--pmse", PMSE {});
+    add_if_contains!("--snr", SNR{});
+    add_if_contains!("--psnr", PSNR {});
+    add_if_contains!("--md", MaximumDifference{});
+
     return Box::new(composite);
 }
 
@@ -35,6 +49,7 @@ impl Analyzer for CompositeAnalyzer {
         let mut result = String::new();
         for analyzer in &self.analyzers {
             result.push_str(&analyzer.compare(original, modified)?);
+            result.push_str("\n");
         }
         Ok(result)
     }

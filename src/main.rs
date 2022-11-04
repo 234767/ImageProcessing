@@ -56,7 +56,7 @@ fn main() {
         &altered_image,
     );
     match comparison_result {
-        Ok(result) => println!("{}", result),
+        Ok(result) => print!("{}", result),
         Err(e) => eprintln!("Error: {}", e),
     }
 
