@@ -5,6 +5,16 @@ mod analysis;
 mod modifications;
 mod parsing;
 
+fn try_get_image(path: &String) -> Option<RgbImage> {
+    match image::io::Reader::open(path) {
+        Ok(reader) => match reader.decode() {
+            Ok(image) => Some(image.to_rgb8()),
+            Err(_) => None,
+        },
+        _ => None,
+    }
+}
+
 fn main() {
     let args = parsing::parse_args();
 
@@ -36,7 +46,17 @@ fn main() {
     transformation.apply(&mut altered_image);
 
     let comparer = analysis::get_analyzers(&args);
-    let comparison_result = comparer.compare(&img, &altered_image);
+    let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
+        Some(path) => try_get_image(path),
+        None => None,
+    };
+    let comparison_result = comparer.compare(
+        match &comparison_baseline {
+            Some(image) => image,
+            None => &img,
+        },
+        &altered_image,
+    );
     match comparison_result {
         Ok(result) => println!("{}", result),
         Err(e) => eprintln!("Error: {}", e),
