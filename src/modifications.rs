@@ -3,9 +3,11 @@ use image::RgbImage;
 
 mod elementary;
 mod geometric;
+mod filters;
 
 use elementary::*;
 use geometric::*;
+use filters::*;
 
 pub trait Transformation {
     fn apply(&self, image: &mut RgbImage);
@@ -21,7 +23,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--dflip" => Ok(Box::new(DiagonalFlip {})),
         "--shrink" => Ok(Box::new(Scale::try_new_shrink(args)?)),
         "--enlarge" => Ok(Box::new(Scale::try_new_enlarge(args)?)),
-        // "--median"=> Ok(Box::new(Median{})),
+        "--median"=> Ok(Box::new(MedianFilter::try_new(args)?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
