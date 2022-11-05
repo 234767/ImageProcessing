@@ -67,7 +67,7 @@ impl Transformation for GeometricMeanFilter{
         let mut h = image.height();
         let mut w = image.width();
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
-
+/*
         for (target_x, target_y) in new_image.enumerate_pixels_mut() {
             let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
             for x in u32:(target_x, w, h)(pow(target_x,((w * h) as usize))) {
@@ -78,6 +78,8 @@ impl Transformation for GeometricMeanFilter{
                 }
             }
         }
+
+ */
         *image = new_image;
     }
 }
