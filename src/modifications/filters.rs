@@ -1,3 +1,4 @@
+//Methods of image noise removal
 use crate::modifications::Transformation;
 use crate::parsing::Args;
 use image::ImageBuffer;
@@ -10,6 +11,7 @@ fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
     x < image.width() && y < image.height()
 }
 
+//(N1) Median filter (--median)
 pub struct MedianFilter {
     width: u32,
     height: u32,
@@ -51,5 +53,21 @@ impl Transformation for MedianFilter {
             }
         }
         *image = new_image;
+    }
+}
+
+//(N1) geometric mean filter (--gmean)
+pub struct GeometricMeanFilter {
+    width: u32,
+    height: u32,
+}
+
+impl GeometricMeanFilter{
+
+}
+
+impl Transformation for GeometricMeanFilter{
+    fn apply(&self, image: &mut RgbImage) {
+        todo!()
     }
 }

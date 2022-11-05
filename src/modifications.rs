@@ -24,6 +24,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--shrink" => Ok(Box::new(Scale::try_new_shrink(args)?)),
         "--enlarge" => Ok(Box::new(Scale::try_new_enlarge(args)?)),
         "--median"=> Ok(Box::new(MedianFilter::try_new(args)?)),
+        //"--gmean"
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

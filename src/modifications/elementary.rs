@@ -1,8 +1,10 @@
+//Elementary operations on images enabling to easily modify brightness and contrast
 use crate::modifications::Transformation;
 use crate::parsing::Args;
 use image::{Pixel, RgbImage};
 use num;
 
+//(B3) Negative (--negative)
 pub struct Negative {}
 
 impl Transformation for Negative {
@@ -13,6 +15,7 @@ impl Transformation for Negative {
     }
 }
 
+//(B1) Image brightness modification (--brightness)
 pub struct Brightness {
     amount: i32,
 }
@@ -36,6 +39,7 @@ impl Transformation for Brightness {
     }
 }
 
+//(B2) Image contrast modification (--contrast)
 pub struct Contrast {
     factor: f64,
 }

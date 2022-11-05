@@ -1,7 +1,9 @@
+//Geometric operations
 use crate::modifications::Transformation;
 use crate::parsing::Args;
 use image::{ImageBuffer, RgbImage};
 
+//(G1) Horizontal flip (--hflip)
 pub struct HorizontalFlip {}
 
 impl HorizontalFlip {
@@ -24,6 +26,7 @@ impl Transformation for HorizontalFlip {
     }
 }
 
+//(G2) Vertical flip (--vflip)
 pub struct VerticalFlip {}
 
 impl VerticalFlip {
@@ -45,6 +48,7 @@ impl Transformation for VerticalFlip {
     }
 }
 
+//(G3) Diagonal flip (--dflip)
 pub struct DiagonalFlip {}
 
 impl Transformation for DiagonalFlip {
@@ -59,6 +63,7 @@ pub struct Scale {
     pub factor_y: f64,
 }
 
+//(G4) Image shrinking (--shrink) & (G5) Image enlargement (--enlarge)
 impl Transformation for Scale {
     fn apply(&self, image: &mut RgbImage) {
         let mut new_image: RgbImage = ImageBuffer::new(
