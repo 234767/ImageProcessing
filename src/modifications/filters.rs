@@ -62,6 +62,12 @@ pub struct GeometricMeanFilter {
     height: u32,
 }
 
+impl GeometricMeanFilter {
+    pub fn try_new(args: &Args) -> Result<Self, String> {
+        todo!()
+    }
+}
+
 impl Transformation for GeometricMeanFilter{
     fn apply(&self, image: &mut RgbImage) {
         let mut h = image.height();
