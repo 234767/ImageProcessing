@@ -13,17 +13,17 @@ use vulkano::shader::ShaderModule;
 
 use vulkano::device::physical::PhysicalDevice;
 use vulkano::format::Format;
-use vulkano::image::{view::ImageView, ImageDimensions, StorageImage};
+use vulkano::image::{view::ImageView, ImageDimensions, StorageImage, ImageCreationError};
 use vulkano::sync::GpuFuture;
 use vulkano::{sync, VulkanError, VulkanLibrary};
 
 pub struct GPUComputeRunner {
-    device: Arc<Device>,
-    queue: Arc<Queue>,
+    pub device: Arc<Device>,
+    pub queue: Arc<Queue>,
 }
 
 impl GPUComputeRunner {
-    fn new() -> Option<Self> {
+    pub fn new() -> Option<Self> {
         let library = VulkanLibrary::new().expect("No local vulkan library");
         let instance = match Instance::new(
             library,
@@ -66,11 +66,24 @@ impl GPUComputeRunner {
     }
 }
 
-pub fn RgbImageFromBuffer( width: u32, height: u32, buffer: Arc<CpuAccessibleBuffer<[u8]>>) -> RgbImage {
+pub fn rgb_image_from_buffer(width: u32, height: u32, buffer: Arc<CpuAccessibleBuffer<[u8]>>) -> RgbImage {
     let buffer_content = Vec::from(&buffer.read().unwrap()[..]);
     DynamicImage::from(
         ImageBuffer::<Rgba<u8>, _>::from_raw(width, height, buffer_content)
             .unwrap(),
     )
     .to_rgb8()
+}
+
+pub fn create_image(device: Arc<Device>, queue: &Queue, width: u32, height: u32) -> Result<Arc<StorageImage>, ImageCreationError>{
+    StorageImage::new(
+        device.clone(),
+        ImageDimensions::Dim2d {
+            width,
+            height,
+            array_layers: 1,
+        },
+        Format::R8G8B8A8_UNORM,
+        Some(queue.queue_family_index()),
+    )
 }
