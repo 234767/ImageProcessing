@@ -1,6 +1,6 @@
 #version 450
 
-#define MAX_SIZE 200
+#define MAX_SIZE 50
 
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
@@ -16,18 +16,12 @@ layout (set = 0, binding = 1, rgba8) uniform writeonly image2D outImage;
 uint arraySize;
 float luminosities[MAX_SIZE];
 
-void sort() {
-    for (int k=1; k < int(arraySize); k++)
-    {
-        float temp = luminosities[k];
-        int j = k-1;
-        while (j>=0 && temp <= luminosities[j])
-        {
-            luminosities[j+1] = luminosities[j];
-            j = j-1;
-        }
-        luminosities[j+1] = temp;
+float mean() {
+    float sum = 0.f;
+    for (int i = 0; i < arraySize; i++) {
+        sum += luminosities[i];
     }
+    return sum / arraySize;
 }
 void main() {
     ivec2 max_size = imageSize(inImage);
@@ -45,8 +39,7 @@ void main() {
             }
         }
     }
-    sort();
-    to_write.r = luminosities[arraySize/2];
+    to_write.r = mean();
 
     arraySize = 0;
     for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
@@ -58,8 +51,7 @@ void main() {
             }
         }
     }
-    sort();
-    to_write.g = luminosities[arraySize/2];
+    to_write.g = mean();
 
     arraySize = 0;
     for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
@@ -71,8 +63,7 @@ void main() {
             }
         }
     }
-    sort();
-    to_write.b = luminosities[arraySize/2];
+    to_write.b = mean();
 
     imageStore(outImage, ID, vec4(to_write,1.0));
 }
