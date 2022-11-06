@@ -5,7 +5,7 @@ use image::ImageBuffer;
 use image::Rgb;
 use image::RgbImage;
 
-use num::{Integer, pow};
+use num::Integer;
 
 fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
     x < image.width() && y < image.height()
@@ -68,24 +68,24 @@ impl GeometricMeanFilter {
     }
 }
 
-impl Transformation for GeometricMeanFilter{
+impl Transformation for GeometricMeanFilter {
     fn apply(&self, image: &mut RgbImage) {
         let mut h = image.height();
         let mut w = image.width();
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
-/*
-        for (target_x, target_y) in new_image.enumerate_pixels_mut() {
-            let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
-            for x in u32:(target_x, w, h)(pow(target_x,((w * h) as usize))) {
-                for y in u32:(target_y, w, h)(pow(target_x,((w * h) as usize))) {
-                    if is_in_range(x, y, image) {
-                        old_pixels.push(image.get_pixel(x, y));
-                    }
-                }
-            }
-        }
+        /*
+               for (target_x, target_y) in new_image.enumerate_pixels_mut() {
+                   let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
+                   for x in u32:(target_x, w, h)(pow(target_x,((w * h) as usize))) {
+                       for y in u32:(target_y, w, h)(pow(target_x,((w * h) as usize))) {
+                           if is_in_range(x, y, image) {
+                               old_pixels.push(image.get_pixel(x, y));
+                           }
+                       }
+                   }
+               }
 
- */
+        */
         *image = new_image;
     }
 }

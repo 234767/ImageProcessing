@@ -25,9 +25,9 @@ pub fn get_analyzers(args: &Args) -> Box<dyn Analyzer> {
 
     add_if_contains!("--mse", MeanSquareError {});
     add_if_contains!("--pmse", PMSE {});
-    add_if_contains!("--snr", SNR{});
+    add_if_contains!("--snr", SNR {});
     add_if_contains!("--psnr", PSNR {});
-    add_if_contains!("--md", MaximumDifference{});
+    add_if_contains!("--md", MaximumDifference {});
 
     return Box::new(composite);
 }
