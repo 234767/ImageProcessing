@@ -78,8 +78,8 @@ impl GeometricMeanFilter {
 
 impl Transformation for GeometricMeanFilter {
     fn apply(&self, image: &mut RgbImage) {
-        let mut h_offset = image.height();
-        let mut w_offset = image.width();
+        let mut h_offset = self.height / 2;
+        let mut w_offset = self.width / 2;
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
             let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
@@ -93,7 +93,8 @@ impl Transformation for GeometricMeanFilter {
             for channel in 0..3 {
                 let mut luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
-                    new_pixel[channel] = luminosities.iter().sum::<u8>()/ luminosities.iter().count()as u8;
+                new_pixel[channel] =
+                    luminosities.iter().sum::<u8>() / luminosities.iter().count() as u8;
             }
         }
         *image = new_image;
