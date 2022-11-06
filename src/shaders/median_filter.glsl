@@ -1,6 +1,6 @@
 #version 450
 
-#define MAX_SIZE 500
+#define MAX_SIZE 400
 
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
@@ -38,7 +38,7 @@ void main() {
     arraySize = 0;
     for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
         for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
+            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
                 vec4 pixel = imageLoad(inImage, ivec2(x,y));
                 luminosities[arraySize] = pixel.r;
                 arraySize++;
@@ -51,7 +51,7 @@ void main() {
     arraySize = 0;
     for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
         for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
+            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
                 vec4 pixel = imageLoad(inImage, ivec2(x,y));
                 luminosities[arraySize] = pixel.g;
                 arraySize++;
@@ -64,7 +64,7 @@ void main() {
     arraySize = 0;
     for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
         for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
+            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
                 vec4 pixel = imageLoad(inImage, ivec2(x,y));
                 luminosities[arraySize] = pixel.b;
                 arraySize++;
