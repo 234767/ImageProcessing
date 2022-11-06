@@ -1,21 +1,13 @@
-use image::{DynamicImage, ImageBuffer, Rgb, RgbImage, Rgba, RgbaImage};
+use image::{DynamicImage, ImageBuffer, RgbImage, Rgba};
 use std::sync::Arc;
-use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
-use vulkano::command_buffer::{
-    AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo, CopyImageToBufferInfo,
-};
-use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
+use vulkano::buffer::CpuAccessibleBuffer;
 
-use vulkano::device::{Device, DeviceCreateInfo, DeviceCreationError, Queue, QueueCreateInfo};
+use vulkano::device::{Device, DeviceCreateInfo, Queue, QueueCreateInfo};
 use vulkano::instance::{Instance, InstanceCreateInfo};
-use vulkano::pipeline::{ComputePipeline, Pipeline, PipelineBindPoint};
-use vulkano::shader::ShaderModule;
 
-use vulkano::device::physical::PhysicalDevice;
 use vulkano::format::Format;
-use vulkano::image::{view::ImageView, ImageDimensions, StorageImage, ImageCreationError};
-use vulkano::sync::GpuFuture;
-use vulkano::{sync, VulkanError, VulkanLibrary};
+use vulkano::image::{ImageDimensions, StorageImage, ImageCreationError};
+use vulkano::{VulkanLibrary};
 
 pub struct GPUComputeRunner {
     pub device: Arc<Device>,
@@ -33,7 +25,7 @@ impl GPUComputeRunner {
             },
         ) {
             Ok(i) => i,
-            Err(e) => return None,
+            Err(_) => return None,
         };
 
         let physical = match instance.enumerate_physical_devices() {

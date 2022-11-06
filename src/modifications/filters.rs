@@ -92,7 +92,7 @@ impl Transformation for GeometricMeanFilter {
                 let luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
                 new_pixel[channel] =
-                    luminosities.iter().sum::<u8>() / luminosities.iter().count() as u8;
+                    (luminosities.iter().map(|l| *l as u128).sum::<u128>() / luminosities.iter().count() as u128) as u8;
             }
         }
         *image = new_image;
