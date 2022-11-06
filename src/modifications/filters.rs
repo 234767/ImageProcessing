@@ -1,4 +1,3 @@
-//use std::iter::Sum;
 //Methods of image noise removal
 use crate::modifications::Transformation;
 use crate::parsing::Args;
@@ -73,7 +72,6 @@ impl GeometricMeanFilter {
         if height.is_even() {
             height += 1
         }
-        //let S: Sum<Self::Item>;
         Ok(Self { width, height })
     }
 }
@@ -95,12 +93,7 @@ impl Transformation for GeometricMeanFilter {
             for channel in 0..3 {
                 let mut luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
-                luminosities.sort();
-                todo!()
-                //let sum = luminosities.into_iter().sum::<S>();
-                //let sum = luminosities.into_iter().sum();
-                //let sum::<S>(self) -> S
-               // new_pixel[channel] = luminosities[luminosities.into_iter().sum()/ 2];
+                    new_pixel[channel] = luminosities.iter().sum::<u8>()/ luminosities.iter().count()as u8;
             }
         }
         *image = new_image;
