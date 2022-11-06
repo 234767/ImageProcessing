@@ -23,6 +23,7 @@ fn main() {
     }
 
     let args = args.unwrap();
+    println!("{:#?}",args);
 
     let img = image::io::Reader::open(&args.input_file)
         .unwrap()

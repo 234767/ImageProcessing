@@ -1,3 +1,4 @@
+//use std::iter::Sum;
 //Methods of image noise removal
 use crate::modifications::Transformation;
 use crate::parsing::Args;
@@ -64,28 +65,44 @@ pub struct GeometricMeanFilter {
 
 impl GeometricMeanFilter {
     pub fn try_new(args: &Args) -> Result<Self, String> {
-        todo!()
+        let mut width: u32 = args.try_get_arg("-w")?;
+        if width.is_even() {
+            width += 1
+        }
+        let mut height: u32 = args.try_get_arg("-h")?;
+        if height.is_even() {
+            height += 1
+        }
+        //let S: Sum<Self::Item>;
+        Ok(Self { width, height })
     }
 }
 
 impl Transformation for GeometricMeanFilter {
     fn apply(&self, image: &mut RgbImage) {
-        let mut h = image.height();
-        let mut w = image.width();
+        let mut h_offset = image.height();
+        let mut w_offset = image.width();
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
-        /*
-               for (target_x, target_y) in new_image.enumerate_pixels_mut() {
-                   let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
-                   for x in u32:(target_x, w, h)(pow(target_x,((w * h) as usize))) {
-                       for y in u32:(target_y, w, h)(pow(target_x,((w * h) as usize))) {
-                           if is_in_range(x, y, image) {
-                               old_pixels.push(image.get_pixel(x, y));
-                           }
-                       }
-                   }
-               }
-
-        */
+        for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
+            let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
+            for x in u32::saturating_sub(target_x, w_offset)..(target_x + w_offset) {
+                for y in u32::saturating_sub(target_y, h_offset)..(target_y + h_offset) {
+                    if is_in_range(x, y, image) {
+                        old_pixels.push(image.get_pixel(x, y));
+                    }
+                }
+            }
+            for channel in 0..3 {
+                let mut luminosities: Vec<u8> =
+                    old_pixels.iter().map(|pixel| pixel[channel]).collect();
+                luminosities.sort();
+                todo!()
+                //let sum = luminosities.into_iter().sum::<S>();
+                //let sum = luminosities.into_iter().sum();
+                //let sum::<S>(self) -> S
+               // new_pixel[channel] = luminosities[luminosities.into_iter().sum()/ 2];
+            }
+        }
         *image = new_image;
     }
 }

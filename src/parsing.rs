@@ -108,7 +108,7 @@ Commands:
                                     \t  HEIGHT: Height of sample region in pixels
 
 Options:
-\t -o, --output=<FILE> \t Save the image after transformation to the specified file
+\t -o=<FILE> \t Save the image after transformation to the specified file
 
 \t --mse                \t Display mean square error
 \t --pmse               \t Display peak mean square error
