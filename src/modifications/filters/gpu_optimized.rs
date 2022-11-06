@@ -33,6 +33,9 @@ impl MedianFilterGPU {
         if height.is_odd() {
             height -= 1
         }
+        if height * width > 500 {
+            return Err(format!("Values of height and width too large. Maximum sampling area is 500, got {}.", height*width));
+        }
         if let Some(GPUComputeRunner { device, queue }) = GPUComputeRunner::new() {
             Ok(Self {
                 x_radius: width / 2,
