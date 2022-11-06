@@ -7,6 +7,8 @@ use image::RgbImage;
 
 use num::Integer;
 
+pub mod gpu_optimized;
+
 fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
     x < image.width() && y < image.height()
 }

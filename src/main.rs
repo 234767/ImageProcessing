@@ -4,6 +4,7 @@ use modifications::{get_transformation, Transformation};
 mod analysis;
 mod modifications;
 mod parsing;
+mod gpu;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {

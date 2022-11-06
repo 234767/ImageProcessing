@@ -24,7 +24,23 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--shrink" => Ok(Box::new(Scale::try_new_shrink(args)?)),
         "--enlarge" => Ok(Box::new(Scale::try_new_enlarge(args)?)),
         "--median" => Ok(Box::new(MedianFilter::try_new(args)?)),
+        "--median-gpu" => match gpu_optimized::MedianFilterGPU::try_new(args) {
+            Ok(filter) => Ok(Box::new(filter)),
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                println!("Falling back to default implementation");
+                Ok(Box::new(MedianFilter::try_new(args)?))
+            }
+        },
         "--gmean" => Ok(Box::new(GeometricMeanFilter::try_new(args)?)),
+        "--gmean-gpu" => match gpu_optimized::GMeanFilterGPU::try_new(args) {
+            Ok(filter) => Ok(Box::new(filter)),
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                println!("Falling back to default implementation");
+                Ok(Box::new(MedianFilter::try_new(args)?))
+            }
+        },
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
