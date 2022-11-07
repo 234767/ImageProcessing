@@ -6,6 +6,7 @@ use image::Rgb;
 use image::RgbImage;
 
 use num::Integer;
+use num::pow::Pow;
 
 pub mod gpu_optimized;
 
@@ -92,7 +93,7 @@ impl Transformation for GeometricMeanFilter {
                 let luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
                 new_pixel[channel] =
-                    (luminosities.iter().map(|l| *l as u128).sum::<u128>() / luminosities.iter().count() as u128) as u8;
+                    f64::pow(luminosities.iter().map(|l| *l as f64).product::<f64>(), 1f64 / luminosities.iter().count() as f64) as u8;
             }
         }
         *image = new_image;
