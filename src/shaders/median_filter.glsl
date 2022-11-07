@@ -13,11 +13,11 @@ layout (push_constant) uniform PushConstantData {
 layout (set = 0, binding = 0, rgba8) uniform readonly image2D inImage;
 layout (set = 0, binding = 1, rgba8) uniform writeonly image2D outImage;
 
-uint arraySize;
+uint numElements;
 float luminosities[MAX_SIZE];
 
 void sort() {
-    for (int k=1; k < int(arraySize); k++)
+    for ( int k=1; k < int( numElements); k++)
     {
         float temp = luminosities[k];
         int j = k-1;
@@ -35,29 +35,29 @@ void main() {
 
     vec3 to_write = vec3(0.0,0.0,0.0);
 
-    arraySize = 0;
+    numElements = 0;
     COLLECT_PIXELS (
-        luminosities[arraySize] = pixel.r;
-        arraySize++;
-    )
+        luminosities[numElements] = pixel.r;
+        numElements++;
+        )
     sort();
-    to_write.r = luminosities[arraySize/2];
+    to_write.r = luminosities[numElements / 2];
 
-    arraySize = 0;
+    numElements = 0;
     COLLECT_PIXELS (
-        luminosities[arraySize] = pixel.g;
-        arraySize++;
-    )
+        luminosities[numElements] = pixel.g;
+        numElements++;
+        )
     sort();
-    to_write.g = luminosities[arraySize/2];
+    to_write.g = luminosities[numElements / 2];
 
-    arraySize = 0;
+    numElements = 0;
     COLLECT_PIXELS (
-        luminosities[arraySize] = pixel.b;
-        arraySize++;
-    )
+        luminosities[numElements] = pixel.b;
+        numElements++;
+        )
     sort();
-    to_write.b = luminosities[arraySize/2];
+    to_write.b = luminosities[numElements / 2];
 
     imageStore(outImage, ID, vec4(to_write,1.0));
 }
