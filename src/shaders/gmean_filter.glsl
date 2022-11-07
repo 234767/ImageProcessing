@@ -1,4 +1,5 @@
 #version 450
+#include "shader_macros.h"
 
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
@@ -22,46 +23,31 @@ void main() {
     ivec2 max_size = imageSize(inImage);
     ivec2 ID = ivec2(gl_GlobalInvocationID.xy);
 
-    vec3 to_write = vec3(0.0,0.0,0.0);
+    vec3 to_write = vec3(0.0, 0.0, 0.0);
 
     arraySize = 0;
     sum = 0.f;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                sum += pixel.r;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        sum += pixel.r;
+        arraySize++;
+        )
     to_write.r = mean();
 
     arraySize = 0;
     sum = 0.f;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                sum += pixel.g;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        sum += pixel.g;
+        arraySize++;
+        )
     to_write.g = mean();
 
     arraySize = 0;
     sum = 0.f;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                sum += pixel.b;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        sum += pixel.g;
+        arraySize++;
+        )
     to_write.b = mean();
 
-    imageStore(outImage, ID, vec4(to_write,1.0));
+    imageStore(outImage, ID, vec4(to_write, 1.0));
 }

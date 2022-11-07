@@ -1,5 +1,5 @@
 #version 450
-
+#include "shader_macros.h"
 #define MAX_SIZE 400
 
 layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
@@ -36,41 +36,26 @@ void main() {
     vec3 to_write = vec3(0.0,0.0,0.0);
 
     arraySize = 0;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                luminosities[arraySize] = pixel.r;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        luminosities[arraySize] = pixel.r;
+        arraySize++;
+    )
     sort();
     to_write.r = luminosities[arraySize/2];
 
     arraySize = 0;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                luminosities[arraySize] = pixel.g;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        luminosities[arraySize] = pixel.g;
+        arraySize++;
+    )
     sort();
     to_write.g = luminosities[arraySize/2];
 
     arraySize = 0;
-    for (int x = int(ID.x) - int(dat.x_radius); x <= int(ID.x) + int(dat.x_radius); x++ ) {
-        for (int y = int(ID.y) - int(dat.y_radius); y <= int(ID.y) + int(dat.y_radius); y++) {
-            if (x > 0 && y > 0 && x < max_size.x && y < max_size.y && arraySize < MAX_SIZE) {
-                vec4 pixel = imageLoad(inImage, ivec2(x,y));
-                luminosities[arraySize] = pixel.b;
-                arraySize++;
-            }
-        }
-    }
+    COLLECT_PIXELS (
+        luminosities[arraySize] = pixel.b;
+        arraySize++;
+    )
     sort();
     to_write.b = luminosities[arraySize/2];
 
