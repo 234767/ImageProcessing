@@ -44,7 +44,7 @@ void main() {
     arraySize = 0;
     sum = 0.f;
     COLLECT_PIXELS (
-        sum += pixel.g;
+        sum += pixel.b;
         arraySize++;
         )
     to_write.b = mean();
