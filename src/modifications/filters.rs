@@ -107,12 +107,12 @@ impl Transformation for GeometricMeanFilter {
 mod test {
     use super::*;
 
-    struct FilterTestFixture {
+    pub struct FilterTestFixture {
         pub image: RgbImage,
     }
 
     impl FilterTestFixture {
-        fn new() -> Self {
+        pub fn new() -> Self {
             // image size 10x9
             let width = 10;
             let height = 9;
@@ -128,7 +128,7 @@ mod test {
     }
 
     #[test]
-    fn collect_pixel_works_in_the_middle() {
+    fn collect_pixels_works_in_the_middle() {
         let fixture = FilterTestFixture::new();
         let x = 3;
         let y = 4;
@@ -139,11 +139,79 @@ mod test {
 
         assert_eq!(15, result.len());
 
-        for xi in x-x_offset..=x+x_offset {
-            for yi in y-y_offset..=y+y_offset {
-                let pixel = fixture.image.get_pixel(xi,yi);
-                assert!(result.contains(&pixel))
+        for xi in x - x_offset..=x + x_offset {
+            for yi in y - y_offset..=y + y_offset {
+                let pixel = fixture.image.get_pixel(xi, yi);
+                assert!(result.contains(&pixel));
             }
+        }
+    }
+
+    #[test]
+    fn collect_pixels_works_on_edges() {
+        let image = FilterTestFixture::new().image;
+        let x = 0;
+        let y = 1;
+        let x_offset = 1;
+        let y_offset = 2;
+
+        let result = collect_pixels(&image, x, x_offset, y, y_offset);
+
+        assert_eq!(8, result.len());
+
+        for xi in 0..=x + x_offset {
+            for yi in 0..y + y_offset {
+                let pixel = image.get_pixel(xi, yi);
+                assert!(result.contains(&pixel));
+            }
+        }
+    }
+
+    mod median_filter_tests {
+        use super::*;
+
+        macro_rules! cpu_tests {
+            ($($name:ident $values:expr,)*) => {
+                $(
+                #[test]
+                fn $name () {
+                    let (width, height, channel) = $values;
+                    let mut image = FilterTestFixture::new().image;
+                    let filter = MedianFilter { width, height };
+
+                    let values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
+                    assert_eq!(width * height, values.len() as u32);
+                    let median = values[values.len() / 2];
+
+                    let mut iter = values.iter();
+                    for xi in 1..(1 + width) {
+                        for yi in 1..(1 + height) {
+                            let Rgb(pixel) = image.get_pixel_mut(xi, yi);
+                            pixel[channel] = *iter.next().unwrap();
+                        }
+                    }
+
+                    filter.apply(&mut image);
+                    let Rgb(target_pixel) = image.get_pixel(2, 2);
+                    assert_eq!(median, target_pixel[channel]);
+                }
+                )*
+            }
+        }
+
+        cpu_tests! {
+            median_3x3_cpu_red (3,3,0),
+            median_3x3_cpu_green (3,3,1),
+            median_3x3_cpu_blue (3,3,2),
+            median_5x5_cpu_red (5,5,0),
+            median_5x5_cpu_green (5,5,1),
+            median_5x5_cpu_blue (5,5,2),
+            median_7x7_cpu_red (7,7,0),
+            median_7x7_cpu_green (7,7,1),
+            median_7x7_cpu_blue (7,7,2),
+            median_9x9_cpu_red (9,9,0),
+            median_9x9_cpu_green (9,9,1),
+            median_9x9_cpu_blue (9,9,2),
         }
     }
 }
