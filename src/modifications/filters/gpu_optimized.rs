@@ -149,7 +149,8 @@ mod test {
 
                 let mut image = RgbImage::new(16,16);
                 // did not work with images smaller than the group size
-
+                // todo: add the check for minimal image size to try_new function
+                // todo: fix error when image size is not multiple of 16
 
                 let gpu_config = GPUConfig::new().unwrap();
                 let filter = MedianFilterGPU {
@@ -158,7 +159,11 @@ mod test {
                     config: gpu_config,
                 };
 
-                let values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
+                let values: Vec<u8> = {
+                    let mut values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
+                    values.sort();
+                    values
+                };
                 assert_eq!(width * height, values.len() as u32);
                 let median = values[values.len() / 2];
 
@@ -179,9 +184,6 @@ mod test {
             )*
         }
     }
-
-    // todo: add the check for minimal image size to try_new function
-    // todo: fix error when image size is not multiple of 16
 
     gpu_tests! {
         median_3x3_gpu_red (3,3,0),

@@ -113,9 +113,9 @@ mod test {
 
     impl FilterTestFixture {
         pub fn new() -> Self {
-            // image size 10x9
+            // image size 10x10
             let width = 10;
-            let height = 9;
+            let height = 10;
             let buffer: Vec<u8> = (0..(width * height * 3)).map(|c| c as u8).collect();
             let image: RgbImage = RgbImage::from_vec(width, height, buffer).unwrap();
             Self { image }
@@ -179,7 +179,11 @@ mod test {
                     let mut image = FilterTestFixture::new().image;
                     let filter = MedianFilter { width, height };
 
-                    let values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
+                    let values: Vec<u8> = {
+                        let mut values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
+                        values.sort();
+                        values
+                    };
                     assert_eq!(width * height, values.len() as u32);
                     let median = values[values.len() / 2];
 
