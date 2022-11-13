@@ -192,7 +192,8 @@ mod test {
                     }
 
                     filter.apply(&mut image);
-                    let Rgb(target_pixel) = image.get_pixel(2, 2);
+                    let (target_x, target_y) = ((1+width) / 2, (1+height)/2);
+                    let Rgb(target_pixel) = image.get_pixel(target_x, target_y);
                     assert_eq!(median, target_pixel[channel]);
                 }
                 )*
