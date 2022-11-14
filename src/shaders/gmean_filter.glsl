@@ -25,7 +25,7 @@ uint numElements;
 float product;
 
 float mean() {
-    return pow(product, 1 / float(numElements));
+    return pow(product, (1.f / float(numElements)));
 }
 
 void main() {
@@ -35,7 +35,7 @@ void main() {
     vec3 to_write = vec3( 0.0, 0.0, 0.0 );
 
     numElements = 0;
-    product = 0.f;
+    product = 1.f;
     COLLECT_PIXELS (
             product *= pixel.r;
             numElements++;
@@ -43,7 +43,7 @@ void main() {
     to_write.r = mean();
 
     numElements = 0;
-    product = 0.f;
+    product = 1.f;
     COLLECT_PIXELS (
             product *= pixel.g;
             numElements++;
@@ -51,7 +51,7 @@ void main() {
     to_write.g = mean();
 
     numElements = 0;
-    product = 0.f;
+    product = 1.f;
     COLLECT_PIXELS (
             product *= pixel.b;
             numElements++;
