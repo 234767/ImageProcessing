@@ -41,6 +41,12 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
                 Ok(Box::new(MedianFilter::try_new(args)?))
             }
         },
+        "--max-gpu" => match gpu_optimized::MaxFilterGPU::try_new(args) {
+            Ok(filter) => Ok(Box::new(filter)),
+            Err(e) => {
+                panic!("Error: {}", e);
+            }
+        },
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
