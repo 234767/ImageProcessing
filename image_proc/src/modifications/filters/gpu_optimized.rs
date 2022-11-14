@@ -71,7 +71,7 @@ impl Transformation for MedianFilterGPU {
             self.config.clone(),
             image,
             |device| cs::load(device).expect("Failed to create shader module"),
-            [image.width() / 16, image.height() / 16, 1],
+            [image.width() / 16 + 1, image.height() / 16 + 1, 1],
             Some(push_constants),
         );
 
@@ -114,7 +114,7 @@ impl Transformation for GMeanFilterGPU {
             self.config.clone(),
             image,
             |device| cs::load(device).expect("Failed to create shader module"),
-            [image.width() / 16, image.height() / 16, 1],
+            [image.width() / 16 + 1, image.height() / 16 + 1, 1],
             Some(push_constants),
         );
 
@@ -156,7 +156,7 @@ impl Transformation for MaxFilterGPU {
             self.config.clone(),
             image,
             |device| cs::load(device).expect("Failed to create shader module"),
-            [image.width() / 16, image.height() / 16, 1],
+            [image.width() / 16 + 1, image.height() / 16 + 1, 1],
             Some(push_constants),
         );
 
