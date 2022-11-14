@@ -1,14 +1,19 @@
 //Methods of image noise removal
-use crate::modifications::Transformation;
-use crate::parsing::Args;
+use super::Transformation;
 use image::ImageBuffer;
 use image::Rgb;
 use image::RgbImage;
-
 use num::pow::Pow;
-use num::Integer;
 
 pub mod gpu_optimized;
+
+macro_rules! impl_new {
+    () => {
+        pub fn new(width: u32, height: u32) -> Self {
+            Self { width, height }
+        }
+    };
+}
 
 fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
     x < image.width() && y < image.height()
@@ -26,18 +31,6 @@ fn collect_pixels(image: &RgbImage, x: u32, x_offset: u32, y: u32, y_offset: u32
     old_pixels
 }
 
-fn get_width_and_height(args: &Args) -> Result<(u32, u32), String> {
-    let mut width: u32 = args.try_get_arg("-w")?;
-    if width.is_even() {
-        width += 1
-    }
-    let mut height: u32 = args.try_get_arg("-h")?;
-    if height.is_even() {
-        height += 1
-    }
-    Ok((width, height))
-}
-
 //(N1) Median filter (--median)
 pub struct MedianFilter {
     width: u32,
@@ -45,10 +38,7 @@ pub struct MedianFilter {
 }
 
 impl MedianFilter {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let (width, height) = get_width_and_height(args)?;
-        Ok(Self { width, height })
-    }
+    impl_new!();
 }
 
 impl Transformation for MedianFilter {
@@ -77,10 +67,7 @@ pub struct GeometricMeanFilter {
 }
 
 impl GeometricMeanFilter {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let (width, height) = get_width_and_height(args)?;
-        Ok(Self { width, height })
-    }
+    impl_new!();
 }
 
 impl Transformation for GeometricMeanFilter {

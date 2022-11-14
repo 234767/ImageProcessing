@@ -1,8 +1,24 @@
+use super::super::Transformation;
 use crate::gpu::{GPUConfig, InOutImageTransformationPipeline};
-use crate::modifications::Transformation;
-use crate::parsing::Args;
 use image::RgbImage;
-use num::Integer;
+
+macro_rules! impl_try_new {
+    () => {
+        pub fn try_new(width: u32, height: u32) -> Result<Self, String> {
+            if let Some(config) = GPUConfig::new() {
+                Ok(Self {
+                    x_radius: width / 2,
+                    y_radius: height / 2,
+                    config,
+                })
+            } else {
+                Err(String::from(
+                    "Vulkan required for running GPU optimized version",
+                ))
+            }
+        }
+    };
+}
 
 pub struct MedianFilterGPU {
     x_radius: u32,
@@ -11,15 +27,7 @@ pub struct MedianFilterGPU {
 }
 
 impl MedianFilterGPU {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let mut width: u32 = args.try_get_arg("-w")?;
-        if width.is_odd() {
-            width -= 1
-        }
-        let mut height: u32 = args.try_get_arg("-h")?;
-        if height.is_odd() {
-            height -= 1
-        }
+    pub fn try_new(width: u32, height: u32) -> Result<Self, String> {
         if height * width > 400 {
             return Err(format!(
                 "Values of height and width too large. Maximum sampling area is 400, got {}.",
@@ -80,27 +88,7 @@ pub struct GMeanFilterGPU {
 }
 
 impl GMeanFilterGPU {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let mut width: u32 = args.try_get_arg("-w")?;
-        if width.is_odd() {
-            width -= 1
-        }
-        let mut height: u32 = args.try_get_arg("-h")?;
-        if height.is_odd() {
-            height -= 1
-        }
-        if let Some(config) = GPUConfig::new() {
-            Ok(Self {
-                x_radius: width / 2,
-                y_radius: height / 2,
-                config,
-            })
-        } else {
-            Err(String::from(
-                "Vulkan required for running GPU optimized version",
-            ))
-        }
-    }
+    impl_try_new!();
 }
 
 impl Transformation for GMeanFilterGPU {
@@ -142,27 +130,7 @@ pub struct MaxFilterGPU {
 }
 
 impl MaxFilterGPU {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let mut width: u32 = args.try_get_arg("-w")?;
-        if width.is_odd() {
-            width -= 1
-        }
-        let mut height: u32 = args.try_get_arg("-h")?;
-        if height.is_odd() {
-            height -= 1
-        }
-        if let Some(config) = GPUConfig::new() {
-            Ok(Self {
-                x_radius: width / 2,
-                y_radius: height / 2,
-                config,
-            })
-        } else {
-            Err(String::from(
-                "Vulkan required for running GPU optimized version",
-            ))
-        }
-    }
+    impl_try_new!();
 }
 
 impl Transformation for MaxFilterGPU {

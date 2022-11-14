@@ -10,7 +10,7 @@ pub trait Analyzer {
 }
 
 pub struct CompositeAnalyzer {
-    analyzers: Vec<Box<dyn Analyzer>>,
+    pub analyzers: Vec<Box<dyn Analyzer>>,
 }
 
 impl CompositeAnalyzer {

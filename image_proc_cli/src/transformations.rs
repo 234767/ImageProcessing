@@ -4,86 +4,84 @@ use image_proc::modifications::*;
 pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String> {
     match args.command.as_str() {
         "--negative" => Ok(Box::new(Negative {})),
-        "--brightness" => Ok(Box::new(Brightness::try_new(args)?)),
-        "--contrast" => Ok(Box::new(Contrast::try_new(args)?)),
+        "--brightness" => Ok(Box::new(Brightness::new(
+            args.try_get_arg::<i32>("amount")?,
+        ))),
+        "--contrast" => Ok(Box::new(Contrast::new(args.try_get_arg::<f64>("amount")?))),
         "--hflip" => Ok(Box::new(HorizontalFlip {})),
         "--vflip" => Ok(Box::new(VerticalFlip {})),
         "--dflip" => Ok(Box::new(DiagonalFlip {})),
         "--shrink" => Ok(Box::new(util::try_new_shrink(args)?)),
         "--enlarge" => Ok(Box::new(util::try_new_enlarge(args)?)),
-        "--median" => Ok(Box::new(MedianFilter::try_new(args)?)),
-        "--median-gpu" => match gpu_optimized::MedianFilterGPU::try_new(args) {
-            Ok(filter) => Ok(Box::new(filter)),
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                println!("Falling back to default implementation");
-                Ok(Box::new(MedianFilter::try_new(args)?))
+        "--median" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            Ok(Box::new(MedianFilter::new(width, height)))
+        }
+        "--median-gpu" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            match gpu_optimized::MedianFilterGPU::try_new(width, height) {
+                Ok(filter) => Ok(Box::new(filter)),
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    println!("Falling back to default implementation");
+                    Ok(Box::new(MedianFilter::new(width, height)))
+                }
             }
-        },
-        "--gmean" => Ok(Box::new(GeometricMeanFilter::try_new(args)?)),
-        "--gmean-gpu" => match gpu_optimized::GMeanFilterGPU::try_new(args) {
-            Ok(filter) => Ok(Box::new(filter)),
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                println!("Falling back to default implementation");
-                Ok(Box::new(MedianFilter::try_new(args)?))
+        }
+        "--gmean" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            Ok(Box::new(GeometricMeanFilter::new(width, height)))
+        }
+        "--gmean-gpu" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            match gpu_optimized::GMeanFilterGPU::try_new(width, height) {
+                Ok(filter) => Ok(Box::new(filter)),
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    println!("Falling back to default implementation");
+                    Ok(Box::new(GeometricMeanFilter::new(width, height)))
+                }
             }
-        },
-        "--max-gpu" => match gpu_optimized::MaxFilterGPU::try_new(args) {
-            Ok(filter) => Ok(Box::new(filter)),
-            Err(e) => {
-                panic!("Error: {}", e);
+        }
+        "--max-gpu" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            match gpu_optimized::MaxFilterGPU::try_new(width, height) {
+                Ok(filter) => Ok(Box::new(filter)),
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    panic!("No default implementation to fallback to")
+                }
             }
-        },
+        }
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
 
 mod util {
     use crate::parsing::Args;
-    use image_proc::modifications::{Brightness, Contrast, Scale};
-
-    fn get_scale(args: &Args) -> Result<f64, String> {
-        let amount = args.try_get_arg("amount")?;
-        if amount < 0.0 {
-            Err(format!("Number {} is not a positive number!", amount))
-        } else {
-            Ok(amount)
-        }
-    }
+    use image_proc::modifications::Scale;
+    use num::Integer;
 
     pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
-        let factor = get_scale(args)?;
-        Ok(Self {
-            factor_x: factor,
-            factor_y: factor,
-        })
+        let factor = args.try_get_arg("amount")?;
+        Ok(Scale::new(factor, factor))
     }
 
     pub fn try_new_shrink(args: &Args) -> Result<Scale, String> {
         // invert the factor - shrink x2 = scale x0.5
-        let factor = 1f64 / get_scale(args)?;
-        Ok(Self {
-            factor_x: factor,
-            factor_y: factor,
-        })
+        let factor = 1f64 / args.try_get_arg::<f64>("amount")?;
+        Ok(Scale::new(factor, factor))
     }
 
-    pub fn try_new_brightness(args: &Args) -> Result<Brightness, String> {
-        let amount: i32 = args.try_get_arg("amount")?;
-        if amount < 0 {
-            Err(format!("Number {} is not a positive integer!", amount))
-        } else {
-            Ok(Brightness::new(amount))
+    pub fn get_width_and_height(args: &Args) -> Result<(u32, u32), String> {
+        let mut width: u32 = args.try_get_arg("-w")?;
+        if width.is_even() {
+            width += 1
         }
-    }
-
-    pub fn try_new_contrast(args: &Args) -> Result<Contrast, String> {
-        let factor: f64 = args.try_get_arg("amount")?;
-        if factor < 0.0 {
-            Err(format!("Number {} is not a positive integer!", factor))
-        } else {
-            Ok(Contrast::new(factor))
+        let mut height: u32 = args.try_get_arg("-h")?;
+        if height.is_even() {
+            height += 1
         }
+        Ok((width, height))
     }
 }

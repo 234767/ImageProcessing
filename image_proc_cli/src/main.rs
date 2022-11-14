@@ -1,12 +1,12 @@
 use image::RgbImage;
-use image_proc::modifications::{get_transformation, Transformation};
-use image_proc::analysis::Analyzer;
+use image_proc::modifications::Transformation;
 
 mod parsing;
 mod analysis;
 mod transformations;
 
 use analysis::get_analyzers;
+use crate::transformations::get_transformation;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {
@@ -33,9 +33,7 @@ fn main() {
         .unwrap()
         .to_rgb8();
 
-    let transformation: Box<dyn Transformation>;
-
-    transformation = match get_transformation(&args) {
+    let transformation: Box<dyn Transformation> = match get_transformation(&args) {
         Ok(t) => t,
         Err(e) => {
             eprintln!("Error: {}", e);
