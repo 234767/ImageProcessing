@@ -3,6 +3,7 @@ use image_proc::modifications::*;
 
 pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String> {
     match args.command.as_str() {
+        "--id" => Ok(Box::new(IdTransform {})),
         "--negative" => Ok(Box::new(Negative {})),
         "--brightness" => Ok(Box::new(Brightness::new(
             args.try_get_arg::<i32>("amount")?,
