@@ -1,3 +1,3 @@
-mod analysis;
-mod modifications;
-mod gpu;
+pub mod analysis;
+pub mod modifications;
+pub mod gpu;

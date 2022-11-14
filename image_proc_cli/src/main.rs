@@ -1,7 +1,11 @@
 use image::RgbImage;
-use modifications::{get_transformation, Transformation};
+use image_proc::modifications::{get_transformation, Transformation};
+use image_proc::analysis::Analyzer;
 
 mod parsing;
+mod analysis;
+
+use analysis::get_analyzers;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {
@@ -41,7 +45,7 @@ fn main() {
     let mut altered_image: RgbImage = img.clone();
     transformation.apply(&mut altered_image);
 
-    let comparer = analysis::get_analyzers(&args);
+    let comparer = get_analyzers(&args);
     let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
         Some(path) => try_get_image(path),
         None => None,

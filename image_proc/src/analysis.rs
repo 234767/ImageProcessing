@@ -1,38 +1,15 @@
-use crate::parsing::Args;
 use image::RgbImage;
-use std::collections::HashMap;
 
-use analyzers::*;
-
-mod analyzers;
+pub mod analyzers;
 mod util;
+
+pub use analyzers::*;
 
 pub trait Analyzer {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String>;
 }
 
-pub fn get_analyzers(args: &Args) -> Box<dyn Analyzer> {
-    let args: &HashMap<String, String> = &args.args;
-    let mut composite = CompositeAnalyzer::new();
-
-    macro_rules! add_if_contains {
-        ($key:literal,$object:expr) => {
-            if (args.contains_key($key)) {
-                composite.analyzers.push(Box::new($object));
-            }
-        };
-    }
-
-    add_if_contains!("--mse", MeanSquareError {});
-    add_if_contains!("--pmse", PMSE {});
-    add_if_contains!("--snr", SNR {});
-    add_if_contains!("--psnr", PSNR {});
-    add_if_contains!("--md", MaximumDifference {});
-
-    return Box::new(composite);
-}
-
-struct CompositeAnalyzer {
+pub struct CompositeAnalyzer {
     analyzers: Vec<Box<dyn Analyzer>>,
 }
 
