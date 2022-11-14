@@ -4,6 +4,7 @@ use image_proc::analysis::Analyzer;
 
 mod parsing;
 mod analysis;
+mod transformations;
 
 use analysis::get_analyzers;
 
