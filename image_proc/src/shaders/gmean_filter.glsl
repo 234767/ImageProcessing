@@ -21,11 +21,9 @@ layout (set = 0, binding = 1, rgba8
 uniform writeonly
 image2D outImage;
 
-uint numElements;
-float product;
 
-float mean() {
-    return pow(product, (1.f / float(numElements)));
+float root( float radicand, uint index ) {
+    return pow( radicand, ( 1.f / float( index )));
 }
 
 void main() {
@@ -34,29 +32,18 @@ void main() {
 
     vec3 to_write = vec3( 0.0, 0.0, 0.0 );
 
-    numElements = 0;
-    product = 1.f;
-    COLLECT_PIXELS (
-            product *= pixel.r;
-            numElements++;
-            )
-    to_write.r = mean();
+    vec3 products = vec3( 1.0, 1.0, 1.0 );
+    uint numElements = 0;
 
-    numElements = 0;
-    product = 1.f;
     COLLECT_PIXELS (
-            product *= pixel.g;
-            numElements++;
-            )
-    to_write.g = mean();
-
-    numElements = 0;
-    product = 1.f;
-    COLLECT_PIXELS (
-            product *= pixel.b;
-            numElements++;
-            )
-    to_write.b = mean();
+        products.r *= pixel.r;
+        products.g *= pixel.g;
+        products.b *= pixel.b;
+        numElements++;
+    )
+    to_write.r = root(products.r, numElements);
+    to_write.g = root(products.g, numElements);
+    to_write.b = root(products.b, numElements);
 
     imageStore( outImage, ID, vec4( to_write, 1.0 ));
 }
