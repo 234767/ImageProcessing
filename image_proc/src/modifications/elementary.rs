@@ -21,7 +21,7 @@ pub struct Brightness {
 
 impl Brightness {
     pub fn new(amount: i32) -> Self {
-        Self {amount}
+        Self { amount }
     }
 }
 
@@ -40,7 +40,7 @@ pub struct Contrast {
 
 impl Contrast {
     pub fn new(factor: f64) -> Self {
-        Self {factor}
+        Self { factor }
     }
 }
 

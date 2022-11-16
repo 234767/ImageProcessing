@@ -1,12 +1,12 @@
 use image::RgbImage;
 use image_proc::modifications::Transformation;
 
-mod parsing;
 mod analysis;
+mod parsing;
 mod transformations;
 
-use analysis::get_analyzers;
 use crate::transformations::get_transformation;
+use analysis::get_analyzers;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {

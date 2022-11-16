@@ -71,7 +71,8 @@ pub struct SNR {}
 
 impl SNR {
     fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
-        let Rgb(luminance_sums) = map_and_sum(original, modified, |old, _new| (old as i128 * old as i128));
+        let Rgb(luminance_sums) =
+            map_and_sum(original, modified, |old, _new| (old as i128 * old as i128));
         let mean_luminance = (luminance_sums.iter().sum::<i128>() as f64)
             / ((3 * original.width() * original.height()) as f64);
 

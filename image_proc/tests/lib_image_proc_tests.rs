@@ -1,5 +1,5 @@
 use image::{Rgb, RgbImage};
-use image_proc::{modifications::Transformation};
+use image_proc::modifications::Transformation;
 
 macro_rules! invoke_test {
         ($func:ident {$($name:ident ($($arg:expr),*)),*}) => {

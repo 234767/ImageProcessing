@@ -4,7 +4,7 @@ use image_proc::modifications::gpu_optimized::MedianFilterGPU;
 fn test_median_filter_gpu(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();
 
-    let filter = MedianFilterGPU::try_new(width,height).expect("Failed to create filter");
+    let filter = MedianFilterGPU::try_new(width, height).expect("Failed to create filter");
 
     let values: Vec<u8> = {
         let mut values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();

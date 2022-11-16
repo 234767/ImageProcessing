@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::parsing::Args;
+use std::collections::HashMap;
 
 use image_proc::analysis::*;
 

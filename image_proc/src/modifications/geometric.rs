@@ -77,11 +77,9 @@ impl Transformation for Scale {
     }
 }
 
-
-
 impl Scale {
     pub fn new(factor_x: f64, factor_y: f64) -> Self {
-        Self {factor_x, factor_y}
+        Self { factor_x, factor_y }
     }
 
     /// Returns a pair of `x,y` coordinates in the source image,
