@@ -1,10 +1,12 @@
 use image::RgbImage;
-use modifications::{get_transformation, Transformation};
+use image_proc::modifications::Transformation;
 
 mod analysis;
-mod modifications;
 mod parsing;
-mod gpu;
+mod transformations;
+
+use crate::transformations::get_transformation;
+use analysis::get_analyzers;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {
@@ -31,9 +33,7 @@ fn main() {
         .unwrap()
         .to_rgb8();
 
-    let transformation: Box<dyn Transformation>;
-
-    transformation = match get_transformation(&args) {
+    let transformation: Box<dyn Transformation> = match get_transformation(&args) {
         Ok(t) => t,
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -44,7 +44,7 @@ fn main() {
     let mut altered_image: RgbImage = img.clone();
     transformation.apply(&mut altered_image);
 
-    let comparer = analysis::get_analyzers(&args);
+    let comparer = get_analyzers(&args);
     let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
         Some(path) => try_get_image(path),
         None => None,

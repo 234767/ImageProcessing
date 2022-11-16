@@ -1,14 +1,19 @@
 //Methods of image noise removal
-use crate::modifications::Transformation;
-use crate::parsing::Args;
+use super::Transformation;
 use image::ImageBuffer;
 use image::Rgb;
 use image::RgbImage;
-
 use num::pow::Pow;
-use num::Integer;
 
 pub mod gpu_optimized;
+
+macro_rules! impl_new {
+    () => {
+        pub fn new(width: u32, height: u32) -> Self {
+            Self { width, height }
+        }
+    };
+}
 
 fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
     x < image.width() && y < image.height()
@@ -26,18 +31,6 @@ fn collect_pixels(image: &RgbImage, x: u32, x_offset: u32, y: u32, y_offset: u32
     old_pixels
 }
 
-fn get_width_and_height(args: &Args) -> Result<(u32, u32), String> {
-    let mut width: u32 = args.try_get_arg("-w")?;
-    if width.is_even() {
-        width += 1
-    }
-    let mut height: u32 = args.try_get_arg("-h")?;
-    if height.is_even() {
-        height += 1
-    }
-    Ok((width, height))
-}
-
 //(N1) Median filter (--median)
 pub struct MedianFilter {
     width: u32,
@@ -45,10 +38,7 @@ pub struct MedianFilter {
 }
 
 impl MedianFilter {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let (width, height) = get_width_and_height(args)?;
-        Ok(Self { width, height })
-    }
+    impl_new!();
 }
 
 impl Transformation for MedianFilter {
@@ -77,10 +67,7 @@ pub struct GeometricMeanFilter {
 }
 
 impl GeometricMeanFilter {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let (width, height) = get_width_and_height(args)?;
-        Ok(Self { width, height })
-    }
+    impl_new!();
 }
 
 impl Transformation for GeometricMeanFilter {
@@ -107,7 +94,7 @@ impl Transformation for GeometricMeanFilter {
 mod test {
     use super::*;
 
-    pub struct FilterTestFixture {
+    struct FilterTestFixture {
         pub image: RgbImage,
     }
 
@@ -120,11 +107,6 @@ mod test {
             let image: RgbImage = RgbImage::from_vec(width, height, buffer).unwrap();
             Self { image }
         }
-    }
-
-    #[test]
-    fn fixture_setup_correctly() {
-        let _ = FilterTestFixture::new();
     }
 
     #[test]
@@ -164,59 +146,6 @@ mod test {
                 let pixel = image.get_pixel(xi, yi);
                 assert!(result.contains(&pixel));
             }
-        }
-    }
-
-    mod median_filter_tests {
-        use super::*;
-
-        macro_rules! cpu_tests {
-            ($($name:ident $values:expr,)*) => {
-                $(
-                #[test]
-                fn $name () {
-                    let (width, height, channel) = $values;
-                    let mut image = FilterTestFixture::new().image;
-                    let filter = MedianFilter { width, height };
-
-                    let values: Vec<u8> = {
-                        let mut values: Vec<u8> = (0..width * height).map(|i| (i * i) as u8).collect();
-                        values.sort();
-                        values
-                    };
-                    assert_eq!(width * height, values.len() as u32);
-                    let median = values[values.len() / 2];
-
-                    let mut iter = values.iter();
-                    for xi in 1..(1 + width) {
-                        for yi in 1..(1 + height) {
-                            let Rgb(pixel) = image.get_pixel_mut(xi, yi);
-                            pixel[channel] = *iter.next().unwrap();
-                        }
-                    }
-
-                    filter.apply(&mut image);
-                    let (target_x, target_y) = ((1+width) / 2, (1+height)/2);
-                    let Rgb(target_pixel) = image.get_pixel(target_x, target_y);
-                    assert_eq!(median, target_pixel[channel]);
-                }
-                )*
-            }
-        }
-
-        cpu_tests! {
-            median_3x3_cpu_red (3,3,0),
-            median_3x3_cpu_green (3,3,1),
-            median_3x3_cpu_blue (3,3,2),
-            median_5x5_cpu_red (5,5,0),
-            median_5x5_cpu_green (5,5,1),
-            median_5x5_cpu_blue (5,5,2),
-            median_7x7_cpu_red (7,7,0),
-            median_7x7_cpu_green (7,7,1),
-            median_7x7_cpu_blue (7,7,2),
-            median_9x9_cpu_red (9,9,0),
-            median_9x9_cpu_green (9,9,1),
-            median_9x9_cpu_blue (9,9,2),
         }
     }
 }

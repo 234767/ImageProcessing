@@ -1,6 +1,5 @@
 //Geometric operations
-use crate::modifications::Transformation;
-use crate::parsing::Args;
+use super::Transformation;
 use image::{ImageBuffer, RgbImage};
 
 //(G1) Horizontal flip (--hflip)
@@ -59,8 +58,8 @@ impl Transformation for DiagonalFlip {
 }
 
 pub struct Scale {
-    pub factor_x: f64,
-    pub factor_y: f64,
+    factor_x: f64,
+    factor_y: f64,
 }
 
 //(G4) Image shrinking (--shrink) & (G5) Image enlargement (--enlarge)
@@ -78,30 +77,9 @@ impl Transformation for Scale {
     }
 }
 
-fn get_scale(args: &Args) -> Result<f64, String> {
-    let amount = args.try_get_arg("amount")?;
-    if amount < 0.0 {
-        Err(format!("Number {} is not a positive number!", amount))
-    } else {
-        Ok(amount)
-    }
-}
-
 impl Scale {
-    pub fn try_new_enlarge(args: &Args) -> Result<Self, String> {
-        let factor = get_scale(args)?;
-        Ok(Self {
-            factor_x: factor,
-            factor_y: factor,
-        })
-    }
-
-    pub fn try_new_shrink(args: &Args) -> Result<Self, String> {
-        let factor = 1f64 / get_scale(args)?;
-        Ok(Self {
-            factor_x: factor,
-            factor_y: factor,
-        })
+    pub fn new(factor_x: f64, factor_y: f64) -> Self {
+        Self { factor_x, factor_y }
     }
 
     /// Returns a pair of `x,y` coordinates in the source image,

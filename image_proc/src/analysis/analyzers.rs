@@ -71,7 +71,8 @@ pub struct SNR {}
 
 impl SNR {
     fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
-        let Rgb(luminance_sums) = map_and_sum(original, modified, |old, _new| old as i128);
+        let Rgb(luminance_sums) =
+            map_and_sum(original, modified, |old, _new| (old as i128 * old as i128));
         let mean_luminance = (luminance_sums.iter().sum::<i128>() as f64)
             / ((3 * original.width() * original.height()) as f64);
 
@@ -93,7 +94,7 @@ pub struct PSNR {}
 
 impl PSNR {
     fn compare(original: &RgbImage, modified: &RgbImage) -> f64 {
-        let max_luminance = u8::MAX as f64;
+        let max_luminance = u8::MAX as f64 * u8::MAX as f64;
         let mse = MeanSquareError::compare(original, modified);
 
         10f64 * f64::log10(max_luminance / mse)

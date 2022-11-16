@@ -1,6 +1,5 @@
 //Elementary operations on images enabling to easily modify brightness and contrast
-use crate::modifications::Transformation;
-use crate::parsing::Args;
+use super::Transformation;
 use image::{Pixel, RgbImage};
 use num;
 
@@ -21,13 +20,8 @@ pub struct Brightness {
 }
 
 impl Brightness {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let amount: i32 = args.try_get_arg("amount")?;
-        if amount < 0 {
-            Err(format!("Number {} is not a positive integer!", amount))
-        } else {
-            Ok(Self { amount })
-        }
+    pub fn new(amount: i32) -> Self {
+        Self { amount }
     }
 }
 
@@ -45,13 +39,8 @@ pub struct Contrast {
 }
 
 impl Contrast {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let factor: f64 = args.try_get_arg("amount")?;
-        if factor < 0.0 {
-            Err(format!("Number {} is not a positive integer!", factor))
-        } else {
-            Ok(Self { factor })
-        }
+    pub fn new(factor: f64) -> Self {
+        Self { factor }
     }
 }
 
