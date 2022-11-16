@@ -3,6 +3,7 @@ use image_proc::modifications::MedianFilter;
 
 fn test_median_filter(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();
+
     let filter = MedianFilter::new(width, height);
 
     let values: Vec<u8> = {

@@ -2,7 +2,7 @@ use crate::*;
 use image_proc::modifications::gpu_optimized::MedianFilterGPU;
 
 fn test_median_filter_gpu(width: u32, height: u32, channel: usize) {
-    let mut image = RgbImage::new(16, 16);
+    let mut image = sample_image();
 
     let filter = MedianFilterGPU::try_new(width,height).expect("Failed to create filter");
 
@@ -18,8 +18,7 @@ fn test_median_filter_gpu(width: u32, height: u32, channel: usize) {
     for xi in 1..(1 + width) {
         for yi in 1..(1 + height) {
             let Rgb(pixel) = image.get_pixel_mut(xi, yi);
-            let luminance = *iter.next().unwrap();
-            pixel[channel] = luminance;
+            pixel[channel] = *iter.next().unwrap();
         }
     }
 
