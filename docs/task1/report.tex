@@ -11,6 +11,9 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[table]{xcolor}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\pgfplotsset{compat=1.17}
 
 \graphicspath{{../img/}}
 
@@ -84,6 +87,9 @@ The external libraries (called ``crates'' in case of Rust) that we use in our pr
     \item \textbf{vulkano} --- Rust wrapper around the Vulkan graphical API,
           which we use to provide alternative implementations of some transformations,
           which are run on the GPU making them significantly faster
+    \item \textbf{vulkano-shaders} --- providing some macros that automatically,
+          during the program's compilation,
+          also compile the glsl shader code and embed it in the final binary.
 \end{itemize}
 
 \subsubsection*{Data structures}
@@ -101,9 +107,16 @@ For parameters that are specified by the user (e.g\ in brightness or contrast mo
 
 \subsection*{Brightness modification (B1)}
 
+\subsubsection*{Implementation}
+
+For modyfying brightness we simply add the amount supplied by the user to the luminosity value of each pixel.
+Because such operation can exceed the range of allowed values, we have to restrict the result to the range $[0,255]$.
+
 \begin{equation}
     \hat{f} = (f + \alpha) \, \Big|_{[0,255]}
 \end{equation}
+
+\subsubsection*{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -118,11 +131,55 @@ For parameters that are specified by the user (e.g\ in brightness or contrast mo
     \caption{Image before and after increasing the brightness by 30}
 \end{figure}
 
+\subsubsection*{Complexity analysis}
+
+The operation for one pixel is of constant time,
+therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
+The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
+
 \subsection*{Contrast modification (B2)}
+
+\subsubsection*{Implementation}
+
+For contrast modification, we want to multiply the luminosity values by the specified factor
+in order to modify the slope of the tone curve.
+
+However, plain multiplication would result in visible brighness modification alogside the contrast change.
+We, however, would like to make the dark pixels darker, and bright ones brighter.
+For this reason, we offset the input luminosity by 128, to produce rotation around the center.
+
+\begin{figure}[ht]\centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                % width=.5\textwidth,
+                height = .4\textwidth,
+                xmin=0,
+                xmax=255,
+                ymin=0,
+                ymax=255,
+                xtick = {0,255},
+                xlabel = {\small input},
+                ytick = {0,255},
+                ylabel = {\small output}
+            ]
+            \addplot[black,domain=0:255,dotted]{x};
+            \addplot[blue,domain=0:255,thick]{min(x*2,254)};
+            \addplot[red,domain=0:255,thick]{max(1,min((x-128)*2+128,254))};
+            % should be clamped to [0,255], but we use [1,254] for better visibility
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Contrast modification ($\alpha = 2$) without offset (blue), and with offset (red)}
+    \label{fig:contrast-differences}
+\end{figure}
+
+The difference is shown of fig. \ref{fig:contrast-differences}.
+We can clearly see the benefit of using the offset, so for computation we will use the following formula:
 
 \begin{equation}
     \hat{f} = \left((f - 128) \cdot \alpha + 128\right)\Big|_{[0,255]}
 \end{equation}
+
+\subsubsection*{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -137,11 +194,24 @@ For parameters that are specified by the user (e.g\ in brightness or contrast mo
     \caption{Image before and after increasing the contrast by a factor of 2}
 \end{figure}
 
+\subsubsection*{Complexity analysis}
+
+The operation for one pixel is of constant time,
+therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
+The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
+
 \subsection*{Negative (B3)}
+
+\subsubsection*{Implementation}
+
+Negative is produced by subtracting each pixel from the maximum intensity value, resulting in a complementary color.
+It can be expressed as the following equation:
 
 \begin{equation}
     \hat{f} = 255 - f
 \end{equation}
+
+\subsubsection*{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -156,11 +226,30 @@ For parameters that are specified by the user (e.g\ in brightness or contrast mo
     \caption{Image before and after inverting the colors}
 \end{figure}
 
+\subsubsection*{Complexity analysis}
+
+The operation for one pair of pixex is of constant time,
+therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(\frac{wh}{2}) = \mathcal{O}(wh)$.
+The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
+
 \subsection*{Horizontal flip (G1)}
 
+\subsubsection*{Implementation}
+
+Horizontal flip performs a mirroring operation around the vertical axis.
+Therefore, the $y$ coordinates will remain unchanged, and $x$ coordinates will be mirrored around the center.
 \begin{equation}
     \hat{f}(x,y) = f(width - x, y)
 \end{equation}
+
+We accomplish this by looping over every pixel in the left half of the image,
+and swapping it with it's mirror pixel.
+
+We loop only over the left half
+because otherwise, each pair of pixels would be swapped twice,
+cancelling each other.
+
+\subsubsection*{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -174,6 +263,10 @@ For parameters that are specified by the user (e.g\ in brightness or contrast mo
     \end{subfigure}
     \caption{Image before and after flipping it horizontally}
 \end{figure}
+
+\subsubsection*{Complexity analysis}
+
+
 
 \subsection*{Vertical flip (G2)}
 
@@ -239,7 +332,6 @@ so the program just sets $\varphi_x = \varphi_y = \varphi$.
 Enlarge will just apply scale with the factor as it is, and shrink will apply scale, but with the inverse of the specified factor,
 i.e.\ if we want to shrink by a factor of 2, we will apply scale with a factor of $\frac{1}{2}$.
 
-
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
         \includegraphics[width=\textwidth]{lenac.png}
@@ -280,12 +372,12 @@ Therefore, in order to remove duplication, we extracted the common functionality
 Note that we return the pixels by read-only reference, so we are not performing unnecessary copies.
 
 Let $Img$ denote some image, and $Img_{(x,y)}$ the pixel of $Img$ at coordinates $x,y$.
-Let $w$ and $h$ be width and height of $Img$. 
+Let $w$ and $h$ be width and height of $Img$.
 Then, $collect\_pixels(Img,x,y,r_x,r_y)$ will return the pixels of $Img$ in some neighbourhood $S_{(x,y)}$ around $(x,y)$, defined as follows:
 \begin{equation}
-    S_{(x,y)} = 
+    S_{(x,y)} =
     \\\bigg\{
-        Img_{(x,y)} \mid x \in [x-r_x,x+r_x] \cap [0,w) \land y \in [y-r_y, y+r_y] \cap [0,h)
+    Img_{(x,y)} \mid x \in [x-r_x,x+r_x] \cap [0,w) \land y \in [y-r_y, y+r_y] \cap [0,h)
     \bigg\}
 \end{equation}
 
