@@ -31,6 +31,7 @@
 \begin{document}
 
 \pagestyle{fancy}
+\fancyhead{}
 \fancyhead[L]{
     \renewcommand{\arraystretch}{1.5}
     \begin{tabularx}{\textwidth}{|X|X|}
@@ -58,8 +59,8 @@
 \vspace{1em}
 \renewcommand{\arraystretch}{1}
 
-\section*{Technical description of the program}
-\subsection*{Basic information}
+\section{Technical description of the program}
+\subsection{Basic information}
 
 Technical description of the application
 This application allows a user to apply some operations to bitmap files, which are:
@@ -78,8 +79,8 @@ The basic format for all the operations are:
     \lstinline{executable --command [-argument=value]* input_file}
 \end{center}
 
-\subsection*{Advanced information}
-\subsubsection*{Used libraries}
+\subsection{Advanced information}
+\subsubsection{Used libraries}
 The external libraries (called ``crates'' in case of Rust) that we use in our project are
 \begin{itemize}
     \item \textbf{image} --- providing implementations of image encoders and decoders,
@@ -92,11 +93,11 @@ The external libraries (called ``crates'' in case of Rust) that we use in our pr
           also compile the glsl shader code and embed it in the final binary.
 \end{itemize}
 
-\subsubsection*{Data structures}
+\subsubsection{Data structures}
 For storing the image we use RgbImage struct from the mentioned image crate,
 which is just a wrapper around a vector of pixels, which in turn are just a 3-element array of unsigned 8-bit integers (one for each RGB channel).
 
-\section*{Description of implementation of basic image operations}
+\section{Description of implementation of basic image operations}
 
 \paragraph*{Preface on the used notation}
 In the equations we write to describe operations, we will use luminosity functions $f$ to describe the original image, and $\hat{f}$ to describe the new image (after transformation).
@@ -105,9 +106,9 @@ For brevity, if the pixel coordinates are irrelevant, they may be ommited and be
 Additionally, we define $x|_{[a,b]}$ as $x$ restricted to the range $[a,b]$, that is $\max\{a, \min\{x,b\}\}$.
 For parameters that are specified by the user (e.g\ in brightness or contrast modifications), we will use letters from the greek alphabet.
 
-\subsection*{Brightness modification (B1)}
+\subsection{Brightness modification (B1)}
 
-\subsubsection*{Implementation}
+\subsubsection{Implementation}
 
 For modyfying brightness we simply add the amount supplied by the user to the luminosity value of each pixel.
 Because such operation can exceed the range of allowed values, we have to restrict the result to the range $[0,255]$.
@@ -116,7 +117,7 @@ Because such operation can exceed the range of allowed values, we have to restri
     \hat{f} = (f + \alpha) \, \Big|_{[0,255]}
 \end{equation}
 
-\subsubsection*{Results}
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -131,15 +132,15 @@ Because such operation can exceed the range of allowed values, we have to restri
     \caption{Image before and after increasing the brightness by 30}
 \end{figure}
 
-\subsubsection*{Complexity analysis}
+\subsubsection{Complexity analysis}
 
 The operation for one pixel is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
-\subsection*{Contrast modification (B2)}
+\subsection{Contrast modification (B2)}
 
-\subsubsection*{Implementation}
+\subsubsection{Implementation}
 
 For contrast modification, we want to multiply the luminosity values by the specified factor
 in order to modify the slope of the tone curve.
@@ -179,7 +180,7 @@ We can clearly see the benefit of using the offset, so for computation we will u
     \hat{f} = \left((f - 128) \cdot \alpha + 128\right)\Big|_{[0,255]}
 \end{equation}
 
-\subsubsection*{Results}
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -194,15 +195,15 @@ We can clearly see the benefit of using the offset, so for computation we will u
     \caption{Image before and after increasing the contrast by a factor of 2}
 \end{figure}
 
-\subsubsection*{Complexity analysis}
+\subsubsection{Complexity analysis}
 
 The operation for one pixel is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
-\subsection*{Negative (B3)}
+\subsection{Negative (B3)}
 
-\subsubsection*{Implementation}
+\subsubsection{Implementation}
 
 Negative is produced by subtracting each pixel from the maximum intensity value, resulting in a complementary color.
 It can be expressed as the following equation:
@@ -211,7 +212,7 @@ It can be expressed as the following equation:
     \hat{f} = 255 - f
 \end{equation}
 
-\subsubsection*{Results}
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -226,15 +227,15 @@ It can be expressed as the following equation:
     \caption{Image before and after inverting the colors}
 \end{figure}
 
-\subsubsection*{Complexity analysis}
+\subsubsection{Complexity analysis}
 
 The operation for one pair of pixex is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(\frac{wh}{2}) = \mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
-\subsection*{Horizontal flip (G1)}
+\subsection{Horizontal flip (G1)}
 
-\subsubsection*{Implementation}
+\subsubsection{Implementation}
 
 Horizontal flip performs a mirroring operation around the vertical axis.
 Therefore, the $y$ coordinates will remain unchanged, and $x$ coordinates will be mirrored around the center.
@@ -249,7 +250,7 @@ We loop only over the left half
 because otherwise, each pair of pixels would be swapped twice,
 cancelling each other.
 
-\subsubsection*{Results}
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -264,11 +265,11 @@ cancelling each other.
     \caption{Image before and after flipping it horizontally}
 \end{figure}
 
-\subsubsection*{Complexity analysis}
+\subsubsection{Complexity analysis}
 
 
 
-\subsection*{Vertical flip (G2)}
+\subsection{Vertical flip (G2)}
 
 \begin{equation}
     \hat{f}(x,y) = f(x, height - y)
@@ -287,7 +288,7 @@ cancelling each other.
     \caption{Image before and after flipping it vertically}
 \end{figure}
 
-\subsection*{Diagonal flip (G3)}
+\subsection{Diagonal flip (G3)}
 
 \begin{equation}
     \hat{f}(x,y) = f(width - x, height - y)
@@ -306,7 +307,7 @@ cancelling each other.
     \caption{Image before and after flipping it diagonally}
 \end{figure}
 
-\subsection*{Shrink (G4) and Enlarge (G5)}
+\subsection{Shrink (G4) and Enlarge (G5)}
 
 For shrinking and enlarging, we will implement just one transformation, called scale.
 Given some factors $\varphi_x, \varphi_y$ and an image with dimensions $w \times h$, it will produce a new image of dimensions $\varphi_x w \times \varphi_y h$.
@@ -358,7 +359,7 @@ i.e.\ if we want to shrink by a factor of 2, we will apply scale with a factor o
     \caption{Image before and after enlarging by a factor of 4 (not to scale)}
 \end{figure}
 
-\section*{Description of the implementation of the noise reduction methods}
+\section{Description of the implementation of the noise reduction methods}
 
 \subsection*{Common implementation}
 We noticed that all the filters operate by gathering some neighbourhood around the target pixel,
@@ -366,7 +367,7 @@ and then applying some reducing function on that pixels to determine the value o
 Therefore, in order to remove duplication, we extracted the common functionality of gathering the pixels to a separate function $collect\_pixels$, such that:
 
 \begin{equation*}
-    collect\_pixels : \mathbf{Ref}\langle\mathrm{Image}\rangle \times \mathbb{N}^4 \to \mathbf{Multiset}\langle \mathbf{Ref}\langle\mathrm{Pixel} \rangle\rangle
+    collect\_pixels : \mathbf{Ref}\langle\mathrm{Image}\rangle \times \mathbb{N}^4 \to \mathbf{Vec}\langle \mathbf{Ref}\langle\mathrm{Pixel} \rangle\rangle
 \end{equation*}
 
 Note that we return the pixels by read-only reference, so we are not performing unnecessary copies.
@@ -381,21 +382,87 @@ Then, $collect\_pixels(Img,x,y,r_x,r_y)$ will return the pixels of $Img$ in some
     \bigg\}
 \end{equation}
 
-\begin{lstlisting}
-let mut neighbourhood: Vec<&Rgb<u8>> = Vec::new();
-for x in u32::saturating_sub(x, x_offset)..=(x + x_offset) {
-    for y in u32::saturating_sub(y, y_offset)..=(y + y_offset) {
-        if x < image.width() && y < image.height() {
-            neighbourhood.push(image.get_pixel(x, y));
-        }
-    }
-}
-\end{lstlisting}
+\subsection{Median filter (N1)}
 
+\subsubsection{Implementation}\label{sec:median-impl}
 
-\subsection*{Median filter}
+The median filter works very simply, it just picks the median luminosity from the neighbourhood.
 
+\begin{equation}
+    \hat{f}(x,y) = \mathrm{median} \big\{ S_{(x,y)} \big\}
+\end{equation}
 
+While we could sort the values, and then pick the middle one,
+we found the sorting to be problematic, as many sorting algorithms cannot go below $\mathcal{O}(n \log n)$.
+For this reason, we used a more optimal approach, allowing as to get the median in $\mathcal{O}(n)$ time.
 
+We define a sequence $(L_n)_{n=0}^{255}$, such that $L_n = n\big(\{p \in S_{(x,y)} \mid \mathrm{luminosity}(p) = n\}\big)$.
 
+For example $L_{128}$ will be the number of pixels that have the luminosity 128.
+
+From this sequence, finding the median is trivial, it is just $\mathbf{min}\big\{n \mid \sum_{k=0}^n L_k > \lfloor n(S)/2 \rfloor \big\}$
+
+\paragraph*{Example\\}
+Consider the neighbourhood $S = \{1,1,1,2,4,5,6\}$.
+Then, our bucket array will look like this:
+\begin{table}[H]\centering
+    \begin{tabular}{|r|c|c|c|c|c|c|c|}
+        \hline
+        $\phantom{\big|}n$                & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\ \hline
+        $\phantom{\big|}L_n$              & 0 & 3 & 1 & 0 & 1 & 1 & 1 \\ \hline\hline
+        $\phantom{\Big|}\sum_{k=0}^n L_k$ & 0 & 3 & 4 & 4 & 5 & 6 & 7 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Since $n(S) = 7$, the median index will be $\lfloor 7/2 \rfloor = 3$.
+The first partial sum greater than 3 is 4, with index 2. Therefore, our median is 2.
+
+\subsubsection{Complexity analysis}
+
+Let $w,h$ be the dimensions of the image, and $m,n$, the dimensions of the sampling region (the neighbourhood).
+For each pixel, i.e.\ $wh$ times, we must calculate the median, which takes $\mathcal{O}(mn)$.
+Therefore, the total computational complexity is $\mathcal{O}(whmn)$.
+
+In terms of space complexity, since our computation operates on not one pixel, but a neighbourhood, we must avoid corrupting the state.
+We cannot perform the operation in-place, but rather must create a second image buffer.
+Therefore the spacial complexity of the median filter is $\mathcal{O}(wh)$.
+
+\subsection{GPU-accelerated Median filter}
+
+Since filtering the image is computationally intensive, we decided to implement it also on the \textsc{gpu}.
+We took advantage of it's parallel processing capabilities to \emph{significantly} improve the execution time.
+
+\subsubsection{Implementation}\label{sec:median-gpu-impl}
+
+To interface with the \textsc{gpu} we decided to use Vulkan API,
+and ``vulkano'' crate as a wraper for interfacing with Rust.
+To eliminate the tedious and repetitive parts of performing the calculations on the \textsc{gpu},
+we wrote a helper struct --- \lstinline{InOutImageTransformationPipeline}.
+This struct takes care of setting up the environment for transformations that take image as an input and produce an image as the output.
+It's responsibilities are to create image views and buffers, binding them to the descriptor sets, and configuring the command buffer from a shader supplied in the constructor.
+
+The shader code is semantically identical to the \textsc{cpu} version ---
+we loop the neighbourhood and calculate the median luminance in the same way as described in section \ref{sec:median-impl}.
+In the shader we use work group size of $16\times16$ --- a standard size when it comes to image processing.
+The important thing is that we must pass the size of the neighbourhood to the shader.
+We accomplish that by using push constant that contain values of $r_x$ and $r_y$.
+
+In Rust code, we invoke the \lstinline{vulkano_shaders::shader!} macro, that compiles the shader source code and generates the struct for push constants.
+Then, we set appropriate values in the push constants struct, and create the abovementioned transformation pipeline,
+passing it the compiled shader, push constants, and gropup counts, which are calculated as $w / 16 + 1$ and $h / 16 + 1$ for $x$ and $y$ directions respectively.
+(Note that we must add one to avoid black strips in case the image dimensions are not divisible by 16).
+
+\subsubsection{Complexity analysis}
+
+Calculating the standard computational complexity is not a very good measure for calculations performed on the \textsc{gpu},
+so instead, we will calculate the work~($T_1$), and span~($T_\infty$) which are measures that take into account the parrallelization of work.
+
+Work is the complexity in a single-threaded scenario, and in this case it is equal to the complexity of the \textsc{cpu}-based implementation of the median filter: $T_1 = \mathcal{O}(whmn)$. 
+The span is the complexity assuming perfect parrallelism of all the computations.
+In this case all of the work groups will execute simultaneously, so, since the work group size is constant, 
+the span will depend only on the dimensions of the sampling region.
+Therefore $T_\infty = \mathcal{O}(mn)$.
+
+The space complexity will be the same as in the \textsc{cpu} implementation --- $\mathcal{O}(wh)$.
 \end{document}
