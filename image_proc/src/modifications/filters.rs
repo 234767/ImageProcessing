@@ -15,21 +15,86 @@ macro_rules! impl_new {
     };
 }
 
-fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
-    x < image.width() && y < image.height()
-}
+mod iterating {
+    use image::{Rgb, RgbImage};
 
-fn collect_pixels(image: &RgbImage, x: u32, x_offset: u32, y: u32, y_offset: u32) -> Vec<&Rgb<u8>> {
-    let mut old_pixels: Vec<&Rgb<u8>> = Vec::new();
-    for x in u32::saturating_sub(x, x_offset)..=(x + x_offset) {
-        for y in u32::saturating_sub(y, y_offset)..=(y + y_offset) {
-            if is_in_range(x, y, image) {
-                old_pixels.push(image.get_pixel(x, y));
+    pub struct Neighbourhood<'a> {
+        image: &'a RgbImage,
+        min_x: u32,
+        max_x: u32,
+        min_y: u32,
+        max_y: u32,
+    }
+
+    impl<'a> Neighbourhood<'a> {
+        pub fn new(image: &'a RgbImage, x: u32, x_offset: u32, y: u32, y_offset: u32) -> Self {
+            let min_x = u32::saturating_sub(x, x_offset);
+            let min_y = u32::saturating_sub(y, y_offset);
+            Self {
+                image,
+                min_x,
+                max_x: x + x_offset,
+                min_y,
+                max_y: y + y_offset,
             }
         }
     }
-    old_pixels
+
+    impl<'a> Neighbourhood<'a> {
+        pub fn iter(&self) -> NeighbourhoodIterator<'_, 'a> {
+            NeighbourhoodIterator {
+                neighbourhood: self,
+                x: self.min_x,
+                y: self.min_y,
+            }
+        }
+    }
+
+    pub struct NeighbourhoodIterator<'n, 'img: 'n> {
+        neighbourhood: &'n Neighbourhood<'img>,
+        x: u32,
+        y: u32,
+    }
+
+    impl NeighbourhoodIterator<'_, '_> {
+        fn advance(&mut self) {
+            self.x += 1;
+            if self.x > self.neighbourhood.max_x {
+                // go to next row
+                self.y += 1;
+                self.x = self.neighbourhood.min_x;
+            }
+        }
+
+        fn is_finished(&self) -> bool {
+            self.y > self.neighbourhood.max_y
+        }
+    }
+
+    impl<'a> Iterator for NeighbourhoodIterator<'_, 'a> {
+        type Item = &'a Rgb<u8>;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            while !is_in_range(self.x, self.y, self.neighbourhood.image) {
+                self.advance();
+                if self.is_finished() {
+                    return None;
+                }
+            }
+            if self.is_finished() {
+                return None;
+            }
+            let pixel = self.neighbourhood.image.get_pixel(self.x, self.y);
+            let _ = self.advance();
+            Some(pixel)
+        }
+    }
+
+    fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
+        x < image.width() && y < image.height()
+    }
 }
+use iterating::Neighbourhood;
 
 //(N1) Median filter (--median)
 pub struct MedianFilter {
@@ -48,7 +113,9 @@ impl Transformation for MedianFilter {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
             let old_pixels: Vec<&Rgb<u8>> =
-                collect_pixels(image, target_x, width_offset, target_y, height_offset);
+                Neighbourhood::new(image, target_x, width_offset, target_y, height_offset)
+                    .iter()
+                    .collect();
             for channel in 0..3 {
                 let mut luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
@@ -77,7 +144,7 @@ impl Transformation for GeometricMeanFilter {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
             let old_pixels: Vec<&Rgb<u8>> =
-                collect_pixels(image, target_x, w_offset, target_y, h_offset);
+                Neighbourhood::new(image, target_x, w_offset, target_y, h_offset).iter().collect();
             for channel in 0..3 {
                 let luminosities: Vec<u8> = old_pixels.iter().map(|pixel| pixel[channel]).collect();
                 new_pixel[channel] = f64::pow(
@@ -110,34 +177,38 @@ mod test {
     }
 
     #[test]
-    fn collect_pixels_works_in_the_middle() {
-        let fixture = FilterTestFixture::new();
+    fn neighborhood_iter_works_in_the_middle() {
+        let image = FilterTestFixture::new().image;
         let x = 3;
         let y = 4;
         let x_offset = 1;
         let y_offset = 2;
 
-        let result = collect_pixels(&fixture.image, x, x_offset, y, y_offset);
+        let result: Vec<_> = Neighbourhood::new(&image, x, x_offset, y, y_offset)
+            .iter()
+            .collect();
 
         assert_eq!(15, result.len());
 
         for xi in x - x_offset..=x + x_offset {
             for yi in y - y_offset..=y + y_offset {
-                let pixel = fixture.image.get_pixel(xi, yi);
+                let pixel = image.get_pixel(xi, yi);
                 assert!(result.contains(&pixel));
             }
         }
     }
 
     #[test]
-    fn collect_pixels_works_on_edges() {
+    fn neighborhood_iter_works_on_edges() {
         let image = FilterTestFixture::new().image;
         let x = 0;
         let y = 1;
         let x_offset = 1;
         let y_offset = 2;
 
-        let result = collect_pixels(&image, x, x_offset, y, y_offset);
+        let result: Vec<_> = Neighbourhood::new(&image, x, x_offset, y, y_offset)
+            .iter()
+            .collect();
 
         assert_eq!(8, result.len());
 
