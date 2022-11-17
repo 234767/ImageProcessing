@@ -119,16 +119,22 @@ impl Transformation for MedianFilter {
             }
             for channel in 0..3 {
                 let luminosity_buckets = luminosity_buckets[channel];
-                let partial_sums = luminosity_buckets
-                    .iter()
-                    .scan(0, |sum, elem| {
-                        *sum += elem;
-                        Some(*sum)
-                    })
-                    .collect::<Vec<_>>();
-
                 let median_index = neighbourhood.non_enumerated_count() as u32 / 2;
-                let median = partial_sums.iter().position(|s| *s > median_index).unwrap() as u8;
+                let median: u8 = {
+                    let mut median: u8 = 0;
+                    let mut partial_sum: u32 = 0;
+                    for l in 0..=255 {
+                        partial_sum += luminosity_buckets[l];
+                        if partial_sum > median_index {
+                            median = l as u8;
+                            break;
+                        }
+                    }
+                    if median == 0 {
+                        median = 255;
+                    }
+                    median
+                };
                 new_pixel[channel] = median;
             }
         }
