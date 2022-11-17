@@ -162,12 +162,11 @@ impl Transformation for GeometricMeanFilter {
             let products = neighbourhood
                 .iter()
                 .fold([1.0, 1.0, 1.0], |prod, Rgb(pixel)| {
-                    prod.iter()
-                        .zip(pixel.iter().map(|l| *l as f64))
-                        .map(|(a, b)| a * b)
-                        .collect::<Vec<f64>>()
-                        .try_into()
-                        .unwrap()
+                    [
+                        prod[0] * pixel[0] as f64,
+                        prod[1] * pixel[1] as f64,
+                        prod[2] * pixel[2] as f64,
+                    ]
                 });
             for channel in 0..3 {
                 new_pixel[channel] = f64::pow(
