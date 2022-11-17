@@ -27,25 +27,7 @@ pub struct MedianFilterGPU {
 }
 
 impl MedianFilterGPU {
-    pub fn try_new(width: u32, height: u32) -> Result<Self, String> {
-        if height * width > 400 {
-            return Err(format!(
-                "Values of height and width too large. Maximum sampling area is 400, got {}.",
-                height * width
-            ));
-        }
-        if let Some(config) = GPUConfig::new() {
-            Ok(Self {
-                x_radius: width / 2,
-                y_radius: height / 2,
-                config,
-            })
-        } else {
-            Err(String::from(
-                "Vulkan required for running GPU optimized version",
-            ))
-        }
-    }
+    impl_try_new!();
 }
 
 impl Transformation for MedianFilterGPU {
