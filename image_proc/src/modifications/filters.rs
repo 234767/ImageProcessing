@@ -81,23 +81,13 @@ mod iterating {
         type Item = &'a Rgb<u8>;
 
         fn next(&mut self) -> Option<Self::Item> {
-            while !is_in_range(self.x, self.y, self.neighbourhood.image) {
-                self.advance();
-                if self.is_finished() {
-                    return None;
-                }
-            }
             if self.is_finished() {
                 return None;
             }
             let pixel = self.neighbourhood.image.get_pixel(self.x, self.y);
-            let _ = self.advance();
+            self.advance();
             Some(pixel)
         }
-    }
-
-    fn is_in_range(x: u32, y: u32, image: &RgbImage) -> bool {
-        x < image.width() && y < image.height()
     }
 }
 use iterating::Neighbourhood;
