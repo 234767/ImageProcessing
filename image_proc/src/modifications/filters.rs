@@ -28,25 +28,31 @@ mod iterating {
 
     impl<'a> Neighbourhood<'a> {
         pub fn new(image: &'a RgbImage, x: u32, x_offset: u32, y: u32, y_offset: u32) -> Self {
-            let min_x = u32::saturating_sub(x, x_offset);
-            let min_y = u32::saturating_sub(y, y_offset);
+            let min_x = u32::min(u32::saturating_sub(x, x_offset), image.width() - 1);
+            let min_y = u32::min(u32::saturating_sub(y, y_offset), image.height() - 1);
+            let max_x = u32::min(x + x_offset, image.width() - 1);
+            let max_y = u32::min(y + y_offset, image.height() - 1);
             Self {
                 image,
                 min_x,
-                max_x: x + x_offset,
+                max_x,
                 min_y,
-                max_y: y + y_offset,
+                max_y,
             }
         }
-    }
 
-    impl<'a> Neighbourhood<'a> {
         pub fn iter(&self) -> NeighbourhoodIterator<'_, 'a> {
             NeighbourhoodIterator {
                 neighbourhood: self,
                 x: self.min_x,
                 y: self.min_y,
             }
+        }
+    }
+
+    impl Neighbourhood<'_> {
+        pub fn non_enumerated_count(&self) -> usize {
+            ((self.max_x - self.min_x + 1) * (self.max_y - self.min_y + 1)) as usize
         }
     }
 
@@ -112,15 +118,28 @@ impl Transformation for MedianFilter {
         let height_offset = self.height / 2;
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
-            let old_pixels: Vec<&Rgb<u8>> =
-                Neighbourhood::new(image, target_x, width_offset, target_y, height_offset)
-                    .iter()
-                    .collect();
+            let mut luminosity_buckets = [[0u32; 256]; 3];
+            let neighbourhood =
+                Neighbourhood::new(image, target_x, width_offset, target_y, height_offset);
+            for Rgb(pixel) in neighbourhood.iter() {
+                for channel in 0..3 {
+                    let luminosity = pixel[channel];
+                    luminosity_buckets[channel][luminosity as usize] += 1;
+                }
+            }
             for channel in 0..3 {
-                let mut luminosities: Vec<u8> =
-                    old_pixels.iter().map(|pixel| pixel[channel]).collect();
-                luminosities.sort();
-                new_pixel[channel] = luminosities[luminosities.len() / 2];
+                let luminosity_buckets = luminosity_buckets[channel];
+                let partial_sums = luminosity_buckets
+                    .iter()
+                    .scan(0, |sum, elem| {
+                        *sum += elem;
+                        Some(*sum)
+                    })
+                    .collect::<Vec<_>>();
+
+                let median_index = neighbourhood.non_enumerated_count() as u32 / 2;
+                let median = partial_sums.iter().position(|s| *s > median_index).unwrap() as u8;
+                new_pixel[channel] = median;
             }
         }
         *image = new_image;
@@ -144,7 +163,9 @@ impl Transformation for GeometricMeanFilter {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
             let old_pixels: Vec<&Rgb<u8>> =
-                Neighbourhood::new(image, target_x, w_offset, target_y, h_offset).iter().collect();
+                Neighbourhood::new(image, target_x, w_offset, target_y, h_offset)
+                    .iter()
+                    .collect();
             for channel in 0..3 {
                 let luminosities: Vec<u8> = old_pixels.iter().map(|pixel| pixel[channel]).collect();
                 new_pixel[channel] = f64::pow(
@@ -218,5 +239,32 @@ mod test {
                 assert!(result.contains(&pixel));
             }
         }
+    }
+
+    #[test]
+    fn neighbourhood_non_enumerated_count_works_in_center() {
+        let image = FilterTestFixture::new().image;
+        let x = 3;
+        let y = 4;
+        let x_offset = 1;
+        let y_offset = 2;
+
+        let result = Neighbourhood::new(&image, x, x_offset, y, y_offset).non_enumerated_count();
+
+        assert_eq!(15, result);
+    }
+
+    #[test]
+    fn neighbourhood_non_enumerated_count_works_on_edges() {
+        let image = FilterTestFixture::new().image;
+        let x = 9;
+        let y = 9;
+        let x_offset = 1;
+        let y_offset = 2;
+
+        let neighbourhood = Neighbourhood::new(&image, x, x_offset, y, y_offset);
+        let result = neighbourhood.non_enumerated_count();
+
+        assert_eq!(6, result);
     }
 }
