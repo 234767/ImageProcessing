@@ -10,10 +10,14 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage[table]{xcolor}
 \usepackage{pgfplots}
 \usepackage{tikz}
 \pgfplotsset{compat=1.17}
+
+\theoremstyle{definition}
+\newtheorem*{example}{Example}
 
 \graphicspath{{../img/}}
 
@@ -229,9 +233,9 @@ It can be expressed as the following equation:
 
 \subsubsection{Complexity analysis}
 
-The operation for one pair of pixex is of constant time,
-therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(\frac{wh}{2}) = \mathcal{O}(wh)$.
-The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
+Similarly to the previous transformation,
+the operation on one pixel is constant time, which for $w \times h$ pixels in total gives computational complexity $\mathcal{O}(wh)$
+and space complexity $\mathcal{O}(1)$.
 
 \subsection{Horizontal flip (G1)}
 
@@ -267,13 +271,28 @@ cancelling each other.
 
 \subsubsection{Complexity analysis}
 
+The operation for one pair of pixex is of constant time,
+therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(\frac{wh}{2}) = \mathcal{O}(wh)$.
+The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
+
 
 
 \subsection{Vertical flip (G2)}
 
+\subsubsection{Implementation}
+
+The vertical flip works almost identically as the horizontal one, 
+except the mirror axis is horizontal, not vertical.
+Therefore, the implementation is also almost identical.
+The only difference is that instead of looping over the left half, 
+we loop over the top one, and the $x$ coordinate stays constant, 
+while the swap occurs at the $y$ coordinate
+
 \begin{equation}
     \hat{f}(x,y) = f(x, height - y)
 \end{equation}
+
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -288,11 +307,22 @@ cancelling each other.
     \caption{Image before and after flipping it vertically}
 \end{figure}
 
+\subsubsection{Complexity analysis}
+Similarly to the horizontal flip,
+the computational complexity is $\mathcal{O}(wh)$, and the spacial complexity is $\mathcal{O}(1)$.
+
 \subsection{Diagonal flip (G3)}
+
+\subsubsection{Implementation}
+
+The diagonal flip is just the vertical flip composed with the vertical flip.
+The order of the composition does not matter.
 
 \begin{equation}
     \hat{f}(x,y) = f(width - x, height - y)
 \end{equation}
+
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -307,10 +337,24 @@ cancelling each other.
     \caption{Image before and after flipping it diagonally}
 \end{figure}
 
+\subsubsection{Complexity analysis}
+Since it is just applying two flips, each of which are $\mathcal{O}(wh)$, 
+the computational complexity is also $\mathcal{O}(wh)$, and the spacial complexity is $\mathcal{O}(1)$.
+
+
 \subsection{Shrink (G4) and Enlarge (G5)}
 
+\subsubsection{Implementation}
+
 For shrinking and enlarging, we will implement just one transformation, called scale.
-Given some factors $\varphi_x, \varphi_y$ and an image with dimensions $w \times h$, it will produce a new image of dimensions $\varphi_x w \times \varphi_y h$.
+Given some factors $\varphi_x, \varphi_y$ and an image with dimensions $w \times h$, 
+it will produce a new image of dimensions $\varphi_x w \times \varphi_y h$.
+For handling cases where the pixels should be interpolated, 
+we chose to use floor function, 
+as it was not stated that we should use any specific method for handling such cases.
+The choice of this method will result in a visible pixelation when scaling up by a large factor, 
+which may or not be desirable depending on the type of image
+(for example this method will work very well with enlarging pixel-art style images, but less so with photographs).
 
 \begin{equation}
     \hat{f}(x,y) =
@@ -332,6 +376,8 @@ so the program just sets $\varphi_x = \varphi_y = \varphi$.
 
 Enlarge will just apply scale with the factor as it is, and shrink will apply scale, but with the inverse of the specified factor,
 i.e.\ if we want to shrink by a factor of 2, we will apply scale with a factor of $\frac{1}{2}$.
+
+\subsubsection{Results}
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -359,28 +405,67 @@ i.e.\ if we want to shrink by a factor of 2, we will apply scale with a factor o
     \caption{Image before and after enlarging by a factor of 4 (not to scale)}
 \end{figure}
 
+\subsubsection{Complexity analysis}
+
+We loop over every pixel in the \emph{new image}, which has dimensions $\varphi w \times \varphi h$.
+Therefore, the computational complexity is $\mathcal{O}(wh \varphi^2)$.
+
+The spacial complexity is the size of buffer we need to allocate for the new image. Therefore it is $\mathcal{O}(wh \varphi^2)$.
+
 \section{Description of the implementation of the noise reduction methods}
 
 \subsection*{Common implementation}
 We noticed that all the filters operate by gathering some neighbourhood around the target pixel,
 and then applying some reducing function on that pixels to determine the value of the resulting pixel.
-Therefore, in order to remove duplication, we extracted the common functionality of gathering the pixels to a separate function $collect\_pixels$, such that:
+Therefore, in order to remove duplication, we extracted the common functionality 
+of gathering the pixels to a special struct called \lstinline{Neighbourhood}, which holds a reference to the image, and the bounds of the neighbourhood.
 
-\begin{equation*}
-    collect\_pixels : \mathbf{Ref}\langle\mathrm{Image}\rangle \times \mathbb{N}^4 \to \mathbf{Vec}\langle \mathbf{Ref}\langle\mathrm{Pixel} \rangle\rangle
-\end{equation*}
-
-Note that we return the pixels by read-only reference, so we are not performing unnecessary copies.
+\begin{lstlisting}
+pub struct Neighbourhood<'a> {
+    image: &'a RgbImage,
+    min_x: u32,
+    max_x: u32,
+    min_y: u32,
+    max_y: u32,
+}
+\end{lstlisting}
 
 Let $Img$ denote some image, and $Img_{(x,y)}$ the pixel of $Img$ at coordinates $x,y$.
 Let $w$ and $h$ be width and height of $Img$.
-Then, $collect\_pixels(Img,x,y,r_x,r_y)$ will return the pixels of $Img$ in some neighbourhood $S_{(x,y)}$ around $(x,y)$, defined as follows:
+The constructor of \lstinline{Neighbourhood} takes 5 arguments --- the reference to the image $Img$, and 4 natural numbers: $x,r_x,y,r_y$
+The resulting struct will represent some neighbourhood $S_{(x,y)}$ around $(x,y)$, defined as follows:
 \begin{equation}
     S_{(x,y)} =
     \\\bigg\{
     Img_{(x,y)} \mid x \in [x-r_x,x+r_x] \cap [0,w) \land y \in [y-r_y, y+r_y] \cap [0,h)
     \bigg\}
 \end{equation}
+
+To acompany this struct, we provided it with an iterator:
+
+\begin{lstlisting}
+pub struct NeighbourhoodIterator<'n, 'img: 'n> {
+    neighbourhood: &'n Neighbourhood<'img>,
+    x: u32,
+    y: u32,
+}
+\end{lstlisting}
+
+It is equipped with the function \lstinline{next()}, of the following signature:
+
+\begin{lstlisting}
+impl<'a> Iterator for NeighbourhoodIterator<'_, 'a> {
+    type Item = &'a Rgb<u8>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        /* ... */
+    }
+}
+\end{lstlisting}
+
+Note that the \lstinline{Item} type of the iterator is a read-only reference to pixel, so we are not performing unnecessary copies.
+Also note that the creation of both the neighbourhood and the iterator, both have $\mathcal{O}(1)$ time and space complexity, 
+which would have not been the case when using e.g.\ a function returing an array of pixels in the neighbourhood $S_{(x,y)}$.
 
 \subsection{Median filter (N1)}
 
@@ -396,13 +481,13 @@ While we could sort the values, and then pick the middle one,
 we found the sorting to be problematic, as many sorting algorithms cannot go below $\mathcal{O}(n \log n)$.
 For this reason, we used a more optimal approach, allowing as to get the median in $\mathcal{O}(n)$ time.
 
-We define a sequence $(L_n)_{n=0}^{255}$, such that $L_n = n\big(\{p \in S_{(x,y)} \mid \mathrm{luminosity}(p) = n\}\big)$.
+We define a sequence $(L_n)_{n=0}^{255}$, such that $L_n = \#\big(\{p \in S_{(x,y)} \mid \mathrm{luminosity}(p) = n\}\big)$.
 
 For example $L_{128}$ will be the number of pixels that have the luminosity 128.
 
-From this sequence, finding the median is trivial, it is just $\mathbf{min}\big\{n \mid \sum_{k=0}^n L_k > \lfloor n(S)/2 \rfloor \big\}$
+From this sequence, finding the median is trivial, it is just $\mathbf{min}\big\{n \mid \sum_{k=0}^n L_k > \lfloor \frac{\#S}{2} \rfloor \big\}$
 
-\paragraph*{Example\\}
+\begin{example}
 Consider the neighbourhood $S = \{1,1,1,2,4,5,6\}$.
 Then, our bucket array will look like this:
 \begin{table}[H]\centering
@@ -414,9 +499,35 @@ Then, our bucket array will look like this:
         \hline
     \end{tabular}
 \end{table}
-
-Since $n(S) = 7$, the median index will be $\lfloor 7/2 \rfloor = 3$.
+Since $\#S = 7$, the median index will be $\lfloor 7/2 \rfloor = 3$.
 The first partial sum greater than 3 is 4, with index 2. Therefore, our median is 2.
+\end{example}
+
+We fill the buckets by looping over the neighbourhood:
+\begin{lstlisting}
+for Rgb(pixel) in neighbourhood.iter() {
+    for channel in 0..3 {
+        let luminosity = pixel[channel];
+        luminosity_buckets[channel][luminosity] += 1;
+    }
+}
+\end{lstlisting}
+
+Then, to find the median: 
+\begin{lstlisting}
+let luminosity_buckets = luminosity_buckets[channel];
+let median_index = neighbourhood.count() / 2;
+let mut partial_sum = 0;
+for luminosity in 0..=255 {
+    partial_sum += luminosity_buckets[luminosity];
+    if partial_sum > median_index {
+        median = luminosity;
+        return median;
+    }
+}
+
+\end{lstlisting}
+
 
 \subsubsection{Complexity analysis}
 
@@ -458,9 +569,9 @@ passing it the compiled shader, push constants, and gropup counts, which are cal
 Calculating the standard computational complexity is not a very good measure for calculations performed on the \textsc{gpu},
 so instead, we will calculate the work~($T_1$), and span~($T_\infty$) which are measures that take into account the parrallelization of work.
 
-Work is the complexity in a single-threaded scenario, and in this case it is equal to the complexity of the \textsc{cpu}-based implementation of the median filter: $T_1 = \mathcal{O}(whmn)$. 
+Work is the complexity in a single-threaded scenario, and in this case it is equal to the complexity of the \textsc{cpu}-based implementation of the median filter: $T_1 = \mathcal{O}(whmn)$.
 The span is the complexity assuming perfect parrallelism of all the computations.
-In this case all of the work groups will execute simultaneously, so, since the work group size is constant, 
+In this case all of the work groups will execute simultaneously, so, since the work group size is constant,
 the span will depend only on the dimensions of the sampling region.
 Therefore $T_\infty = \mathcal{O}(mn)$.
 
