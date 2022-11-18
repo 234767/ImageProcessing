@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use image_proc::analysis::*;
 
 pub fn get_analyzers(args: &Args) -> Box<dyn Analyzer> {
-    let args: &HashMap<String, String> = &args.args;
+    let _args: &HashMap<String, String> = &args.args;
     let mut composite = CompositeAnalyzer::new();
 
     macro_rules! add_if_contains {
         ($key:literal,$object:expr) => {
-            if (args.contains_key($key)) {
+            if (_args.contains_key($key)) {
                 composite.analyzers.push(Box::new($object));
             }
         };
