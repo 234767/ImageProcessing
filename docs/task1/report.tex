@@ -599,6 +599,13 @@ In this case all of the work groups will execute simultaneously, so, since the w
 the span will depend only on the dimensions of the sampling region.
 Therefore $T_\infty = \mathcal{O}(mn)$.
 
+However, it is worth pointing out
+that this measure fades into insignificance 
+when taking into account other components of the program. 
+For reasonable sizes of the sampling region ($\leq 9\times9$)
+we were able to achieve results, when the filtering process took an order of magnitude less time
+than the static aspects of the program, such as loading the image file, or setting up the \textsc{gpu}.
+
 The space complexity will be the same as in the \textsc{cpu} implementation --- $\mathcal{O}(wh)$.
 
 \subsection{Geometric mean filter}
@@ -660,7 +667,15 @@ At the end, we use the pow function to get the geometric means and save it to th
 \subsubsection{Complexity analysis}
 
 The same as in case of the \textsc{gpu}-accelerated median filter:
-$T_1 = \mathcal{O}(whmn)$, $T_\infty = \mathcal{O}(mn)$, space complexity is $\mathcal{O}(wh)$.
+$T_1 = \mathcal{O}(whmn)$, $T_\infty = \mathcal{O}(mn)$.
+
+Similarly to the \textsc{gpu}-accelerated median filter, we feel the need to mention the insignificance of this measure in comparison with the static aspects of our program.
+Furthermore, contrary to the median filter, the performance impact of this filter is even less noticeable.
+During our testing we were able to achieve results where the time of running this filter with $3\times3$ was the same,
+as with a $100\times100$ sampling region (both $\sim300$ ms).
+Therefore, we conclude that for reasonable sizes of the sampling region, the complexity of this \textsc{gpu}-accelerated implementation can be approximated as $\mathcal{O}(1)$.
+
+The spacial complexity is the same as in case of the \textsc{cpu} implementation: $\mathcal{O}(wh)$.
 
 \section{Analysis of the parameters of the noise reduction methods}
 
