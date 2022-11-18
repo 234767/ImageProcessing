@@ -11,8 +11,10 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage{array}
 \usepackage[table]{xcolor}
 \usepackage{pgfplots}
+\usepackage{pgfplotstable}
 \usepackage{tikz}
 \pgfplotsset{compat=1.17}
 
@@ -27,9 +29,31 @@
 \renewcommand{\headrulewidth}{0pt}
 
 \newcommand{\subfiguresize}{.3\textwidth}
+\DeclareMathOperator*{\median}{median}
 
 \lstset {
     basicstyle = \small\ttfamily,
+    keywordstyle = \color{blue},
+    commentstyle = \color{black!30},
+    comment = [l]{//},
+    morecomment = [s]{/*}{*/},
+    identifierstyle=,
+    keywords = {
+        let,
+        mut,
+        for,
+        in,
+        if,
+        else,
+        pub,
+        struct,
+        impl,
+        type,
+        Self,
+        u8,u16,u32,u64,
+        i8,i16,i32,i64,
+        f32,f64,
+    }
 }
 
 \begin{document}
@@ -430,14 +454,14 @@ pub struct Neighbourhood<'a> {
 }
 \end{lstlisting}
 
-Let $Img$ denote some image, and $Img_{(x,y)}$ the pixel of $Img$ at coordinates $x,y$.
-Let $w$ and $h$ be width and height of $Img$.
-The constructor of \lstinline{Neighbourhood} takes 5 arguments --- the reference to the image $Img$, and 4 natural numbers: $x,r_x,y,r_y$
+Let $Img$ denote some image, and $w$ and $h$ the width and height of $Img$.
+The constructor of \lstinline{Neighbourhood} takes 5 arguments --- the reference to the image $Img$, and 4 natural numbers: $x,r_x,y,r_y$,
+where $x,y$ are the coordinates of the center, and $r_x, r_y$ are the radiuses of the neighbourhood in the $x$ and $y$ axes.
 The resulting struct will represent some neighbourhood $S_{(x,y)}$ around $(x,y)$, defined as follows:
 \begin{equation}
     S_{(x,y)} =
     \\\bigg\{
-    Img_{(x,y)} \mid x \in [x-r_x,x+r_x] \cap [0,w) \land y \in [y-r_y, y+r_y] \cap [0,h)
+    f(u,v) \mid u \in [x-r_x,x+r_x] \cap [0,w) \land v \in [y-r_y, y+r_y] \cap [0,h)
     \bigg\}
 \end{equation}
 
@@ -467,21 +491,21 @@ Note that the \lstinline{Item} type of the iterator is a read-only reference to 
 Also note that the creation of both the neighbourhood and the iterator, both have $\mathcal{O}(1)$ time and space complexity, 
 which would have not been the case when using e.g.\ a function returing an array of pixels in the neighbourhood $S_{(x,y)}$.
 
-\subsection{Median filter (N1)}
+\subsection{Median filter}
 
 \subsubsection{Implementation}\label{sec:median-impl}
 
 The median filter works very simply, it just picks the median luminosity from the neighbourhood.
 
 \begin{equation}
-    \hat{f}(x,y) = \mathrm{median} \big\{ S_{(x,y)} \big\}
+    \hat{f}(x,y) = \median \big\{ S_{(x,y)} \big\}
 \end{equation}
 
 While we could sort the values, and then pick the middle one,
 we found the sorting to be problematic, as many sorting algorithms cannot go below $\mathcal{O}(n \log n)$.
 For this reason, we used a more optimal approach, allowing as to get the median in $\mathcal{O}(n)$ time.
 
-We define a sequence $(L_n)_{n=0}^{255}$, such that $L_n = \#\big(\{p \in S_{(x,y)} \mid \mathrm{luminosity}(p) = n\}\big)$.
+We define a sequence $(L_n)_{n=0}^{255}$, such that $L_n = \#\big(\{p \in S_{(x,y)} \mid p = n\}\big)$.
 
 For example $L_{128}$ will be the number of pixels that have the luminosity 128.
 
@@ -505,8 +529,8 @@ The first partial sum greater than 3 is 4, with index 2. Therefore, our median i
 
 We fill the buckets by looping over the neighbourhood:
 \begin{lstlisting}
-for Rgb(pixel) in neighbourhood.iter() {
-    for channel in 0..3 {
+for pixel in neighbourhood.iter() {
+    for channel in 0..3 {   // r,g,b
         let luminosity = pixel[channel];
         luminosity_buckets[channel][luminosity] += 1;
     }
@@ -539,7 +563,7 @@ In terms of space complexity, since our computation operates on not one pixel, b
 We cannot perform the operation in-place, but rather must create a second image buffer.
 Therefore the spacial complexity of the median filter is $\mathcal{O}(wh)$.
 
-\subsection{GPU-accelerated Median filter}
+\subsection{*GPU-accelerated Median filter}
 
 Since filtering the image is computationally intensive, we decided to implement it also on the \textsc{gpu}.
 We took advantage of it's parallel processing capabilities to \emph{significantly} improve the execution time.
@@ -576,4 +600,190 @@ the span will depend only on the dimensions of the sampling region.
 Therefore $T_\infty = \mathcal{O}(mn)$.
 
 The space complexity will be the same as in the \textsc{cpu} implementation --- $\mathcal{O}(wh)$.
+
+\subsection{Geometric mean filter}
+
+\subsubsection{Implementation}
+
+The geometric mean filter sets the value of the luminosity 
+to the geometic mean of all the luminosities in the pixel neighbourhood.
+
+\begin{equation}
+    \hat{f}(x,y) = \left(\, \prod_{p \in S_{(x,y)}} \!\!\!p \,\right)^{\frac{1}{\#S}}
+\end{equation}
+
+
+To calculate the product, we fold the iterator using the multiplication operation: 
+\begin{lstlisting}
+let products = neighbourhood
+    .iter()
+    .fold([1.0, 1.0, 1.0], |prod, Rgb(pixel)| {
+        [
+            prod[0] * pixel[0],    // red
+            prod[1] * pixel[1],    // green
+            prod[2] * pixel[2],    // blue
+        ]
+    });
+\end{lstlisting}
+Note that we calculate the values for all channels in only one iteration.
+
+After calculating, the products, we just need to calculate the geometric mean:
+\begin{lstlisting}
+for channel in 0..3 {
+    new_pixel[channel] = f64::pow(
+        products[channel],
+        1.0 / neighbourhood.non_enumerated_count() as f64,
+    ) as u8;
+}
+\end{lstlisting}
+
+\subsubsection{Complexity analysis}
+
+Similarly to the median filter, given image of dimensions $w \times h$, and sampling region $m \times n$, 
+for each pixel, i.e.\ for $wh$ pixels, we must calculate the geometric mean, which takes $\mathcal{O}(mn)$.
+Therefore total computational complexity is $\mathcal{O}(whmn)$.
+
+The space complexity is determined by the creation of the new image buffer, of the same size as the original image.
+Therefore space complexity is $\mathcal{O}(wh)$.
+
+\subsection{*GPU-accelerated geometric mean filter}
+
+\subsubsection{Implementation}
+
+Similarly to the median filter, we also created a \textsc{gpu}-based implementation for the geometric mean filter.
+The Rust part of the code is identical --- we also utilize the pipeline helper struct, and configure it the same way.
+
+The only difference is in the shader code.
+We loop through the neighbourhood pixels, and calculate the products of each channels values.
+At the end, we use the pow function to get the geometric means and save it to the output image.
+
+\subsubsection{Complexity analysis}
+
+The same as in case of the \textsc{gpu}-accelerated median filter:
+$T_1 = \mathcal{O}(whmn)$, $T_\infty = \mathcal{O}(mn)$, space complexity is $\mathcal{O}(wh)$.
+
+\section{Analysis of the parameters of the noise reduction methods}
+
+\subsection{Median filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{0.25\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.25\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_impulse3.png}
+        \caption{impulse noise}
+    \end{subfigure} 
+    \\[1em]
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_impulse_median3.png}
+        \caption{median $3\times3$}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_impulse_median5.png}
+        \caption{median $5\times5$}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_impulse_median7.png}
+        \caption{median $7\times7$}
+    \end{subfigure} 
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_impulse_median9.png}
+        \caption{median $9\times9$}
+    \end{subfigure} 
+\end{figure}
+
+\begin{table}[H]
+    \pgfplotstabletypeset[
+        col sep=comma,
+        fixed,
+        fixed zerofill,
+        precision=2,
+        every head row/.style ={
+            before row = \toprule,
+            after row = \midrule
+        },
+        every last row/.style = {after row =\bottomrule},
+        columns/time/.style={column name={\textsc{cpu} time [s]}},
+        columns/gpu time/.style={column name={\textsc{gpu} time [s]}, precision=3},
+        columns/md/.style={fixed, precision=0},
+        columns/operation/.style={string type},
+        empty cells with ={---},
+    ]{
+        operation, time, gpu time, mse, pmse, snr, psnr, md
+        none, , , 596.822, 2.340, 11.423, 20.327, 144
+        median $3\times3$, 2.286, 0.346, 13.716, 0.054, 27.810, 36.758, 107
+        median $5\times5$, 4.814, 0.354, 33.026, 0.130, 23.993, 32.993, 109
+        median $7\times7$, 8.289, 0.369, 54.188, 0.213, 21.843, 30.792, 131
+        median $9\times9$, 13.417, 0.462, 72.954, 0.286, 20.551, 29.500, 139
+    }
+\end{table}
+
+\subsection{Geometric mean filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{0.25\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.25\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_normal3.png}
+        \caption{normal dist. noise}
+    \end{subfigure} 
+    \\[1em]
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_normal_gmean3.png}
+        \caption{gmean $3\times3$}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_normal_gmean5.png}
+        \caption{gmean $5\times5$}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_normal_gmean7.png}
+        \caption{gmean $7\times7$}
+    \end{subfigure} 
+    \begin{subfigure}[t]{0.2\textwidth}\centering
+        \includegraphics[width=0.9\textwidth]{lenac_normal_gmean9.png}
+        \caption{gmean $9\times9$}
+    \end{subfigure} 
+\end{figure}
+
+\begin{table}[H]\centering
+    \pgfplotstabletypeset[
+        col sep=comma,
+        fixed,
+        fixed zerofill,
+        precision=2,
+        every head row/.style ={
+            before row = \toprule,
+            after row = \midrule
+        },
+        every last row/.style = {after row =\bottomrule},
+        columns/time/.style={column name={\textsc{cpu} time [s]}},
+        columns/gpu time/.style={column name={\textsc{gpu} time [s]}, precision=3},
+        columns/md/.style={fixed, precision=0},
+        columns/operation/.style={string type},
+        empty cells with ={---},
+    ]{
+        operation, time, gpu time, mse, pmse, snr, psnr, md
+        none, , , 755.262, 2.962, 10.401, 19.350, 79
+        gmean $3\times3$, 2.140, 0.303, 501.780, 1.986, 12.177, 21.126, 201
+        gmean $5\times5$, 3.119, 0.328, 870.211, 3.413, 9.786, 18.753, 221
+        gmean $7\times7$, 4.668, 0.330, 1258.318, 4.953, 8.184, 17.133, 234
+        gmean $9\times9$, 6.628, 0.313, 1627.559, 6.383, 7.067, 16.015, 241
+    }
+\end{table}
+
+
+\vfill
+\section*{Teacher's remarks}
+\begin{tabularx}{\textwidth}{|X|}
+    \hline
+    \vspace{7cm}
+    \phantom{.} \\
+    \hline
+\end{tabularx}
+
 \end{document}
