@@ -15,7 +15,7 @@ macro_rules! impl_new {
     };
 }
 
-mod iterating {
+mod neighbourhood {
     use image::{Rgb, RgbImage};
 
     pub struct Neighbourhood<'a> {
@@ -90,7 +90,7 @@ mod iterating {
         }
     }
 }
-use iterating::Neighbourhood;
+use neighbourhood::Neighbourhood;
 
 //(N1) Median filter (--median)
 pub struct MedianFilter {

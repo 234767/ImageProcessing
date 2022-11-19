@@ -2,24 +2,24 @@ use image::{Rgb, RgbImage};
 use image_proc::modifications::Transformation;
 
 macro_rules! invoke_test {
-        ($func:ident {$($name:ident ($($arg:expr),*)),*}) => {
-            $(
-                #[test]
-                fn $name () {
-                    $func($($arg),*);
-                }
-            )*
-        };
-        // allow for trailing comma:
-        ($func:ident {$($name:ident ($($arg:expr),*),)*}) => {
-            $(
-                #[test]
-                fn $name () {
-                    $func($($arg),*);
-                }
-            )*
-        }
+    ($func:ident {$($name:ident ($($arg:expr),*)),*}) => {
+        $(
+            #[test]
+            fn $name () {
+                $func($($arg),*);
+            }
+        )*
+    };
+    // allow for trailing comma:
+    ($func:ident {$($name:ident ($($arg:expr),*),)*}) => {
+        $(
+            #[test]
+            fn $name () {
+                $func($($arg),*);
+            }
+        )*
     }
+}
 
 fn sample_image() -> RgbImage {
     // image size 10x10
