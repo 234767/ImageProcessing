@@ -41,8 +41,11 @@ fn main() {
         }
     };
 
-    let mut altered_image: RgbImage = img.clone();
-    transformation.apply(&mut altered_image);
+    let altered_image = {
+        let mut image_copy: RgbImage = img.clone();
+        transformation.apply(&mut image_copy);
+        image_copy
+    };
 
     let comparer = get_analyzers(&args);
     let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
