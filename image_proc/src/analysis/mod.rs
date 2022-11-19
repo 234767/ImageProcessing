@@ -1,16 +1,17 @@
 use image::RgbImage;
 
-pub mod analyzers;
+pub mod comparers;
+pub mod characteristics;
 mod util;
 
-pub use analyzers::*;
+pub use comparers::*;
 
-pub trait Analyzer {
+pub trait ImageComparer {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String>;
 }
 
 pub struct CompositeAnalyzer {
-    pub analyzers: Vec<Box<dyn Analyzer>>,
+    pub analyzers: Vec<Box<dyn ImageComparer>>,
 }
 
 impl CompositeAnalyzer {
@@ -21,7 +22,7 @@ impl CompositeAnalyzer {
     }
 }
 
-impl Analyzer for CompositeAnalyzer {
+impl ImageComparer for CompositeAnalyzer {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let mut result = String::new();
         for analyzer in &self.analyzers {

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use image_proc::analysis::*;
 
-pub fn get_analyzers(args: &Args) -> Box<dyn Analyzer> {
+pub fn get_analyzers(args: &Args) -> Box<dyn ImageComparer> {
     let _args: &HashMap<String, String> = &args.args;
     let mut composite = CompositeAnalyzer::new();
 

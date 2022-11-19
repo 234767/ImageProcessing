@@ -1,5 +1,5 @@
 use crate::analysis::util::{map_and_reduce, map_and_sum};
-use crate::analysis::Analyzer;
+use crate::analysis::ImageComparer;
 use image::{Rgb, RgbImage};
 use std::cmp::max;
 
@@ -17,7 +17,7 @@ impl MeanSquareError {
     }
 }
 
-impl Analyzer for MeanSquareError {
+impl ImageComparer for MeanSquareError {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
         Ok(format!("{:10} {:6.3}", "MSE:", result))
@@ -36,7 +36,7 @@ impl PMSE {
     }
 }
 
-impl Analyzer for PMSE {
+impl ImageComparer for PMSE {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
         Ok(format!("{:10} {:6.3}", "Peak MSE:", result))
@@ -59,7 +59,7 @@ impl MaximumDifference {
     }
 }
 
-impl Analyzer for MaximumDifference {
+impl ImageComparer for MaximumDifference {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
         Ok(format!("{:3} {:9}", "MD:", result))
@@ -82,7 +82,7 @@ impl SNR {
     }
 }
 
-impl Analyzer for SNR {
+impl ImageComparer for SNR {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
         Ok(format!("{:10} {:6.3}", "SNR:", result))
@@ -101,7 +101,7 @@ impl PSNR {
     }
 }
 
-impl Analyzer for PSNR {
+impl ImageComparer for PSNR {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let result = Self::compare(original, modified);
         Ok(format!("{:10} {:6.3}", "Peak SNR:", result))
