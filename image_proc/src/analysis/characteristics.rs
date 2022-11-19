@@ -26,3 +26,18 @@ impl Characteristic for CompositeCharacteristic {
         Ok(result)
     }
 }
+
+pub struct Mean;
+
+impl Characteristic for Mean {
+    fn analyze(&self, image: &RgbImage) -> Result<String, String> {
+        let sum: f64 = image
+            .pixels()
+            .flat_map(
+                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
+            )
+            .sum();
+        let mean = sum / (image.width() * image.height() * 3) as f64;
+        Ok(format!("{:10} {:6.3}", "Mean:", mean))
+    }
+}
