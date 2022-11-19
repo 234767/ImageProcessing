@@ -1,24 +1,25 @@
-use std::ops::{Deref, DerefMut};
 use image::RgbImage;
+use std::ops::{Deref, DerefMut};
 
 pub struct Histogram {
-    data: [u32; 256],
+    data: [[u32; 256]; 3],
 }
 
 impl Histogram {
     pub fn new(image: &RgbImage) -> Self {
-        let mut data = [0u32; 256];
+        let mut data = [[0u32; 256]; 3];
         for pixel in image.pixels() {
-            let luminosity = ((pixel[0] as u32 + pixel[1] as u32 + pixel[2] as u32) / 3) as usize;
-            debug_assert!(luminosity < 256);
-            data[luminosity] += 1;
+            for channel in 0..3 {
+                let luminosity = pixel[channel];
+                data[channel][luminosity as usize];
+            }
         }
         Self { data }
     }
 }
 
 impl Deref for Histogram {
-    type Target = [u32;256];
+    type Target = [[u32; 256]; 3];
 
     fn deref(&self) -> &Self::Target {
         &self.data
