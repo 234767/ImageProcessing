@@ -1,7 +1,33 @@
 use super::util::{map_and_reduce, map_and_sum};
-use super::ImageComparer;
 use image::{Rgb, RgbImage};
 use std::cmp::max;
+
+pub trait ImageComparer {
+    fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String>;
+}
+
+pub struct CompositeComparer {
+    pub analyzers: Vec<Box<dyn ImageComparer>>,
+}
+
+impl CompositeComparer {
+    pub fn new() -> Self {
+        CompositeComparer {
+            analyzers: Vec::new(),
+        }
+    }
+}
+
+impl ImageComparer for CompositeComparer {
+    fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
+        let mut result = String::new();
+        for analyzer in &self.analyzers {
+            result.push_str(&analyzer.compare(original, modified)?);
+            result.push_str("\n");
+        }
+        Ok(result)
+    }
+}
 
 pub struct MeanSquareError {}
 
