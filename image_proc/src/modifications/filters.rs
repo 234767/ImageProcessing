@@ -121,7 +121,7 @@ impl Transformation for MedianFilter {
                 let luminosity_buckets = luminosity_buckets[channel];
                 let median_index = neighbourhood.non_enumerated_count() as u32 / 2;
                 let median: u8 = {
-                    let mut median: u8 = 0;
+                    let mut median: u8 = 255;
                     let mut partial_sum: u32 = 0;
                     for l in 0..=255 {
                         partial_sum += luminosity_buckets[l];
@@ -129,9 +129,6 @@ impl Transformation for MedianFilter {
                             median = l as u8;
                             break;
                         }
-                    }
-                    if median == 0 {
-                        median = 255;
                     }
                     median
                 };
