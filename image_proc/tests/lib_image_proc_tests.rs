@@ -35,4 +35,4 @@ fn sample_image_setup_correctly() {
     let _ = sample_image();
 }
 
-mod modification_tests;
+mod filter_tests;
