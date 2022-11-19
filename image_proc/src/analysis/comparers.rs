@@ -1,5 +1,5 @@
-use crate::analysis::util::{map_and_reduce, map_and_sum};
-use crate::analysis::ImageComparer;
+use super::util::{map_and_reduce, map_and_sum};
+use super::ImageComparer;
 use image::{Rgb, RgbImage};
 use std::cmp::max;
 
