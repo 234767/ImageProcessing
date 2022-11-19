@@ -1,6 +1,8 @@
 use crate::parsing::Args;
 use image_proc::modifications::*;
 
+mod histogram;
+
 pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String> {
     match args.command.as_str() {
         "--id" => Ok(Box::new(IdTransform {})),
@@ -54,12 +56,15 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
                 }
             }
         }
+        "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
 
 mod util {
     use crate::parsing::Args;
+    use crate::transformations::histogram;
+    use crate::transformations::histogram::HistogramConverter;
     use image_proc::modifications::Scale;
     use num::Integer;
 
@@ -84,5 +89,21 @@ mod util {
             height += 1
         }
         Ok((width, height))
+    }
+
+    pub fn get_histogram_modifier(args: &Args) -> Result<HistogramConverter, String> {
+        match args.args.get("-c") {
+            Some(channel_arg) => {
+                let channel = match channel_arg.as_str() {
+                    "r" => histogram::HistogramChannelOptions::R,
+                    "g" => histogram::HistogramChannelOptions::G,
+                    "b" => histogram::HistogramChannelOptions::B,
+                    "all" => histogram::HistogramChannelOptions::All,
+                    _ => panic!("Invalid option"),
+                };
+                Ok(HistogramConverter::new(channel))
+            }
+            _ => Err(String::from("Missing -c argument")),
+        }
     }
 }

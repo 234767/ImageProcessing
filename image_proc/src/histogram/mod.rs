@@ -11,7 +11,7 @@ impl Histogram {
         for pixel in image.pixels() {
             for channel in 0..3 {
                 let luminosity = pixel[channel];
-                data[channel][luminosity as usize];
+                data[channel][luminosity as usize] += 1;
             }
         }
         Self { data }
