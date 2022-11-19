@@ -1,4 +1,3 @@
-use image::buffer::Pixels;
 use image::{Rgb, RgbImage};
 
 /// For each channel of RGB maps a given function, and sums the results
@@ -30,34 +29,11 @@ where
     F2: Fn(i128, i128) -> i128,
 {
     let mut total = initial_state;
-    let iterator = DoubleImageIterator::new(original, modified);
-    for (old_pixel, new_pixel) in iterator {
+    for (old_pixel, new_pixel) in original.pixels().zip(modified.pixels()) {
         for channel in 1..3 {
             let value = function(old_pixel[channel], new_pixel[channel]);
             total[channel] = folder(total[channel], value);
         }
     }
     total
-}
-
-pub struct DoubleImageIterator<'a> {
-    old_pixels: Pixels<'a, Rgb<u8>>,
-    new_pixels: Pixels<'a, Rgb<u8>>,
-}
-
-impl<'a> DoubleImageIterator<'a> {
-    pub fn new(original: &'a RgbImage, modified: &'a RgbImage) -> Self {
-        Self {
-            old_pixels: original.pixels(),
-            new_pixels: modified.pixels(),
-        }
-    }
-}
-
-impl<'a> Iterator for DoubleImageIterator<'a> {
-    type Item = (&'a Rgb<u8>, &'a Rgb<u8>);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        Some((self.old_pixels.next()?, self.new_pixels.next()?))
-    }
 }
