@@ -10,19 +10,19 @@ pub trait ImageComparer {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String>;
 }
 
-pub struct CompositeAnalyzer {
+pub struct CompositeComparer {
     pub analyzers: Vec<Box<dyn ImageComparer>>,
 }
 
-impl CompositeAnalyzer {
+impl CompositeComparer {
     pub fn new() -> Self {
-        CompositeAnalyzer {
+        CompositeComparer {
             analyzers: Vec::new(),
         }
     }
 }
 
-impl ImageComparer for CompositeAnalyzer {
+impl ImageComparer for CompositeComparer {
     fn compare(&self, original: &RgbImage, modified: &RgbImage) -> Result<String, String> {
         let mut result = String::new();
         for analyzer in &self.analyzers {
