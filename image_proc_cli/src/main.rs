@@ -5,8 +5,8 @@ mod analysis;
 mod parsing;
 mod transformations;
 
-use crate::transformations::get_transformation;
-use analysis::get_analyzers;
+use transformations::get_transformation;
+use analysis::get_comparers;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {
@@ -47,21 +47,24 @@ fn main() {
         image_copy
     };
 
-    let comparer = get_analyzers(&args);
-    let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
-        Some(path) => try_get_image(path),
-        None => None,
-    };
-    let comparison_result = comparer.compare(
-        match &comparison_baseline {
-            Some(image) => image,
-            None => &img,
-        },
-        &altered_image,
-    );
-    match comparison_result {
-        Ok(result) => print!("{}", result),
-        Err(e) => eprintln!("Error: {}", e),
+    if args.command != "--histogram"
+    {
+        let comparer = get_comparers(&args);
+        let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
+            Some(path) => try_get_image(path),
+            None => None,
+        };
+        let comparison_result = comparer.compare(
+            match &comparison_baseline {
+                Some(image) => image,
+                None => &img,
+            },
+            &altered_image,
+        );
+        match comparison_result {
+            Ok(result) => print!("{}", result),
+            Err(e) => eprintln!("Error: {}", e),
+        }
     }
 
     if let Some(output_path) = args.args.get("-o") {
