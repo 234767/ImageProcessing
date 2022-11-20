@@ -1,4 +1,4 @@
 pub mod analysis;
-pub mod gpu;
+pub(crate) mod gpu;
 pub mod modifications;
 pub mod histogram;
