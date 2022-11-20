@@ -58,7 +58,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--minimum" => {
             let (width, height) = util::get_width_and_height(args)?;
-            Ok(Box::new(GeometricMeanFilter::new(width, height)))
+            Ok(Box::new(MinimumFilter::new(width, height)))
         }
         //Old Minimum Filter done during workshops
         //"--minimum" => Ok(Box::new(MinimumFilter::try_new(args)?)),
