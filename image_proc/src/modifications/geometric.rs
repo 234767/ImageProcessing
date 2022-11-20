@@ -3,7 +3,7 @@ use super::Transformation;
 use image::{ImageBuffer, RgbImage};
 
 //(G1) Horizontal flip (--hflip)
-pub struct HorizontalFlip {}
+pub struct HorizontalFlip;
 
 impl HorizontalFlip {
     fn apply(image: &mut RgbImage) {
@@ -26,7 +26,7 @@ impl Transformation for HorizontalFlip {
 }
 
 //(G2) Vertical flip (--vflip)
-pub struct VerticalFlip {}
+pub struct VerticalFlip;
 
 impl VerticalFlip {
     fn apply(image: &mut RgbImage) {
@@ -48,7 +48,7 @@ impl Transformation for VerticalFlip {
 }
 
 //(G3) Diagonal flip (--dflip)
-pub struct DiagonalFlip {}
+pub struct DiagonalFlip;
 
 impl Transformation for DiagonalFlip {
     fn apply(&self, image: &mut RgbImage) {

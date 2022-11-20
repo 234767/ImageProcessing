@@ -4,7 +4,7 @@ use image::{Pixel, RgbImage};
 use num;
 
 //(B3) Negative (--negative)
-pub struct Negative {}
+pub struct Negative;
 
 impl Transformation for Negative {
     fn apply(&self, image: &mut RgbImage) {

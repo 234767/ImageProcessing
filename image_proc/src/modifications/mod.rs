@@ -13,7 +13,7 @@ pub trait Transformation {
 }
 
 /// Does nothing with the image
-pub struct IdTransform {}
+pub struct IdTransform;
 
 impl Transformation for IdTransform {
     fn apply(&self, _image: &mut RgbImage) {}
