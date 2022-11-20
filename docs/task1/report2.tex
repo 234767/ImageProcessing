@@ -1,0 +1,117 @@
+\documentclass[12pt]{article}
+
+\usepackage{tabularx}
+\usepackage[a4paper,margin=2.5cm, bottom=4cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{tikz}
+\pgfplotsset{compat=1.17}
+
+\theoremstyle{definition}
+\newtheorem*{example}{Example}
+
+\graphicspath{{../img/}}
+
+\setlength{\headheight}{40pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\subfiguresize}{.3\textwidth}
+\DeclareMathOperator*{\median}{median}
+
+\lstset {
+    basicstyle = \small\ttfamily,
+    keywordstyle = \color{blue},
+    commentstyle = \color{black!30},
+    comment = [l]{//},
+    morecomment = [s]{/*}{*/},
+    identifierstyle=,
+    keywords = {
+        let,
+        mut,
+        for,
+        in,
+        if,
+        else,
+        pub,
+        struct,
+        impl,
+        type,
+        Self,
+        u8,u16,u32,u64,
+        i8,i16,i32,i64,
+        f32,f64,
+    }
+}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[L]{
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabularx}{\textwidth}{|X|X|}
+        \hline
+        \large \bf Image processing & \normalsize Task No. 1 \\
+        \hline
+    \end{tabularx}
+}
+\fancyfoot[C]{\thepage}
+
+\thispagestyle{empty}
+\renewcommand{\arraystretch}{2}
+\begin{flushleft}
+    \begin{tabularx}{0.95\textwidth}{|X|X|}
+        \hline
+        \bf \large Image Processing                   & \bf \large Task No.~2                           \\ \hline
+        \multicolumn{2}{|l|}{
+            \textbf{Task variant:} Group 1
+        }                                                                                               \\ \hline
+        \textbf{Day and time:} Mon, 14:00             & \textbf{Full name:} \textsc{Magdalena Paku\l a}       \\
+        \textbf{Academic year: 3\textsuperscript{rd}} & \textbf{Full name:} \textsc{Jakub Pawlak} \\
+        \hline
+    \end{tabularx}
+\end{flushleft}
+\vspace{1em}
+\renewcommand{\arraystretch}{1}
+
+\section{Description of the implementation of the histogram-based image enhancement method}
+
+\section{Image analysis on the basis of the histogram}
+
+\section{Description of the linear filter implementation (general formulation)}
+
+\section{Description of the linear filter implementation (with optimization)}
+
+\section{Analysis of the filtering results (linear filter)}
+
+\section{Description of the non-linear filter implementation }
+
+\section{Analysis of the filtering results (non-linear filter)}
+
+\section{Description of other changes which took place in the application}
+
+
+
+\vfill
+\section*{Teacher's remarks}
+\begin{tabularx}{\textwidth}{|X|}
+    \hline
+    \vspace{7cm}
+    \phantom{.} \\
+    \hline
+\end{tabularx}
+
+\end{document}
