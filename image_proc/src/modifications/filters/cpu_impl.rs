@@ -1,5 +1,3 @@
-use std::cmp::min;
-use std::env::Args;
 use super::super::Transformation;
 use super::iterating::Neighbourhood;
 use image::ImageBuffer;
@@ -137,7 +135,7 @@ impl Transformation for MinimumFilter {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
             let neighbourhood = Neighbourhood::new(image, target_x, w_offset, target_y, h_offset);
-            let min_values = neighbourhood.iter().fold([0u8, 0, 0], |prod, Rgb(pixel)| {
+            let min_values = neighbourhood.iter().fold([255u8, 255u8, 255u8], |prod, Rgb(pixel)| {
                 [
                     u8::min(prod[0], pixel[0]),
                     u8::min(prod[1], pixel[1]),
