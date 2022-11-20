@@ -854,6 +854,29 @@ For example, expecially visible at the $7\times7$ result image, there are some v
 Overall, our impression is that this filter, although fast, yields significantly worse results than the median filter. 
 Especially with larger sampling regions, it produces weird artifacts and is very destructive to the image.
 
+\section{Analysis of the parameters of the noise reduction methods}
+
+We performed error analysis for the mean and geometric filter.
+For this experiment we used the same sized pictures, which were 128x128, and the same parameters for width and height, which were both 3. Result for both filters in that experiment are presented below.
+
+\begin{table}[H]
+\hskip-1.5cm
+\begin{tabular}{cccccccc}
+\hline
+\textbf{Operation} & \textbf{Input image} & \textbf{Dimentions} & \textbf{MSE} & \textbf{PMSE} & \textbf{SNR} & \textbf{PSNR} & \textbf{MD} \\ \hline
+median filter 3x3 & lenac\_normal3\_small.bmp  & 128x128 & 83.295  & 0.327 & 19.974 & 28.925 & 115 \\
+median filter 3x3 & lenac\_uniform3\_small.bmp & 128x128 & 105.920 & 0.415 & 18.960 & 27.881 & 88  \\
+median filter 3x3 & lenac\_impulse3\_small.bmp & 128x128 & 71.562  & 0.281 & 20.641 & 29.584 & 89  \\
+gmean filter 3x3  & lenac\_normal3\_small.bmp  & 128x128 & 112.884 & 0.443 & 18.654 & 27.604 & 119 \\
+gmean filter 3x3  & lenac\_uniform3\_small.bmp & 128x128 & 132.603 & 0.520 & 17.985 & 26.905 & 103 \\
+gmean filter 3x3  & lenac\_impulse3\_small.bmp & 128x128 & 102.974 & 0.404 & 19.060 & 28.004 & 100 \\ \hline
+\end{tabular}
+\end{table}
+
+When it comes to performance, it is immediately noticeable that the smallest errors for the median filter in MSE and PMSE were in the picture $lenac impulse3 small.bmp$. But when it comes to errors: SNR, PSNR and MD the smallest ones were in the picture $lenac uniform3 small.bmp$. With geometric filter the errors were quite bigger in comparison to the median filter. The smallest ones were comparably in the picture $lenac normal3 small.bmp$ and $lenac impulse3 small.bmp$
+
+In our opinion, median filter in comparison to the geometric mean filter gives better results because of following reasons. Geometric median filter leaves colorful spots on the output image, while median filter doesn’t, which reflects in a worse looking picture. It is caused by the noise, which in case of g-mean, it takes noise into account and uses it while calculating the average. Median mean filter doesn’t usually include the noise which tends to have extreme values, therefore we assume this is the reason why images look better.
+
 \vfill
 \section*{Teacher's remarks}
 \begin{tabularx}{\textwidth}{|X|}
