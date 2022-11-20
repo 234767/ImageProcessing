@@ -602,7 +602,7 @@ Therefore $T_\infty = \mathcal{O}(mn)$.
 However, it is worth pointing out
 that this measure fades into insignificance 
 when taking into account other components of the program. 
-For reasonable sizes of the sampling region ($\leq 9\times9$)
+For common sizes of the sampling region (up to $9\times9$)
 we were able to achieve results, when the filtering process took an order of magnitude less time
 than the static aspects of the program, such as loading the image file, or setting up the \textsc{gpu}.
 
@@ -677,6 +677,7 @@ Therefore, we conclude that for reasonable sizes of the sampling region, the com
 
 The spacial complexity is the same as in case of the \textsc{cpu} implementation: $\mathcal{O}(wh)$.
 
+\clearpage
 \section{Analysis of the parameters of the noise reduction methods}
 
 \subsection{Median filter}
@@ -737,7 +738,24 @@ The spacial complexity is the same as in case of the \textsc{cpu} implementation
     \caption{Time of execution, and coefficients for different parameters of median filter.}
 \end{table}
 
+Varying the size of the sampling region, we came to the following conclusions:
+Increasing the size of $m$ and $n$ has a noticeable negative impact on the performance of the algorithm on the \textsc{cpu}.
+The \textsc{gpu}-accelerated version is so fast, that the performance degradation is negligible.
+However, it is not beneficial to increase the size of the sampling region as it is also detrimental to the effectivenes of the denoising.
+We can clearly see that the best image was produced by using a $3\times3$ sampling region.
+Further increasing its size leads only to producing more blurred image.
+
+Overall, in our opinion, this filter produced a very satisfactory result (at least for this type of noise).
+The decrease of the mean square error from 596.82 to 13.72 is a huge improvement, 
+and our subjective opinion of the produced image is also very positive.
+
+\clearpage
 \subsection{Geometric mean filter}
+
+We performed similar parameter analysis for the geometic mean filter.
+However, for this experiment we used normal distribution noise in order 
+to better visualise the differences, because the geometic mean filter
+performs very badly with impulse noise (as will be explained in the next section).
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{0.25\textwidth}\centering
@@ -795,6 +813,24 @@ The spacial complexity is the same as in case of the \textsc{cpu} implementation
     \caption{Time of execution, and coefficients for different parameters of gmean filter.}
 \end{table}
 
+When it comes to performance, it is immediately noticeable 
+that increasing the sampling region results in a slower execution when it comes to the \textsc{cpu} implementation.
+However, with the \textsc{gpu} implementation a very peculiar thing occurs --- the execution times do not seem to be affected by the change in parameters.
+It is contrary to the median filter, where, although very small, a performance degradation was visible.
+Out of curiosity, we went for the extreme, and tried this filter with a $100\times100$ sampling region, and were able to achieve execution times as small as 250ms.
+Only when we increased the sampling region to $500\times500$ we were able to observe a reproducible performance degradation ($\sim$2s).
+
+Looking at the statistics, we see that increasing the sample region to more than $3\times3$, 
+the denoised image is actually \emph{worse} than the image with noise 
+(therefore we're not sure if we can even call the produced image ``denoised'').
+Even if there is some improvement produced by the $3\times3$ gmean filter, it is very slight.
+Looking at the produced image, there is still visible noise, and the image is noticeably darker.
+
+However, one interesting things that we noticed is that the filter seems to ``highlight'' a certain features of the picture.
+For example, expecially visible at the $7\times7$ result image, there are some very intense red artifacts produced around the model's lips and eyes.
+
+Overall, our impression is that this filter, although fast, yields significantly worse results than the median filter. 
+Especially with larger sampling regions, it produces weird artifacts and is very destructive to the image.
 
 \vfill
 \section*{Teacher's remarks}
