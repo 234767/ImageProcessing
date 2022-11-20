@@ -17,6 +17,7 @@
 \usepackage{pgfplotstable}
 \usepackage{multirow}
 \usepackage{tikz}
+\usepackage[hidelinks]{hyperref}
 \pgfplotsset{compat=1.17}
 
 \theoremstyle{definition}
@@ -873,7 +874,7 @@ oth of the median and gmean filters was tested on 3 types of noise --- uniform, 
 
 \subsubsection{Median filter}
 
-\begin{figure}[h]\centering
+\begin{figure}[ht]\centering
     \begin{subfigure}[t]{.4\textwidth}\centering
         \includegraphics[width=.8\textwidth]{lenac_uniform3}
         \caption{Image with uniform noise}
@@ -901,7 +902,7 @@ oth of the median and gmean filters was tested on 3 types of noise --- uniform, 
     \caption{Results of running $3\times3$ median filter on different types of noise}
 \end{figure}
 
-\begin{table}[h]\centering
+\begin{table}[ht]\centering
     \pgfplotstabletypeset[
         col sep=&,
         row sep=\\,
@@ -958,7 +959,7 @@ however, the image after filtering is still much clearer than the unfiltered noi
 \clearpage
 \subsubsection{Geometric mean filter}
 
-\begin{figure}[h]\centering
+\begin{figure}[ht]\centering
     \begin{subfigure}[t]{.4\textwidth}\centering
         \includegraphics[width=.8\textwidth]{lenac_uniform3}
         \caption{Image with uniform noise}
@@ -986,7 +987,7 @@ however, the image after filtering is still much clearer than the unfiltered noi
     \caption{Results of running $3\times3$ geometic mean filter on different types of noise}
 \end{figure}
 
-\begin{table}[h]\centering
+\begin{table}[ht]\centering
     \pgfplotstabletypeset[
         col sep=&,
         row sep=\\,
