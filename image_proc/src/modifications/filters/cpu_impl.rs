@@ -1,3 +1,5 @@
+use std::cmp::min;
+use std::env::Args;
 use super::super::Transformation;
 use super::iterating::Neighbourhood;
 use image::ImageBuffer;
@@ -113,6 +115,37 @@ impl Transformation for MaxFilter {
                 ]
             });
             *new_pixel = max_values
+        }
+        *image = new_image;
+    }
+}
+
+pub struct MinimumFilter {
+    width: u32,
+    height: u32,
+}
+
+impl MinimumFilter {
+    pub fn try_new(args: &Args) -> Result<Self, String> {
+        let (width, height) = get_width_and_height(args)?;
+        Ok(Self { width, height })
+    }
+}
+
+impl Transformation for MinimumFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let h_offset = self.height / 2;
+        let w_offset = self.width / 2;
+        let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
+        for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
+            let old_pixels: Vec<&Rgb<u8>> =
+                collect_pixels(image, target_x, w_offset, target_y, h_offset);
+            for channel in 0..3 {
+                let mut luminosities: Vec<u8> =
+                    old_pixels.iter().map(|pixel| pixel[channel]).collect();
+                    luminosities.sort();
+                    new_pixel[channel] = luminosities.iter().fold(255u8,|a,b| min(a,*b)) as u8;
+            }
         }
         *image = new_image;
     }
