@@ -91,7 +91,7 @@
 \subsection{Basic information}
 
 Technical description of the application
-This application allows a user to apply some operations to bitmap files, which are:
+This application allows a user to apply some operations to images, which are:
 \begin{enumerate}
     \item basic color correction operations such as modifying brightness or contrast
     \item geometric operations, for example resizing or flipping the image
@@ -134,6 +134,8 @@ For brevity, if the pixel coordinates are irrelevant, they may be ommited and be
 Additionally, we define $x|_{[a,b]}$ as $x$ restricted to the range $[a,b]$, that is $\max\{a, \min\{x,b\}\}$.
 For parameters that are specified by the user (e.g\ in brightness or contrast modifications), we will use letters from the greek alphabet.
 
+\vspace{5em}
+% \pagebreak[3]
 \subsection{Brightness modification (B1)}
 
 \subsubsection{Implementation}
@@ -166,6 +168,8 @@ The operation for one pixel is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
+\vspace{5em}
+\pagebreak[3]
 \subsection{Contrast modification (B2)}
 
 \subsubsection{Implementation}
@@ -229,6 +233,8 @@ The operation for one pixel is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
+\vspace{5em}
+\pagebreak[3]
 \subsection{Negative (B3)}
 
 \subsubsection{Implementation}
@@ -261,6 +267,8 @@ Similarly to the previous transformation,
 the operation on one pixel is constant time, which for $w \times h$ pixels in total gives computational complexity $\mathcal{O}(wh)$
 and space complexity $\mathcal{O}(1)$.
 
+\vspace{5em}
+\pagebreak[3]
 \subsection{Horizontal flip (G1)}
 
 \subsubsection{Implementation}
@@ -299,8 +307,8 @@ The operation for one pair of pixex is of constant time,
 therefore the total computational complexity for the image of size $w \times h$ is $\mathcal{O}(\frac{wh}{2}) = \mathcal{O}(wh)$.
 The algorithm operates in-place, therefore it's space complexity is $\mathcal{O}(1)$.
 
-
-
+\vspace{5em}
+\pagebreak[3]
 \subsection{Vertical flip (G2)}
 
 \subsubsection{Implementation}
@@ -335,6 +343,8 @@ while the swap occurs at the $y$ coordinate
 Similarly to the horizontal flip,
 the computational complexity is $\mathcal{O}(wh)$, and the spacial complexity is $\mathcal{O}(1)$.
 
+\vspace{5em}
+\pagebreak[3]
 \subsection{Diagonal flip (G3)}
 
 \subsubsection{Implementation}
@@ -345,6 +355,16 @@ The order of the composition does not matter.
 \begin{equation}
     \hat{f}(x,y) = f(width - x, height - y)
 \end{equation}
+
+The implementation reflects the composition aspect, 
+instead of providing a custom implementation, 
+we just apply the 2 existing flips.
+
+We are aware, that this is not the most optimal solution,
+as we are unnecessarily looping over the pixels in both flips instead of just one,
+however, this operation is still so quick, 
+that the performance degradation coming from using a suboptimal implementation
+is not noticeable to the end user.
 
 \subsubsection{Results}
 
@@ -365,7 +385,8 @@ The order of the composition does not matter.
 Since it is just applying two flips, each of which are $\mathcal{O}(wh)$, 
 the computational complexity is also $\mathcal{O}(wh)$, and the spacial complexity is $\mathcal{O}(1)$.
 
-
+\vspace{5em}
+\pagebreak[3]
 \subsection{Shrink (G4) and Enlarge (G5)}
 
 \subsubsection{Implementation}
@@ -436,6 +457,7 @@ Therefore, the computational complexity is $\mathcal{O}(wh \varphi^2)$.
 
 The spacial complexity is the size of buffer we need to allocate for the new image. Therefore it is $\mathcal{O}(wh \varphi^2)$.
 
+\pagebreak
 \section{Description of the implementation of the noise reduction methods}
 
 \subsection*{Common implementation}
