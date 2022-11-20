@@ -56,7 +56,12 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
                 }
             }
         }
-        "--minimum" => Ok(Box::new(MinimumFilter::try_new(args)?)),
+        "--minimum" => {
+            let (width, height) = util::get_width_and_height(args)?;
+            Ok(Box::new(GeometricMeanFilter::new(width, height)))
+        }
+        //Old Minimum Filter done during workshops
+        //"--minimum" => Ok(Box::new(MinimumFilter::try_new(args)?)),
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }

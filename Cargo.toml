@@ -1,4 +1,4 @@
 [workspace]
 members = [
-    "image_proc", "image_proc_cli"
+    "image_proc", "image_proc_CLI"
 ]

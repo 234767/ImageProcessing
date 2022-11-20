@@ -126,11 +126,9 @@ pub struct MinimumFilter {
 }
 
 impl MinimumFilter {
-    pub fn try_new(args: &Args) -> Result<Self, String> {
-        let (width, height) = get_width_and_height(args)?;
-        Ok(Self { width, height })
-    }
+    impl_new!();
 }
+//Code for Minimum filter updated to the new task
 
 impl Transformation for MinimumFilter {
     fn apply(&self, image: &mut RgbImage) {
@@ -138,15 +136,38 @@ impl Transformation for MinimumFilter {
         let w_offset = self.width / 2;
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
-            let old_pixels: Vec<&Rgb<u8>> =
-                collect_pixels(image, target_x, w_offset, target_y, h_offset);
+            let neighbourhood = Neighbourhood::new(image, target_x, w_offset, target_y, h_offset);
+            let min_values = neighbourhood.iter().fold([0u8, 0, 0], |prod, Rgb(pixel)| {
+                [
+                    u8::min(prod[0], pixel[0]),
+                    u8::min(prod[1], pixel[1]),
+                    u8::min(prod[2], pixel[2]),
+                ]
+            });
+            *new_pixel = Rgb::from(min_values)
+        }
+        *image = new_image;
+    }
+}
+
+
+//Code for Minimum Filter presented while working
+/*
+impl Transformation for MinimumFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let h_offset = self.height / 2;
+        let w_offset = self.width / 2;
+        let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
+        for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
+            let old_pixels: Vec<&Rgb<u8>> = collect_pixels(image, target_x, w_offset, target_y, h_offset);
             for channel in 0..3 {
                 let mut luminosities: Vec<u8> =
                     old_pixels.iter().map(|pixel| pixel[channel]).collect();
                     luminosities.sort();
-                    new_pixel[channel] = luminosities.iter().fold(255u8,|a,b| min(a,*b)) as u8;
+                    new_pixel[channel] = luminosities.iter().fold(255u8,|a,b| min(a, *b)) as u8;
             }
         }
         *image = new_image;
     }
 }
+*/
