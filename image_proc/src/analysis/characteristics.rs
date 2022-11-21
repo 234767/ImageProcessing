@@ -41,7 +41,7 @@ impl Characteristic for Mean {
         Ok(format!("{:10} {:6.3}", "Mean:", mean))
     }
 }
-
+/*
 pub struct Variance;
 
 impl Characteristic for Variance {
@@ -56,3 +56,5 @@ impl Characteristic for Variance {
         Ok(format!("{:10} {:6.3}", "Variance:", variance))
     }
 }
+
+ */
