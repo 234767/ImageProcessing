@@ -127,7 +127,7 @@ impl AsymmetryCoefficient{
                 |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
             )
             .sum();
-        let asymmetry = pow(sum - mean, 3)/ pow(std_deviation, 3)*(image.width() * image.height() * 3) as f64;
+        let asymmetry = pow(sum - mean, 3)* pow(std_deviation, 3)/(image.width() * image.height() * 3) as f64;
         asymmetry
     }
 }
@@ -151,7 +151,7 @@ impl FlatteningCoefficient{
             .sum();
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let flat = pow(sum - mean, 4)/ pow(std_deviation, 4)*(image.width() * image.height() * 3) as f64 -3.0;
+        let flat = pow(sum - mean, 4)* pow(std_deviation, 4) -3.0/ (image.width() * image.height() * 3) as f64;
         flat
     }
 }
