@@ -41,3 +41,18 @@ impl Characteristic for Mean {
         Ok(format!("{:10} {:6.3}", "Mean:", mean))
     }
 }
+
+pub struct Variance;
+
+impl Characteristic for Variance {
+    fn analyze(&self, image: &RgbImage) -> Result<String, String> {
+        let sum: f64 = image
+            .pixels()
+            .flat_map(
+                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
+            )
+            .sum();
+        //let variance =
+        Ok(format!("{:10} {:6.3}", "Variance:", variance))
+    }
+}
