@@ -147,25 +147,3 @@ impl Transformation for MinimumFilter {
         *image = new_image;
     }
 }
-
-
-//Code for Minimum Filter presented while working
-/*
-impl Transformation for MinimumFilter {
-    fn apply(&self, image: &mut RgbImage) {
-        let h_offset = self.height / 2;
-        let w_offset = self.width / 2;
-        let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
-        for (target_x, target_y, new_pixel) in new_image.enumerate_pixels_mut() {
-            let old_pixels: Vec<&Rgb<u8>> = collect_pixels(image, target_x, w_offset, target_y, h_offset);
-            for channel in 0..3 {
-                let mut luminosities: Vec<u8> =
-                    old_pixels.iter().map(|pixel| pixel[channel]).collect();
-                    luminosities.sort();
-                    new_pixel[channel] = luminosities.iter().fold(255u8,|a,b| min(a, *b)) as u8;
-            }
-        }
-        *image = new_image;
-    }
-}
-*/
