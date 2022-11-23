@@ -3,6 +3,7 @@ use image::RgbImage;
 mod elementary;
 mod filters;
 mod geometric;
+mod histogram_modifications;
 
 pub use elementary::*;
 pub use filters::*;

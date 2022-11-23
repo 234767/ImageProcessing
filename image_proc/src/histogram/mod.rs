@@ -1,5 +1,3 @@
-mod improvement;
-
 use image::RgbImage;
 use std::ops::{Deref, DerefMut};
 
