@@ -60,9 +60,8 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             let (width, height) = util::get_width_and_height(args)?;
             Ok(Box::new(MinimumFilter::new(width, height)))
         }
-        //Old Minimum Filter done during workshops
-        //"--minimum" => Ok(Box::new(MinimumFilter::try_new(args)?)),
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
+        "--lowpass-gpu" => Ok(Box::new(gpu_optimized::LowPassFilterGPU::try_new()?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

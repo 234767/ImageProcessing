@@ -146,3 +146,55 @@ impl Transformation for MaxFilterGPU {
         *image = result_image;
     }
 }
+
+pub struct LowPassFilterGPU {
+    config: GPUConfig,
+}
+
+impl LowPassFilterGPU {
+    pub fn try_new() -> Result<Self, String> {
+        if let Some(config) = GPUConfig::new() {
+            Ok(Self { config })
+        } else {
+            Err(String::from(
+                "Vulkan required for running GPU optimized version",
+            ))
+        }
+    }
+}
+
+impl Transformation for LowPassFilterGPU {
+    fn apply(&self, image: &mut RgbImage) {
+        mod cs {
+            vulkano_shaders::shader! {
+                ty: "compute",
+                path: "src/shaders/lowpass.glsl",
+                types_meta: {
+                    use bytemuck::{Pod,Zeroable};
+
+                    #[derive(Clone, Copy, Zeroable, Pod)]
+                }
+            }
+        }
+
+        let mut mask = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        for x in &mut mask {
+            *x /= 9.0;
+        }
+
+        println!("{:?}", mask);
+
+        let push_constants = cs::ty::PushConstantData { mask };
+
+        let pipeline = InOutImageTransformationPipeline::new(
+            self.config.clone(),
+            image,
+            |device| cs::load(device).expect("Failed to create shader module"),
+            [image.width() / 16 + 1, image.height() / 16 + 1, 1],
+            Some(push_constants),
+        );
+
+        let result_image = pipeline.dispatch();
+        *image = result_image;
+    }
+}
