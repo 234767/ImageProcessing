@@ -207,3 +207,6 @@ impl Characteristic for InformationSourceEntropy {
         Ok(format!("{:10} {:6.3}", "Information source entropy:", info_src_ent))
     }
 }
+
+#[cfg(test)]
+mod tests;
