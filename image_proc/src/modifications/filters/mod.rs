@@ -6,8 +6,8 @@ macro_rules! impl_new {
     };
 }
 
-pub mod gpu_optimized;
 mod cpu_impl;
+pub mod gpu_optimized;
 pub use cpu_impl::*;
 
 mod iterating {
@@ -156,7 +156,8 @@ mod iterating {
             let x_offset = 1;
             let y_offset = 2;
 
-            let result = Neighbourhood::new(&image, x, x_offset, y, y_offset).non_enumerated_count();
+            let result =
+                Neighbourhood::new(&image, x, x_offset, y, y_offset).non_enumerated_count();
 
             assert_eq!(15, result);
         }

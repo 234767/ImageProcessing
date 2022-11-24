@@ -39,7 +39,7 @@ impl Transformation for HistogramConverter {
             HistogramChannelOptions::All => {
                 let histogram_image = ImageBuffer::from_fn(256, HISTOGRAM_HEIGHT, |x, y| {
                     let y = HISTOGRAM_HEIGHT - y;
-                    let mut pixel = [0u8;3];
+                    let mut pixel = [0u8; 3];
                     for channel in 0..3 {
                         let height = normalized_histogram[channel][x as usize];
                         if y <= height {

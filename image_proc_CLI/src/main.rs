@@ -5,8 +5,8 @@ mod analysis;
 mod parsing;
 mod transformations;
 
-use transformations::get_transformation;
 use analysis::get_comparers;
+use transformations::get_transformation;
 
 fn try_get_image(path: &String) -> Option<RgbImage> {
     match image::io::Reader::open(path) {
@@ -47,8 +47,7 @@ fn main() {
         image_copy
     };
 
-    if args.command != "--histogram"
-    {
+    if args.command != "--histogram" {
         let comparer = get_comparers(&args);
         let comparison_baseline: Option<RgbImage> = match args.args.get("-baseline") {
             Some(path) => try_get_image(path),

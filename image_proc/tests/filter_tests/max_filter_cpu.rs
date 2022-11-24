@@ -27,7 +27,7 @@ fn test_max_filter(width: u32, height: u32, channel: usize) {
     assert_eq!(max_value, target_pixel[channel]);
 }
 
-invoke_test!{test_max_filter{
+invoke_test! {test_max_filter{
     max_3x3_red  (3,3,0),
     max_3x3_green (3,3,1),
     max_3x3_blue (3,3,2),

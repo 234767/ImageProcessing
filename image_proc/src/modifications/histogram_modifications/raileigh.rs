@@ -1,5 +1,5 @@
-use image::RgbImage;
 use crate::modifications::Transformation;
+use image::RgbImage;
 
 ///(H3) Raleigh final probability density function (--hraleigh).
 pub struct HRaleigh {

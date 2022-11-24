@@ -37,8 +37,8 @@ impl Characteristic for CompositeCharacteristic {
 
 pub struct Mean;
 
-impl Mean{
-    fn analyze(image: &RgbImage) -> f64{
+impl Mean {
+    fn analyze(image: &RgbImage) -> f64 {
         let sum: f64 = image
             .pixels()
             .flat_map(
@@ -59,8 +59,8 @@ impl Characteristic for Mean {
 
 pub struct Variance;
 
-impl Variance{
-    fn analyze(image: &RgbImage) -> f64{
+impl Variance {
+    fn analyze(image: &RgbImage) -> f64 {
         let mean = Mean::analyze(image);
         let sum: f64 = image
             .pixels()
@@ -68,7 +68,7 @@ impl Variance{
                 |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
             )
             .sum();
-        let variance = pow(sum - mean, 2) /(image.width() * image.height() * 3) as f64;
+        let variance = pow(sum - mean, 2) / (image.width() * image.height() * 3) as f64;
         variance
     }
 }
@@ -82,28 +82,31 @@ impl Characteristic for Variance {
 
 pub struct StandardDeviation;
 
-impl StandardDeviation{
-    fn analyze(image: &RgbImage) -> f64{
+impl StandardDeviation {
+    fn analyze(image: &RgbImage) -> f64 {
         let variance = Variance::analyze(image);
         let std_deviation = f64::sqrt(variance);
         std_deviation
     }
 }
 
-impl Characteristic for StandardDeviation{
+impl Characteristic for StandardDeviation {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let std_deviation = Self::analyze(image);
-        Ok(format!("{:10} {:6.3}", "Standard Deviation:", std_deviation))
+        Ok(format!(
+            "{:10} {:6.3}",
+            "Standard Deviation:", std_deviation
+        ))
     }
 }
 
 pub struct VarianceCoefficient1;
 
-impl VarianceCoefficient1{
-    fn analyze(image: &RgbImage) -> f64{
+impl VarianceCoefficient1 {
+    fn analyze(image: &RgbImage) -> f64 {
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let var_coe_1 = std_deviation/mean;
+        let var_coe_1 = std_deviation / mean;
         var_coe_1
     }
 }
@@ -111,14 +114,17 @@ impl VarianceCoefficient1{
 impl Characteristic for VarianceCoefficient1 {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let var_coe_1 = Self::analyze(image);
-        Ok(format!("{:10} {:6.3}", "Variance Coefficient I:", var_coe_1))
+        Ok(format!(
+            "{:10} {:6.3}",
+            "Variance Coefficient I:", var_coe_1
+        ))
     }
 }
 
 pub struct AsymmetryCoefficient;
 
-impl AsymmetryCoefficient{
-    fn analyze(image: &RgbImage) -> f64{
+impl AsymmetryCoefficient {
+    fn analyze(image: &RgbImage) -> f64 {
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
         let sum: f64 = image
@@ -127,7 +133,8 @@ impl AsymmetryCoefficient{
                 |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
             )
             .sum();
-        let asymmetry = pow(sum - mean, 3)* pow(std_deviation, 3)/(image.width() * image.height() * 3) as f64;
+        let asymmetry = pow(sum - mean, 3) * pow(std_deviation, 3)
+            / (image.width() * image.height() * 3) as f64;
         asymmetry
     }
 }
@@ -141,8 +148,8 @@ impl Characteristic for AsymmetryCoefficient {
 
 pub struct FlatteningCoefficient;
 
-impl FlatteningCoefficient{
-    fn analyze(image: &RgbImage) -> f64{
+impl FlatteningCoefficient {
+    fn analyze(image: &RgbImage) -> f64 {
         let sum: f64 = image
             .pixels()
             .flat_map(
@@ -151,7 +158,8 @@ impl FlatteningCoefficient{
             .sum();
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let flat = pow(sum - mean, 4)* pow(std_deviation, 4) -3.0/ (image.width() * image.height() * 3) as f64;
+        let flat = pow(sum - mean, 4) * pow(std_deviation, 4)
+            - 3.0 / (image.width() * image.height() * 3) as f64;
         flat
     }
 }
@@ -165,15 +173,15 @@ impl Characteristic for FlatteningCoefficient {
 
 pub struct VarianceCoefficient2;
 
-impl VarianceCoefficient2{
-    fn analyze(image: &RgbImage) -> f64{
+impl VarianceCoefficient2 {
+    fn analyze(image: &RgbImage) -> f64 {
         let sum: f64 = image
             .pixels()
             .flat_map(
                 |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
             )
             .sum();
-        let var2 = pow(sum,2) / pow(image.width() * image.height() * 3,2) as f64;
+        let var2 = pow(sum, 2) / pow(image.width() * image.height() * 3, 2) as f64;
         var2
     }
 }
@@ -187,8 +195,8 @@ impl Characteristic for VarianceCoefficient2 {
 
 pub struct InformationSourceEntropy;
 
-impl InformationSourceEntropy{
-    fn analyze(image: &RgbImage) -> f64{
+impl InformationSourceEntropy {
+    fn analyze(image: &RgbImage) -> f64 {
         let sum: f64 = image
             .pixels()
             .flat_map(
@@ -196,7 +204,7 @@ impl InformationSourceEntropy{
             )
             .sum();
         let a = sum / (image.width() * image.height() * 3) as f64;
-        let info_src_ent = (-1.0 * sum * a.log2())/ (image.width() * image.height() * 3) as f64;
+        let info_src_ent = (-1.0 * sum * a.log2()) / (image.width() * image.height() * 3) as f64;
         info_src_ent
     }
 }
@@ -204,7 +212,10 @@ impl InformationSourceEntropy{
 impl Characteristic for InformationSourceEntropy {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let info_src_ent = Self::analyze(image);
-        Ok(format!("{:10} {:6.3}", "Information source entropy:", info_src_ent))
+        Ok(format!(
+            "{:10} {:6.3}",
+            "Information source entropy:", info_src_ent
+        ))
     }
 }
 

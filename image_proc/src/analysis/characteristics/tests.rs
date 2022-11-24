@@ -38,5 +38,5 @@ fn std_dev_test() {
 
     let result = super::StandardDeviation::analyze(&sample_image);
 
-    assert_eq!(expected,result);
+    assert_eq!(expected, result);
 }
