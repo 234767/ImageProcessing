@@ -185,7 +185,7 @@ impl Transformation for LowPassFilterGPU {
 
         let mut mask:[f64;9] = self.mask;
         for x in &mut mask {
-            *x /= 9.0;
+            *x *= self.mask_scale;
         }
 
         println!("{:?}", mask);
