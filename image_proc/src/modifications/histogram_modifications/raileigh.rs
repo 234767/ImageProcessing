@@ -38,8 +38,7 @@ impl Transformation for HRaleigh {
         };
 
         let image_size = image.width() * image.height();
-        let alpha =
-            (self.gmax - self.gmin) as f64 / f64::sqrt(2.0 * f64::ln(image_size as f64));
+        let alpha = (self.gmax - self.gmin) as f64 / f64::sqrt(2.0 * f64::ln(image_size as f64));
 
         let brightness_lookup = {
             let mut brightness_lookup = [[0u8; 256]; 3];
@@ -47,11 +46,13 @@ impl Transformation for HRaleigh {
                 for i in 0..256 {
                     let partial_sum = partial_sums[channel][i];
                     if partial_sum == 0 {
+                        // no pixels of such luminosity, so no reason to calculate
                         continue;
                     }
-                    let log_base = image_size as f64 / partial_sum as f64;
+                    let log_base = image_size as f64 / (image_size - partial_sum) as f64;
                     let root_base = f64::sqrt(2.0 * alpha * alpha * f64::ln(log_base));
-                    brightness_lookup[channel][i] = f64::clamp(root_base, 0.0, 255.0) as u8;
+                    brightness_lookup[channel][i] = self.gmin
+                        + f64::clamp(root_base, 0.0, (self.gmax - self.gmin) as f64) as u8;
                 }
             }
             brightness_lookup
@@ -61,7 +62,7 @@ impl Transformation for HRaleigh {
             for channel in 0..3 {
                 let luminosity = pixel[channel];
                 let new_luminosity = brightness_lookup[channel][luminosity as usize];
-                pixel[channel] = self.gmax - new_luminosity
+                pixel[channel] = new_luminosity
             }
         }
     }
