@@ -158,25 +158,21 @@ impl Transformation for Uolis {
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
             let neighbors = {
                 let mut neighbors: Vec<&Rgb<u8>> = vec![];
-                for i in [-1, 1] {
-                    for j in [-1, 1] {
-                        let xi = i + x as i32;
-                        let yj = j + y as i32;
-                        if xi >= 0
-                            && xi < image.width() as i32
-                            && yj >= 0
-                            && yj < image.height() as i32
-                        {
-                            neighbors.push(image.get_pixel(xi as u32, yj as u32))
-                        }
+                for (i, j) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+                    let xi = (x as i32 + i) as u32;
+                    let yi = (y as i32 + j) as u32;
+                    if xi < image.width() && yi < image.height() {
+                        neighbors.push(image.get_pixel(xi, yi));
                     }
                 }
                 neighbors
             };
             for channel in 0..3 {
                 let product = neighbors.iter().map(|x| x[channel] as f64).product::<f64>();
-                pixel[channel] = (f64::log10((pixel[channel] as f64).pow(neighbors.len() as f64) / product)
-                    / neighbors.len() as f64) as u8
+                let power = (image.get_pixel(x,y)[channel] as f64).pow(4.0);
+                let log_base = power / product;
+                let log = f64::log10(log_base);
+                pixel[channel] = (log / 4.0) as u8
             }
         }
         *image = new_image;
