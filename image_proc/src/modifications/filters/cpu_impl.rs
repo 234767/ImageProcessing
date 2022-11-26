@@ -126,7 +126,6 @@ pub struct MinimumFilter {
 impl MinimumFilter {
     impl_new!();
 }
-//Code for Minimum filter updated to the new task
 
 impl Transformation for MinimumFilter {
     fn apply(&self, image: &mut RgbImage) {
