@@ -156,6 +156,9 @@ impl Transformation for Uolis {
     fn apply(&self, image: &mut RgbImage) {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
+            if x == 0 || y == 0 {
+                continue;
+            }
             let neighbors = {
                 let mut neighbors: Vec<&Rgb<u8>> = vec![];
                 for (i, j) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
