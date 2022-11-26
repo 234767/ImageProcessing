@@ -1,5 +1,6 @@
 use crate::parsing::Args;
 use image_proc::modifications::*;
+use crate::transformations::util::try_new_raleigh;
 
 mod histogram;
 
@@ -62,7 +63,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
         "--lowpass-gpu" => Ok(Box::new(gpu_optimized::LowPassFilterGPU::try_new()?)),
-        "--hraleigh" => Ok(Box::new(HRaleigh::new(0,255))),
+        "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
@@ -71,7 +72,7 @@ mod util {
     use crate::parsing::Args;
     use crate::transformations::histogram;
     use crate::transformations::histogram::HistogramConverter;
-    use image_proc::modifications::Scale;
+    use image_proc::modifications::{HRaleigh, Scale};
     use num::Integer;
 
     pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
@@ -111,5 +112,11 @@ mod util {
             }
             _ => Err(String::from("Missing -c argument")),
         }
+    }
+
+    pub fn try_new_raleigh(args: &Args) -> Result<HRaleigh, String> {
+        let gmin: u8 = args.try_get_arg("-gmin")?;
+        let gmax: u8 = args.try_get_arg("-gmax")?;
+        Ok(HRaleigh::new(gmin, gmax))
     }
 }
