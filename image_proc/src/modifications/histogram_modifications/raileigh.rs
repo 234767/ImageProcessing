@@ -48,6 +48,20 @@ impl Transformation for HRaleigh {
                     if partial_sum == 0 {
                         // no pixels of such luminosity, so no reason to calculate
                         continue;
+                    } else if partial_sum == image_size {
+                        // avoid division by 0
+                        if brightness_lookup[channel][i - 1] < 255 {
+                            // safeguard so adding 1 will not overflow
+                            brightness_lookup[channel][i] = u8::clamp(
+                                brightness_lookup[channel][i - 1] + 1,
+                                self.gmin,
+                                self.gmax,
+                            );
+                        }
+                        else {
+                            brightness_lookup[channel][i] = 255;
+                        }
+                        continue;
                     }
                     let log_base = image_size as f64 / (image_size - partial_sum) as f64;
                     let root_base = f64::sqrt(2.0 * alpha * alpha * f64::ln(log_base));
