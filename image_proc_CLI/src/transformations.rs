@@ -64,6 +64,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
         "--lowpass-gpu" => Ok(Box::new(gpu_optimized::LowPassFilterGPU::try_new()?)),
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
+        "--uolis" => Ok(Box::new(Uolis{})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
