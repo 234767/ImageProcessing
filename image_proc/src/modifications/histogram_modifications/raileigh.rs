@@ -4,13 +4,14 @@ use image::RgbImage;
 
 ///(H3) Raleigh final probability density function (--hraleigh).
 pub struct HRaleigh {
-    alpha: f64,
     gmin: u8,
+    gmax: u8,
 }
 
 impl HRaleigh {
-    pub fn new(alpha: f64, gmin: u8) -> Self {
-        Self { alpha, gmin }
+    pub fn new(gmin: u8, gmax: u8) -> Self {
+        assert!(gmax > gmin);
+        Self { gmin, gmax }
     }
 }
 
@@ -37,14 +38,20 @@ impl Transformation for HRaleigh {
         };
 
         let image_size = image.width() * image.height();
+        let alpha =
+            (self.gmax - self.gmin) as f64 / f64::sqrt(2.0 * f64::ln(image_size as f64));
 
         let brightness_lookup = {
             let mut brightness_lookup = [[0u8; 256]; 3];
             for channel in 0..3 {
                 for i in 0..256 {
-                    let log_base = image_size as f64 / partial_sums[channel][i] as f64;
-                    let root_base = f64::sqrt(2.0 * self.alpha * self.alpha * f64::ln(log_base));
-                    brightness_lookup[channel][i] = self.gmin + f64::clamp(root_base,0.0,255.0) as u8;
+                    let partial_sum = partial_sums[channel][i];
+                    if partial_sum == 0 {
+                        continue;
+                    }
+                    let log_base = image_size as f64 / partial_sum as f64;
+                    let root_base = f64::sqrt(2.0 * alpha * alpha * f64::ln(log_base));
+                    brightness_lookup[channel][i] = f64::clamp(root_base, 0.0, 255.0) as u8;
                 }
             }
             brightness_lookup
@@ -54,7 +61,7 @@ impl Transformation for HRaleigh {
             for channel in 0..3 {
                 let luminosity = pixel[channel];
                 let new_luminosity = brightness_lookup[channel][luminosity as usize];
-                pixel[channel] = new_luminosity
+                pixel[channel] = self.gmax - new_luminosity
             }
         }
     }

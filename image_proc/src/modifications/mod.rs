@@ -8,6 +8,7 @@ mod histogram_modifications;
 pub use elementary::*;
 pub use filters::*;
 pub use geometric::*;
+pub use histogram_modifications::*;
 
 pub trait Transformation {
     fn apply(&self, image: &mut RgbImage);
