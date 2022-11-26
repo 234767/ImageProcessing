@@ -183,12 +183,7 @@ impl Transformation for LowPassFilterGPU {
             }
         }
 
-        let mut mask:[f64;9] = self.mask;
-        for x in &mut mask {
-            *x *= self.mask_scale;
-        }
-
-        println!("{:?}", mask);
+        let mask = self.mask.map(|f| f as f32 * self.mask_scale as f32);
 
         let push_constants = cs::ty::PushConstantData { mask };
 

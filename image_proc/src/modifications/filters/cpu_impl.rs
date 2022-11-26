@@ -151,7 +151,7 @@ impl Transformation for MinimumFilter {
 }
 
 fn is_edge(image: &RgbImage, x: u32, y: u32) -> bool {
-    0 < x && x < image.width() && 0 < y && y < image.height()
+    0 == x || x == image.width() - 1 || 0 == y || y == image.height() - 1
 }
 
 pub struct Uolis;
@@ -217,6 +217,7 @@ impl Transformation for LowPassFilter {
         let mut new_image: RgbImage = RgbImage::new(image.width(), image.height());
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
             if is_edge(image, x, y) {
+                *pixel = *image.get_pixel(x,y);
                 continue;
             }
 
@@ -228,7 +229,7 @@ impl Transformation for LowPassFilter {
                             * image.get_pixel(x + i - 1, y + j - 1)[channel] as f64;
                     }
                 }
-                pixel[channel] = (sum / self.mask_scale) as u8;
+                pixel[channel] = (sum * self.mask_scale) as u8;
             }
         }
         *image = new_image;
