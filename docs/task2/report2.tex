@@ -45,7 +45,7 @@ Equation (\ref{eq:rayleigh-initial}) then takes form:
 
 Note that,
 \(
-\forall_{f \in [f_{min},f_{max}]} : 0 < ps(f) \leq N
+\bigforall_{f \in \langle f_{min},f_{max}\rangle} : 0 < ps(f) \leq N
 \), and $ps(f)$ is monotinically non-decreasing.
 That means that $\frac{N}{ps(f)}$ is monotinically non-increasing, and as follows, $g(f)$ is also non-increasing.
 
@@ -92,6 +92,83 @@ Substituting $g(f_{max}) = g_{max}$,
 
 \subsection{Implementation}
 
+We start, by calculating the partial sums of the histogram for each channel:
+\begin{lstlisting}
+let partial_sums: [[u32; 256]; 3] = {
+        let histogram = Histogram::new(image);
+        histogram
+            .into_iter()
+            .map(|h| {
+                h.iter()
+                    .scan(0u32, |sum, value| {
+                        *sum += value;
+                        Some(*sum)
+                    })
+                    .collect()
+            })
+            .collect::<Vec<[u32; 256]>>()
+            .try_into()
+            .unwrap()
+    };
+\end{lstlisting}
+
+\pagebreak[2]
+Then, we calculate the image size, and the value of $\alpha$, according to eq. (\ref{eq:rayleigh-alpha})
+\begin{lstlisting}
+let image_size = image.width() * image.height();
+let alpha = (self.gmax - self.gmin) as f64 
+    / f64::sqrt(2.0 * f64::ln(image_size as f64));
+\end{lstlisting}
+
+\pagebreak[2]
+Then, we create the brighness lookup table, according to eq. (\ref{eq:rayleigh-corrected}):
+\begin{lstlisting}[basicstyle = \footnotesize\ttfamily]
+let mut brightness_lookup = [[0u8; 256]; 3];
+for channel in 0..3 {
+    for i in 0..256 {
+        let partial_sum = partial_sums[channel][i];
+        if partial_sum == 0 {
+            continue;
+        }
+        let log_base = 
+            image_size as f64 / (image_size - partial_sum + 1) as f64;
+        let root_base = 
+            2.0 * alpha * alpha * f64::ln(log_base);
+        brightness_lookup[channel][i] = 
+            self.gmin
+            + f64::clamp(
+                f64::sqrt(root_base), 
+                0.0, 
+                (self.gmax - self.gmin) as f64) as u8;
+        if partial_sums[channel][i] == image_size {
+            break;
+        }
+    }
+}
+\end{lstlisting}
+
+Note 2 important things --- the \lstinline{continue} and \lstinline{break} statements inside the loop.
+We are interested in filling the lookup table only for values of $f \in \langle f_{min}, f_{max} \rangle$.
+Therefore, we check if $ps(f) = 0$. If it is, then $f < f_{min}$, and we need not perform the calculation, so we continue looping
+until we encounter some $ps(f) > 0$.
+
+Similarly, we do not need to perform calculations for $f > f_{max}$. We know that $ps(f) = N \Leftrightarrow f \geq f_{max}$,
+so if we reach that point, we do not need to perform any calculations for further values of $f$, and can safely break out of the loop.
+
+This is a small optimization compensating for the fact that we cannot create a smaller lookup table, adjusted to the size of $\langle f_{min}, f_{max}\rangle$, because these values are unknown at compile time.
+
+\pagebreak[2]
+Finally, we set the new luminosity levels in the image according to the created lookup table:
+\begin{lstlisting}
+for pixel in image.pixels_mut() {
+    for channel in 0..3 {
+        let luminosity = pixel[channel];
+        let new_luminosity = 
+            brightness_lookup[channel][luminosity as usize];
+        pixel[channel] = new_luminosity
+    }
+}
+\end{lstlisting}
 
 
 \section{Image analysis on the basis of the histogram}

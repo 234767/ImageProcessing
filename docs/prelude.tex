@@ -29,6 +29,11 @@
 \newcommand{\subfiguresize}{.3\textwidth}
 \DeclareMathOperator*{\median}{median}
 
+\newcommand{\biggerforall}{\mbox{\Large $\mathsurround0pt\forall$}} 
+\newcommand{\bigforall}{\mbox{\large $\mathsurround0pt\forall$}} 
+\newcommand{\biggerexists}{\mbox{\Large $\mathsurround0pt\exists$}} 
+\newcommand{\bigexists}{\mbox{\large $\mathsurround0pt\exists$}} 
+
 \lstset {
     basicstyle = \small\ttfamily,
     keywordstyle = \color{blue},
@@ -43,6 +48,8 @@
         in,
         if,
         else,
+        continue,
+        break,
         pub,
         struct,
         impl,
@@ -51,6 +58,7 @@
         u8,u16,u32,u64,
         i8,i16,i32,i64,
         f32,f64,
+        usize,
     }
 }
 
