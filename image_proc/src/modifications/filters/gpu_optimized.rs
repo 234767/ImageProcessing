@@ -149,12 +149,18 @@ impl Transformation for MaxFilterGPU {
 
 pub struct LowPassFilterGPU {
     config: GPUConfig,
+    mask: [f64; 9],
+    mask_scale: f64,
 }
 
 impl LowPassFilterGPU {
-    pub fn try_new() -> Result<Self, String> {
+    pub fn try_new(mask: [f64; 9], mask_scale: Option<f64>) -> Result<Self, String> {
         if let Some(config) = GPUConfig::new() {
-            Ok(Self { config })
+            Ok(Self {
+                config,
+                mask,
+                mask_scale: mask_scale.unwrap_or(1.0),
+            })
         } else {
             Err(String::from(
                 "Vulkan required for running GPU optimized version",
@@ -177,7 +183,7 @@ impl Transformation for LowPassFilterGPU {
             }
         }
 
-        let mut mask = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        let mut mask:[f64;9] = self.mask;
         for x in &mut mask {
             *x /= 9.0;
         }
