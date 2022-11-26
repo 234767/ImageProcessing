@@ -79,15 +79,99 @@
         \multicolumn{2}{|l|}{
             \textbf{Task variant:} Group 1
         }                                                                                               \\ \hline
-        \textbf{Day and time:} Mon, 14:00             & \textbf{Full name:} \textsc{Magdalena Paku\l a}       \\
-        \textbf{Academic year: 3\textsuperscript{rd}} & \textbf{Full name:} \textsc{Jakub Pawlak} \\
+        \textbf{Day and time:} Mon, 14:00             & \textbf{Full name:} \textsc{Magdalena Paku\l a} \\
+        \textbf{Academic year: 3\textsuperscript{rd}} & \textbf{Full name:} \textsc{Jakub Pawlak}       \\
         \hline
     \end{tabularx}
 \end{flushleft}
 \vspace{1em}
 \renewcommand{\arraystretch}{1}
 
-\section{Description of the implementation of the histogram-based image enhancement method}
+\section{Description of the implementation of the \\ histogram-based image enhancement method}
+Histogram based image enhancements work by assigning new values to the luminosity levels, to match the histogram to some function.
+The old luminosities will be denoted as $f$, and the new ones, as $g$.
+The histogram of the image is denoted as $H$, and $H(f)$ means the number of pixels with luminosity $f$.
+Finally, $N$ will mean the total number of pixels in the image.
+
+\subsection{Mathematical description}
+
+The equation for calculating the new luminosity values were given as:
+\begin{equation}
+    g(f) = g_{min} +\sqrt{
+        2 \alpha^2 \cdot \ln\left[
+        \left(
+            \frac{1}{N} \sum\limits_{k=0}^f H(k)
+        \right)^{-1}
+        \right]
+    }
+    \label{eq:rayleigh-initial}
+\end{equation}
+
+We immediately noticed, that the numer under the logarithm is a partial sum of the normalized histogram values for luminosities smaller or equal $f$.
+We can refactor the equation, by introducing a partial sum function $ps(f)$:
+\begin{equation}
+    ps(f) = \sum\limits_{k=0}^f H(f)
+\end{equation}
+
+Equation (\ref{eq:rayleigh-initial}) then takes form:
+\begin{equation}
+    g(f) = g_{min} + \sqrt{
+        2 \alpha^2 \cdot \ln
+        \left(
+            \frac{N}{ps(f)}
+        \right)}
+\end{equation}
+
+Note that,
+\(
+    \forall_{f \in [f_{min},f_{max}]} : 0 < ps(f) \leq N
+\), and $ps(f)$ is monotinically non-decreasing.
+That means that $N \over ps(f)$ is monotinically non-increasing, and as follows, $g(f)$ is also non-increasing.
+
+However, this is not what we want from image transformation, as it would produce a negative image.
+Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offseting it by $N$, to keep the domain the same.
+
+\begin{equation}
+    g(f) = g_{min} + \sqrt{
+        2 \alpha^2 \cdot \ln
+        \left(
+            \frac{N}{N - ps(f) + 1}
+        \right)}
+    \label{eq:rayleigh-corrected}
+\end{equation}
+Now, as $f$ increases, $g(f)$ will increase as well.
+
+However, the value of $\alpha$ is still unknown. 
+We know, that the function $g(f)$ should map $f$ to $g$ in such a way, that 
+$f_{min} \mapsto g_{min}$ and $f_{max} \mapsto g_{max}$.
+
+For the first case:
+\(
+    \lim\limits_{f \to f_{min}} ps(f) = 1 
+\),which means that
+\(
+    \lim\limits_{f \to f_{min}} g(f) = g_{min}
+\) regardless of $\alpha$.
+
+The second case is more interesting:
+\begin{align*}
+    ps(f_{max}) &= N \\[1ex]
+    g(f_{max}) &= g_{min} + \sqrt{
+        2 \alpha^2 \cdot \ln(N)
+    }
+\end{align*}
+Substituting $g(f_{max}) = g_{max}$,
+\begin{align}
+    g_{max} &= g_{min} + \sqrt{
+        2 \alpha^2 \cdot \ln(N)
+    }\nonumber\\[1ex]
+    g_{max} &= g_{min} + \alpha \cdot \sqrt{2\ln(N)} \nonumber\\[1ex]
+    \alpha &= \frac{g_{max} - g_{min}}{\sqrt{2\ln(N)}} \label{eq:rayleigh-alpha}
+\end{align}
+
+\subsection{Implementation}
+
+
 
 \section{Image analysis on the basis of the histogram}
 
