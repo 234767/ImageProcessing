@@ -1,0 +1,86 @@
+\usepackage{tabularx}
+\usepackage[a4paper,margin=2.5cm, bottom=3.5cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titling}
+\pgfplotsset{compat=1.17}
+
+\theoremstyle{definition}
+\newtheorem*{example}{Example}
+\setlength{\headheight}{40pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\subfiguresize}{.3\textwidth}
+\DeclareMathOperator*{\median}{median}
+
+\lstset {
+    basicstyle = \small\ttfamily,
+    keywordstyle = \color{blue},
+    commentstyle = \color{black!30},
+    comment = [l]{//},
+    morecomment = [s]{/*}{*/},
+    identifierstyle=,
+    keywords = {
+        let,
+        mut,
+        for,
+        in,
+        if,
+        else,
+        pub,
+        struct,
+        impl,
+        type,
+        Self,
+        u8,u16,u32,u64,
+        i8,i16,i32,i64,
+        f32,f64,
+    }
+}
+
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[L]{
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabularx}{\textwidth}{|X|X|}
+        \hline
+        \large \bf Image processing & \normalsize \thetitle \\
+        \hline
+    \end{tabularx}
+}
+\fancyfoot[C]{\thepage}
+
+\renewcommand{\maketitle}{
+    \thispagestyle{plain}
+    \renewcommand{\arraystretch}{2}
+    \begin{flushleft}
+        \begin{tabularx}{0.95\textwidth}{|X|X|}
+            \hline
+            \bf \large Image Processing                   & \bf \large \thetitle                           \\ \hline
+            \multicolumn{2}{|l|}{
+                \textbf{Task variant:} Group 1
+            }                                                                                               \\ \hline
+            \textbf{Day and time:} Mon, 14:00             & \textbf{Full name:} \textsc{Jakub Pawlak}       \\
+            \textbf{Academic year:} {2022/23} & \textbf{Full name:} \textsc{Magdalena Paku\l a} \\
+            \hline
+        \end{tabularx}
+    \end{flushleft}
+    \vspace{1em}
+    \renewcommand{\arraystretch}{1}
+}

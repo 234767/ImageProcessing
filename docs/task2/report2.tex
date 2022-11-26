@@ -1,93 +1,14 @@
 \documentclass[12pt]{article}
 
-\usepackage{tabularx}
-\usepackage[a4paper,margin=2.5cm, bottom=4cm]{geometry}
-\usepackage{fancyhdr}
-\usepackage{listings}
-\usepackage{booktabs}
-\usepackage{float}
-\usepackage{subcaption}
-\usepackage{graphicx}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{array}
-\usepackage[table]{xcolor}
-\usepackage{pgfplots}
-\usepackage{pgfplotstable}
-\usepackage{tikz}
-\pgfplotsset{compat=1.17}
+\input{../prelude.tex}
+\graphicspath{{../img_task2/}}
 
-\theoremstyle{definition}
-\newtheorem*{example}{Example}
-
-\graphicspath{{../img/}}
-
-\setlength{\headheight}{40pt}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{1ex}
-\renewcommand{\headrulewidth}{0pt}
-
-\newcommand{\subfiguresize}{.3\textwidth}
-\DeclareMathOperator*{\median}{median}
-
-\lstset {
-    basicstyle = \small\ttfamily,
-    keywordstyle = \color{blue},
-    commentstyle = \color{black!30},
-    comment = [l]{//},
-    morecomment = [s]{/*}{*/},
-    identifierstyle=,
-    keywords = {
-        let,
-        mut,
-        for,
-        in,
-        if,
-        else,
-        pub,
-        struct,
-        impl,
-        type,
-        Self,
-        u8,u16,u32,u64,
-        i8,i16,i32,i64,
-        f32,f64,
-    }
-}
+\title{Task No.~2}
 
 \begin{document}
+\maketitle
 
-\pagestyle{fancy}
-\fancyhead{}
-\fancyhead[L]{
-    \renewcommand{\arraystretch}{1.5}
-    \begin{tabularx}{\textwidth}{|X|X|}
-        \hline
-        \large \bf Image processing & \normalsize Task No. 1 \\
-        \hline
-    \end{tabularx}
-}
-\fancyfoot[C]{\thepage}
-
-\thispagestyle{empty}
-\renewcommand{\arraystretch}{2}
-\begin{flushleft}
-    \begin{tabularx}{0.95\textwidth}{|X|X|}
-        \hline
-        \bf \large Image Processing                   & \bf \large Task No.~2                           \\ \hline
-        \multicolumn{2}{|l|}{
-            \textbf{Task variant:} Group 1
-        }                                                                                               \\ \hline
-        \textbf{Day and time:} Mon, 14:00             & \textbf{Full name:} \textsc{Magdalena Paku\l a} \\
-        \textbf{Academic year: 3\textsuperscript{rd}} & \textbf{Full name:} \textsc{Jakub Pawlak}       \\
-        \hline
-    \end{tabularx}
-\end{flushleft}
-\vspace{1em}
-\renewcommand{\arraystretch}{1}
-
-\section{Description of the implementation of the \\ histogram-based image enhancement method}
+\section{Description of the implementation of \texorpdfstring{\\ }{} histogram-based image enhancement method}
 Histogram based image enhancements work by assigning new values to the luminosity levels, to match the histogram to some function.
 The old luminosities will be denoted as $f$, and the new ones, as $g$.
 The histogram of the image is denoted as $H$, and $H(f)$ means the number of pixels with luminosity $f$.
@@ -99,10 +20,10 @@ The equation for calculating the new luminosity values were given as:
 \begin{equation}
     g(f) = g_{min} +\sqrt{
         2 \alpha^2 \cdot \ln\left[
-        \left(
+            \left(
             \frac{1}{N} \sum\limits_{k=0}^f H(k)
-        \right)^{-1}
-        \right]
+            \right)^{-1}
+            \right]
     }
     \label{eq:rayleigh-initial}
 \end{equation}
@@ -118,15 +39,15 @@ Equation (\ref{eq:rayleigh-initial}) then takes form:
     g(f) = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln
         \left(
-            \frac{N}{ps(f)}
+        \frac{N}{ps(f)}
         \right)}
 \end{equation}
 
 Note that,
 \(
-    \forall_{f \in [f_{min},f_{max}]} : 0 < ps(f) \leq N
+\forall_{f \in [f_{min},f_{max}]} : 0 < ps(f) \leq N
 \), and $ps(f)$ is monotinically non-decreasing.
-That means that $N \over ps(f)$ is monotinically non-increasing, and as follows, $g(f)$ is also non-increasing.
+That means that $\frac{N}{ps(f)}$ is monotinically non-increasing, and as follows, $g(f)$ is also non-increasing.
 
 However, this is not what we want from image transformation, as it would produce a negative image.
 Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offseting it by $N$, to keep the domain the same.
@@ -135,38 +56,38 @@ Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, a
     g(f) = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln
         \left(
-            \frac{N}{N - ps(f) + 1}
+        \frac{N}{N - ps(f) + 1}
         \right)}
     \label{eq:rayleigh-corrected}
 \end{equation}
 Now, as $f$ increases, $g(f)$ will increase as well.
 
-However, the value of $\alpha$ is still unknown. 
-We know, that the function $g(f)$ should map $f$ to $g$ in such a way, that 
+However, the value of $\alpha$ is still unknown.
+We know, that the function $g(f)$ should map $f$ to $g$ in such a way, that
 $f_{min} \mapsto g_{min}$ and $f_{max} \mapsto g_{max}$.
 
 For the first case:
 \(
-    \lim\limits_{f \to f_{min}} ps(f) = 1 
+\lim\limits_{f \to f_{min}} ps(f) = 1
 \),which means that
 \(
-    \lim\limits_{f \to f_{min}} g(f) = g_{min}
+\lim\limits_{f \to f_{min}} g(f) = g_{min}
 \) regardless of $\alpha$.
 
 The second case is more interesting:
 \begin{align*}
-    ps(f_{max}) &= N \\[1ex]
-    g(f_{max}) &= g_{min} + \sqrt{
+    ps(f_{max}) & = N                \\[1ex]
+    g(f_{max})  & = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln(N)
     }
 \end{align*}
 Substituting $g(f_{max}) = g_{max}$,
 \begin{align}
-    g_{max} &= g_{min} + \sqrt{
+    g_{max} & = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln(N)
-    }\nonumber\\[1ex]
-    g_{max} &= g_{min} + \alpha \cdot \sqrt{2\ln(N)} \nonumber\\[1ex]
-    \alpha &= \frac{g_{max} - g_{min}}{\sqrt{2\ln(N)}} \label{eq:rayleigh-alpha}
+    }\nonumber                                                                     \\[1ex]
+    g_{max} & = g_{min} + \alpha \cdot \sqrt{2\ln(N)} \nonumber                    \\[1ex]
+    \alpha  & = \frac{g_{max} - g_{min}}{\sqrt{2\ln(N)}} \label{eq:rayleigh-alpha}
 \end{align}
 
 \subsection{Implementation}
