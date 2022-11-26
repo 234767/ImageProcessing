@@ -24,7 +24,7 @@ impl Args {
         let value_text_option = self.args.get(&search_value);
         match value_text_option {
             Some(value_text) => match value_text.parse::<T>() {
-                Ok(value) if value > T::zero() => Ok(value),
+                Ok(value) if value >= T::zero() => Ok(value),
                 _ => Err(format!("Value {} is not a positive number", value_text)),
             },
             None => Err(format!("Missing {} argument", arg_name)),
