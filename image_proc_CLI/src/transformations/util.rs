@@ -51,7 +51,7 @@ pub fn try_new_raleigh(args: &Args) -> Result<HRaleigh, String> {
     Ok(HRaleigh::new(gmin, gmax))
 }
 
-pub fn try_new_lowpass(args: &Args) -> Result<LowPassFilter, String> {
+fn try_parse_mask(args: &Args) -> Result<[f64; 9], String> {
     match args.args.get("-mask") {
         Some(mask_string) => {
             let mask: Vec<Result<f64, ParseFloatError>> =
@@ -63,58 +63,77 @@ pub fn try_new_lowpass(args: &Args) -> Result<LowPassFilter, String> {
                 return Err(e.to_string());
             }
             let mask: Vec<f64> = mask.into_iter().map(|x| x.unwrap()).collect();
-            match args.args.get("-mask-scale").map(|s| s.parse::<f64>()) {
-                Some(Ok(scale)) => Ok(LowPassFilter::from_flat_mask(
-                    mask.try_into().unwrap(),
-                    Some(scale),
-                )),
-                Some(Err(e)) => {
-                    eprintln!(
-                        "Error while parsing -mask-scale argument: {}",
-                        e.to_string()
-                    );
-                    Ok(LowPassFilter::from_flat_mask(
-                        mask.try_into().unwrap(),
-                        None,
-                    ))
-                }
-                _ => Ok(LowPassFilter::from_flat_mask(
-                    mask.try_into().unwrap(),
-                    None,
-                )),
-            }
+            debug_assert_eq!(9, mask.len());
+            Ok(mask.try_into().unwrap())
         }
         None => Err(String::from("Missing -mask argument")),
     }
 }
 
-pub fn try_new_lowpass_gpu(args: &Args) -> Result<LowPassFilterGPU, String> {
-    match args.args.get("-mask") {
-        Some(mask_string) => {
-            let mask: Vec<Result<f64, ParseFloatError>> =
-                mask_string.split(";").map(|s| s.parse()).collect();
-            if mask.len() != 9 {
-                return Err(format!("Expected mask length of 9, got {}", mask.len()));
+fn try_parse_mask_scale(args: &Args) -> Option<Result<f64, String>> {
+    const MASK_SEPARATOR: &str = "/";
+    match args.args.get("-mask-scale") {
+        Some(fraction) if fraction.contains(MASK_SEPARATOR) => {
+            let nums: Vec<_> = fraction.split(MASK_SEPARATOR).map(|s| s.parse::<f64>()).collect();
+            if nums.len() != 2 {
+                return Some(Err(format!(
+                    "Mask scale in fraction form expected to have 2 parts, got {}",
+                    nums.len()
+                )));
             }
-            if let Some(Err(e)) = mask.iter().find(|x| x.is_err()) {
-                return Err(e.to_string());
+            if let Some(Err(e)) = nums.iter().find(|x| x.is_err()) {
+                return Some(Err(e.to_string()));
             }
-            let mask: Vec<f64> = mask.into_iter().map(|x| x.unwrap()).collect();
-            match args.args.get("-mask-scale").map(|s| s.parse::<f64>()) {
-                Some(Ok(scale)) => Ok(LowPassFilterGPU::try_new(
-                    mask.try_into().unwrap(),
-                    Some(scale),
-                )?),
-                Some(Err(e)) => {
-                    eprintln!(
-                        "Error while parsing -mask-scale argument: {}",
-                        e.to_string()
-                    );
-                    Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?)
-                }
-                _ => Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?),
-            }
+            let nums: Vec<f64> = nums.into_iter().map(|x| x.unwrap()).collect();
+            debug_assert_eq!(2, nums.len());
+            Some(Ok(nums[0] / nums[1]))
         }
-        None => Err(String::from("Missing -mask argument")),
+        Some(scale) => match scale.parse::<f64>() {
+            Ok(scale) => Some(Ok(scale)),
+            Err(e) => Some(Err(e.to_string())),
+        },
+        _ => None,
+    }
+}
+
+pub fn try_new_lowpass(args: &Args) -> Result<LowPassFilter, String> {
+    let mask = try_parse_mask(args)?;
+    match try_parse_mask_scale(args) {
+        Some(Ok(scale)) => Ok(LowPassFilter::from_flat_mask(
+            mask.try_into().unwrap(),
+            Some(scale),
+        )),
+        Some(Err(e)) => {
+            eprintln!(
+                "Error while parsing -mask-scale argument: {}",
+                e.to_string()
+            );
+            Ok(LowPassFilter::from_flat_mask(
+                mask.try_into().unwrap(),
+                None,
+            ))
+        }
+        _ => Ok(LowPassFilter::from_flat_mask(
+            mask.try_into().unwrap(),
+            None,
+        )),
+    }
+}
+
+pub fn try_new_lowpass_gpu(args: &Args) -> Result<LowPassFilterGPU, String> {
+    let mask = try_parse_mask(args)?;
+    match try_parse_mask_scale(args) {
+        Some(Ok(scale)) => Ok(LowPassFilterGPU::try_new(
+            mask.try_into().unwrap(),
+            Some(scale),
+        )?),
+        Some(Err(e)) => {
+            eprintln!(
+                "Error while parsing -mask-scale argument: {}",
+                e.to_string()
+            );
+            Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?)
+        }
+        _ => Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?),
     }
 }
