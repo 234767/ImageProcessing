@@ -150,13 +150,17 @@ impl Transformation for MinimumFilter {
     }
 }
 
+fn is_edge(image: &RgbImage, x: u32, y: u32) -> bool {
+    0 < x && x < image.width() && 0 < y && y < image.height()
+}
+
 pub struct Uolis;
 
 impl Transformation for Uolis {
     fn apply(&self, image: &mut RgbImage) {
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
-            if x == 0 || y == 0 {
+            if is_edge(image, x, y) {
                 continue;
             }
             let neighbors = {
@@ -172,10 +176,52 @@ impl Transformation for Uolis {
             };
             for channel in 0..3 {
                 let product = neighbors.iter().map(|x| x[channel] as f64).product::<f64>();
-                let power = (image.get_pixel(x,y)[channel] as f64).pow(4.0);
+                let power = (image.get_pixel(x, y)[channel] as f64).pow(4.0);
                 let log_base = power / product;
                 let log = f64::log10(log_base);
                 pixel[channel] = (log / 4.0) as u8
+            }
+        }
+        *image = new_image;
+    }
+}
+
+pub struct LowPassFilter {
+    mask: [[u8; 3]; 3],
+}
+
+impl LowPassFilter {
+    pub fn new(mask: [[u8; 3]; 3]) -> Self {
+        Self { mask }
+    }
+    pub fn from_flat_mask(flat_mask: [u8; 9]) -> Self {
+        let mut mask = [[0u8; 3]; 3];
+        for y in 0..3 {
+            for x in 0..3 {
+                mask[y][x] = flat_mask[3 * y + x]
+            }
+        }
+        Self { mask }
+    }
+}
+
+impl Transformation for LowPassFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let mut new_image: RgbImage = RgbImage::new(image.width(), image.height());
+        for (x, y, pixel) in new_image.enumerate_pixels_mut() {
+            if is_edge(image, x, y) {
+                continue;
+            }
+
+            for channel in 0..3 {
+                let mut sum = 0;
+                for i in 0..3 {
+                    for j in 0..3 {
+                        sum += self.mask[j as usize][i as usize]
+                            * image.get_pixel(x + i - 1, y + j - 1)[channel];
+                    }
+                }
+                pixel[channel] = sum;
             }
         }
         *image = new_image;
