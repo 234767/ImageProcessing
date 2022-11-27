@@ -401,7 +401,7 @@ vec3 convolution(mat3 mask, ivec2 xy)
 For greater reliability, we run the tests on the bigger image size ($2560 \times 2560$).
 Each implementation was run 3 times, and the average execution time was calculated. The results are shown in table \ref{tab:lowpass-execution-time}.
 
-\begin{table}[h]\centering
+\begin{table}[ht]\centering
     \begin{tabular}{ccc}
         \toprule
         Test N\textsuperscript{\underline{o}} & unoptimized & optimized \\\midrule
@@ -445,7 +445,7 @@ We run the low-pass filter with the 3 masks given in the instruction:
 
 The results are presented on fig. \ref{fig:lowpass-results-original}.
 
-\begin{figure}[h]\centering
+\begin{figure}[ht]\centering
     \begin{subfigure}[t]{.4\textwidth}
         \includegraphics[width=\textwidth]{lenac_small.png}
         \caption{original}
@@ -474,7 +474,7 @@ These rapid changes often occur at the edges of objects, therefore, the filtered
 However, since this filter is good at attenuating rapid changes in luminosity, it can be used as a way of reducing the noise in the image.
 The results of such experiment are presented on fig. \ref{fig:lowpass-results-noise}.
 
-\begin{figure}[h]\centering
+\begin{figure}[ht]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{lenac_uniform3.png}
         \caption{uniform noise}
@@ -594,10 +594,9 @@ which resulted in differences in running time and broadened our knowledge in cod
 
 \vfill
 \section*{Teacher's remarks}
-\begin{tabularx}{\textwidth}{|X|}
+\begin{tabularx}{\textwidth}{|X| }
     \hline
-    \vspace{7cm}
-    \phantom{.} \\
+    \TextField[multiline,invisible,height=7cm, width=.97\textwidth]{}\\
     \hline
 \end{tabularx}
 
