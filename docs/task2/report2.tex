@@ -179,8 +179,8 @@ After conducting an image improvement by using Rayleigh distribution described i
 
 In order to obtain that result, we chose those input numbers as an example.
 \begin{align*}
-    g_{max} & = 1                                                                     \\[1ex]
-    g_{max} & = 200                    
+    g_{max} & = 1   \\[1ex]
+    g_{max} & = 200
 \end{align*}
 
 \subsection{Results}
@@ -199,24 +199,24 @@ In order to obtain that result, we chose those input numbers as an example.
     \caption{Image before and after Rayleigh distribution correction}
 \end{figure}
 
-As we can see, the difference is huge. the output picture is less red and more neutral for the viewer. 
-The same difference we can observe on the histogram created on the before and after picture. 
-While on the original image most of the colors are taking the whole histogram and only part of them are interfering with each other, 
-on the modified picture almost all the colors are interfering, which resulted in very neutral picture for the viewer, which is not that diverse in colors. 
-The histogram of the original image has majority of the red channel, which can be seen on the original image as having red undertones. 
-On the histogram of the modified picture came out with majority of blue tones, which can be clearly seen on the image. 
+As we can see, the difference is huge. the output picture is less red and more neutral for the viewer.
+The same difference we can observe on the histogram created on the before and after picture.
+While on the original image most of the colors are taking the whole histogram and only part of them are interfering with each other,
+on the modified picture almost all the colors are interfering, which resulted in very neutral picture for the viewer, which is not that diverse in colors.
+The histogram of the original image has majority of the red channel, which can be seen on the original image as having red undertones.
+On the histogram of the modified picture came out with majority of blue tones, which can be clearly seen on the image.
 These comparisons can perfectly present a fully working histogram on all the channels at the same time.
 
 \subsection{Characteristics analysis}
 
 In this project we implemented and tested all 8 different characteristics for image transformations which are:
 \begin{itemize}
-  \item Mean and Variance
-  \item Standard deviation and Variation coefficient I 
-  \item Asymmetry coefficient
-  \item Flattening coefficient
-  \item Variation coefficient II
-  \item Information source entropy
+    \item Mean and Variance
+    \item Standard deviation and Variation coefficient I
+    \item Asymmetry coefficient
+    \item Flattening coefficient
+    \item Variation coefficient II
+    \item Information source entropy
 \end{itemize}
 
 For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table.
@@ -406,11 +406,122 @@ Each implementation was run 3 times, and the average execution time was calculat
     \label{tab:lowpass-execution-time}
 \end{table}
 
-As we can see, there is a clear difference in the execution times. 
+As we can see, there is a clear difference in the execution times.
 The standard version took almost 13s to execute, while its optimized counterpart performed in less than 3.5 seconds.
 This is a huge increase in the execution speed; the optimized version is over 370\% faster than the standard one.
 
 \section{Analysis of the filtering results (linear filter)}
+
+We run the low-pass filter with the 3 masks given in the instruction:
+\begin{equation*}
+    \mathbf{M}_1 = \frac{1}{9}\begin{bmatrix}
+        1 & 1 & 1 \\
+        1 & 1 & 1 \\
+        1 & 1 & 1
+    \end{bmatrix}
+    \qquad
+    \mathbf{M}_2 = \frac{1}{10}\begin{bmatrix}
+        1 & 1 & 1 \\
+        1 & 2 & 1 \\
+        1 & 1 & 1
+    \end{bmatrix}
+    \qquad
+    \mathbf{M}_3 = \frac{1}{16}\begin{bmatrix}
+        1 & 2 & 1 \\
+        2 & 4 & 2 \\
+        1 & 2 & 1
+    \end{bmatrix}
+\end{equation*}
+
+The results are presented on fig. \ref{fig:lowpass-results-original}.
+
+\begin{figure}[h]\centering
+    \begin{subfigure}[t]{.4\textwidth}
+        \includegraphics[width=\textwidth]{lenac_small.png}
+        \caption{original}
+    \end{subfigure}\\[2ex]
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass1.png}
+        \caption{low-pass with mask $\mathbf{M}_1$}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass2.png}
+        \caption{low-pass with mask $\mathbf{M}_2$}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass3.png}
+        \caption{low-pass with mask $\mathbf{M}_3$}
+    \end{subfigure}
+    \caption{Results of running the low-pass filter with different masks}
+    \label{fig:lowpass-results-original}
+\end{figure}
+
+As we can see, the images after filtering seem to be more blurred.
+This is expected, due to the characteristic of the low-pass filter.
+It attenuates the high frequencies, which in case of the images means rapid change in pixel lumininosity.
+These rapid changes often occur at the edges of objects, therefore, the filtered image appears softer and less sharp.
+
+However, since this filter is good at attenuating rapid changes in luminosity, it can be used as a way of reducing the noise in the image.
+The results of such experiment are presented on fig. \ref{fig:lowpass-results-noise}.
+
+\begin{figure}[h]\centering
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_uniform3.png}
+        \caption{uniform noise}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_normal3.png}
+        \caption{gaussian noise}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_impulse3.png}
+        \caption{impulse noise}
+    \end{subfigure}\\[2ex]
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass_uniform_1.png}
+        \caption{filtered uniform noise}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass_normal_1.png}
+        \caption{filtered gaussian noise}
+    \end{subfigure}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lenac_lowpass_impulse_1.png}
+        \caption{filtered impulse noise}
+    \end{subfigure}
+    \caption{Results of running the low-pass filter with $\mathbf{M}_1$ on different noise types}
+    \label{fig:lowpass-results-noise}
+\end{figure}
+
+The results are positive, although not perfect.
+The filtered images still have visible grain from the noise, however, they are much softer than in the unfiltered noise.
+The filter did not remove the noise, but rather blurred it, which made it stand out less.
+
+However, to objectively veryfy if the resulting images have less noise, we compared them to the original image (without noise).
+The result of this comparison is presented in table \ref*{tab:lowpass-results-noise} below.
+
+\begin{table}[H]\centering
+    \begin{tabular}{l|ccccc}
+        \toprule
+        image                 & \textsc{mse} & \textsc{pmse} & \textsc{snr} & \textsc{psnr} & \textsc{md} \\
+        \midrule[.5pt]
+        uniform noise         & 1203         & 4.72          & 8.38         & 17.33         & 152         \\
+        filtered unif. noise  & 166          & 0.65          & 16.98        & 25.93         & 149         \\
+        \midrule[.1pt]
+        gaussian noise        & 755          & 2.96          & 10.40        & 19.35         & 79          \\
+        filtered gauss. noise & 109          & 0.43          & 18.83        & 27.78         & 81          \\
+        \midrule[.1pt]
+        impulse noise         & 597          & 2.34          & 11.42        & 20.37         & 144         \\
+        filtered imp. noise   & 91           & 0.36          & 19.61        & 28.56         & 144         \\
+        \bottomrule
+    \end{tabular}
+    \caption{Image comparison metrics for images with noise before and after applying the low-pass filter}
+    \label{tab:lowpass-results-noise}
+\end{table}
+
+We can clearly see that the filtered images are better than the unfiltered versions.
+
+
 
 \section{Description of the non-linear filter implementation }
 
