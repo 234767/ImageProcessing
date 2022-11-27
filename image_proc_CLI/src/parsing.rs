@@ -100,12 +100,29 @@ Commands:
 \t --shrink -factor=<FACTOR>     \t Shrink image
 \t --enlarge -factor=<FACTOR>    \t Enlarge image
 
-\t --median -w=<WIDTH> -h=<HEIGHT> Median filter 
+\t --median -w=<WIDTH> -h=<HEIGHT> Median filter on CPU
                                     \t  WIDTH: Width of sample region in pixels
                                     \t  HEIGHT: Height of sample region in pixels
-\t --gmean -w=<WIDTH> -h=<HEIGHT>  Geometric mean filter
+\t --median-gpu -w=<WIDTH> -h=<HEIGHT> Median filter on GPU
                                     \t  WIDTH: Width of sample region in pixels
                                     \t  HEIGHT: Height of sample region in pixels
+\t --gmean -w=<WIDTH> -h=<HEIGHT>  Geometric mean filter on CPU
+                                    \t  WIDTH: Width of sample region in pixels
+                                    \t  HEIGHT: Height of sample region in pixels
+\t --gmean-gpu -w=<WIDTH> -h=<HEIGHT>  Geometric mean filter on GPU
+                                    \t  WIDTH: Width of sample region in pixels
+                                    \t  HEIGHT: Height of sample region in pixels
+
+\t --max-gpu                        \t Maximum filter
+\t --minimum                        \t Minimum filter
+
+\t --histogram -r, -g, -b, -all     \t Create histogram with: Red, Green, Blue or ALL
+\t --lowpass                        \t Lowpass filter on CPU
+\t --lowpass-gpu                    \t Lowpass filter on GPU
+\t --hraleigh -gmin=<GMIN> -gmax=<GMAX> Rayleigh distribution
+                                    \t  GMIN: User input
+                                    \t  GMAX: User input
+\t --uolis                          \t Uolis filter
 
 Options:
 \t -o=<FILE>            \t Save the image after transformation to the specified file
