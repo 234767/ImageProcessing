@@ -3,6 +3,7 @@
 \input{../prelude.tex}
 \graphicspath{{../img_task2/}}
 
+
 \title{Task No.~2}
 
 \begin{document}
@@ -173,9 +174,187 @@ for pixel in image.pixels_mut() {
 
 \section{Image analysis on the basis of the histogram}
 
-\section{Description of the linear filter implementation (general formulation)}
+\section{Description of the linear filter implementation}
 
-\section{Description of the linear filter implementation (with optimization)}
+\subsection{General formulation}
+
+\subsubsection{Mathematical description}
+
+The linear filter implementation is based on the principle of convolution of the mask $3\times3$ matrix $\mathbf{M}$, with an image fragment of the same size.
+
+Consider a following mask:
+\begin{equation}
+    \mathbf{M} = \begin{bmatrix}
+        a_{0,0} & a_{1,0} & a_{2,0} \\
+        a_{0,1} & a_{1,1} & a_{2,1} \\
+        a_{0,2} & a_{1,2} & a_{2,2}
+    \end{bmatrix}
+\end{equation}
+
+Then, for each pixel at coordinates $(x,y)$, we will compute its new value as
+\begin{equation}
+    g(x,y) = \sum\limits_{i=0}^2 \sum\limits_{j=0}^2 a_{i,j} \cdot f(x + i - 1, y + j - 1)
+\end{equation}
+
+Note, that we have to subtract 1, so the pixel $f(x,y)$ will correspond to the center of the $\mathbf{M}$ matrix ($a_{1,1}$).
+
+Important thing, is that for pixels on the edges,
+the convolution with $\mathbf{M}$ would require calculating values of pixels outside of the image, which is impossible.
+Therefore, for such cases, we assume $g(x,y) = f(x,y)$.
+
+\subsubsection{Implementation}
+
+During the implementation, we noticed that it is sometimes more convenient
+to have a separate factor to multiply the matrix with.
+For example:
+\[
+    \mathbf{M} = \begin{pmatrix}
+        4 & 2 \\ 2 & 4
+    \end{pmatrix} = 2 \begin{pmatrix}
+        2 & 1 \\ 1 & 2
+    \end{pmatrix}
+\]
+
+Moreover, we can factor this value out of the sum, to reduce the number of necessary operations.
+Therefore, in our filter settings we store 2 fields: the mask matrix, and the mask scale factor.
+When running the program, the user is asked to provide the mask as a command line argument.
+They can also provide the optional mask scale (which by default will be set to 1).
+This way, it is much more convenient for the user to input masks that have fractional values (like the low-pass filter masks).
+
+Finally, like with all transformations that operate on more than one pixel at a time,
+it is necessary to allocate a new image buffer, as to not corrupt the data in the original one.
+
+Having done all this preparation, we are ready to implement the convolution, while remembering to skip the edge pixels:
+
+\pagebreak[3]
+\begin{lstlisting}
+for (x, y, pixel) in new_image.enumerate_pixels_mut() {
+    if is_edge(image, x, y) {
+        *pixel = *image.get_pixel(x,y);
+        continue;
+    }
+    for channel in 0..3 {
+        let mut sum: f64 = 0.0;
+        for i in 0..3 {
+            for j in 0..3 {
+                sum += (self.mask[j][i])
+                    * image.get_pixel(x+i-1, y+j-1)[channel];
+            }
+        }
+        pixel[channel] = (sum * self.mask_scale) as u8;
+    }
+}
+\end{lstlisting}
+
+\paragraph{Important remark}
+At the time of writing this report, it was noticed, that although we were supposeed to implement just the low-pass filter,
+since the user has the ability to provide any $3\times3$ mask in the command line,
+there is nothing stopping them from inputing the mask for e.g.\ line identification or edge sharpening.
+Therefore, our implementation actually works not for just low-pass filter, but for all the convolution-based filters with a $3\times3$ mask.
+
+\subsection{With optimization}
+
+\subsubsection{Reasoning}
+
+Looking at the unoptimized implementation of the filter, it was difficult to find the ways of further optimization.
+The extraction of the scale factor, already reduced the number of multiplications.
+We could optimize the first low-pass filter mask, as it has all 1's in the mask, which would further reduce the number of multiplications,
+However, we do not think that it would give such a great performance boost.
+We could also, utilize the fact, that the mastrix size is constant, and eliminate the for loops, adding the values manually, since there are only 9 of them.
+This would eliminate unnecessary bounds checks on the loop indexes.
+However, since the loop ranges are a compile-time constans, the compiler would already perform this optimization (we checked both options and looked at the decompiled code).
+Moreover, this could prevent the compiler from doing optimizations specific for loops, such as loop vectorization.
+
+Therefore, we decided to take a completely different approach, and instead of changing the code, we changed the processing unit.
+Instead of doing the computations on the \textsc{cpu}, which does the operations sequentially (except some optimizations utilizing the \textsc{simd} instructions),
+we moved the computation to the \textsc{gpu}, which is much better at performing simple calculations in parallel.
+Since we create the new image buffer, the original image would be read only, and each compute kernel would write to only one pixel of the output image,
+this soulution will have no race conditions and be safe to implement as a parallel computation.
+
+\subsubsection{Implementation}
+The optimized version would be implemented similarly to the \textsc{gpu}-accelerated filters from the previous task.
+We would use Vulkan API to run a compute shader containing the convolution code.
+
+We set the working group size to $16\times16$ pixels, as it is a standard size for processing images,
+and we found it to work quite well during previous implementations.
+We will provide the shader with the mask as a push constant, so \emph{the optimized version will also work for any $3\times3$ mask}.
+
+\begin{lstlisting}[
+    basicstyle=\footnotesize\ttfamily,
+    morekeywords={
+        float,
+        layout,
+        in,
+        uniform,
+        readonly,
+        writeonly,
+        image2D
+    }
+]
+layout (local_size_x=16, local_size_y=16, local_size_z=1) in;
+
+layout (push_constant) uniform PushConstantData {
+        float[9] mask;
+} dat;
+
+layout (set=0, binding=0, rgba8) uniform readonly image2D inImg;
+layout (set=0, binding=1, rgba8) uniform writeonly image2D outImg;
+\end{lstlisting}
+
+The shader will convert the mask to \lstinline{mat3}, which is a builtin type representing a $3\times3$ matrix.
+Then, it will collect the luminosity values of the neighboring pixels, also to \lstinline{mat3}.
+
+Finally, it will compute the hadamard product of the 2 matrices using a built-in function \lstinline{matrixCompMult()} (\href{https://registry.khronos.org/OpenGL-Refpages/gl4/html/matrixCompMult.xhtml}{see documentation}).
+The final result is the sum of all the elements of the resulting matrix.
+
+\begin{lstlisting}[
+    language=C++,
+    morekeywords={
+        vec3,
+        ivec2,
+        mat3
+    }
+]
+vec3 convolution(mat3 mask, ivec2 xy)
+{
+    vec3 pixel;
+
+    // Extract a 3x3 region centered in xy
+    mat3[3] region = region3x3(xy);
+
+    // for each color channel of region
+    for (int i = 0; i < 3; i++)
+    {
+        mat3 rc = region[i];
+        mat3 c = matrixCompMult(mask, rc);
+        // add each component of matrix
+        float r =  c[0][0] + c[1][0] + c[2][0]
+                 + c[0][1] + c[1][1] + c[2][1]
+                 + c[0][2] + c[1][2] + c[2][2];
+
+        pixel[i] = r;
+    }
+
+    return pixel;
+}
+\end{lstlisting}
+
+\subsection{Time comparison}
+
+For greater reliability, we run the tests on the bigger image size ($2560 \times 2560$), each 3 times.
+
+\begin{table}[H]\centering
+    \begin{tabular}{c|ccc|c}
+        \toprule
+        operation   & time 1 & time 2 & time 3 & average \\ \midrule
+        lowpass     & 12.983 & 12.996 & 12.975 & 12.985  \\
+        lowpass-gpu & 3.555  & 3.465  & 3.453  & 3.491   \\
+        \bottomrule
+    \end{tabular}
+
+\end{table}
+
+The optimized version is over 370\% faster.
 
 \section{Analysis of the filtering results (linear filter)}
 
