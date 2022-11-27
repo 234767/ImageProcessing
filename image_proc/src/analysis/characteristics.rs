@@ -129,16 +129,16 @@ pub struct AsymmetryCoefficient;
 
 impl AsymmetryCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
-        let asymmetry = pow(sum - mean, 3) * pow(std_deviation, 3)
-            / (image.width() * image.height() * 3) as f64;
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean,3.0) * histogram[channel][luma] as f64;
+            }
+        }
+        let asymmetry = sum / (pow(std_deviation, 3)*(image.width() * image.height() * 3) as f64);
         asymmetry
     }
 }
@@ -154,16 +154,17 @@ pub struct FlatteningCoefficient;
 
 impl FlatteningCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let flat = pow(sum - mean, 4) * pow(std_deviation, 4)
-            - 3.0 / (image.width() * image.height() * 3) as f64;
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean,4.0) * histogram[channel][luma] as f64 -3.0;
+
+            }
+        }
+        let flat = sum / (pow(std_deviation, 4)*(image.width() * image.height() * 3) as f64);
         flat
     }
 }
@@ -179,12 +180,13 @@ pub struct VarianceCoefficient2;
 
 impl VarianceCoefficient2 {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += pow(histogram[channel][luma],2) as f64;
+            }
+        }
         let var2 = pow(sum, 2) / pow(image.width() * image.height() * 3, 2) as f64;
         var2
     }
@@ -201,14 +203,16 @@ pub struct InformationSourceEntropy;
 
 impl InformationSourceEntropy {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
-        let a = sum / (image.width() * image.height() * 3) as f64;
-        let info_src_ent = (-1.0 * sum * a.log2()) / (image.width() * image.height() * 3) as f64;
+        let n = (image.width() * image.height()) as f64;
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                let num_pixels = histogram[channel][luma] as f64;
+                sum += num_pixels * f64::log2(num_pixels/n);
+            }
+        }
+        let info_src_ent = -1.0 * sum / (n*3.0) as f64;
         info_src_ent
     }
 }
