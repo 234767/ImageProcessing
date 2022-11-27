@@ -213,27 +213,24 @@ These comparisons can perfectly present a fully working histogram on all the cha
 In this project we implemented and tested all 8 different characteristics for image transformations which are:
 \begin{itemize}
   \item Mean and Variance
-  \[ b=\frac{mH_A(m)}{N\sum_{L-1}^{m=0}}\]
-   \[ D^2=\frac{(m-b)^2H_A(m)}{N\sum_{L-1}^{m=0}}\]
+  \[\bar{b} = \frac{\sum_{L=1}^{m=0}mH_A(m)}{N}\]
+   \[  D^2 = \frac{\sum_{L=1}^{m=0}(m-\bar{b})^2H_A(m)}{N}\]
   \item Standard deviation and Variation coefficient I
    \[ \sigma _x=\sqrt{D^{2}}\]
-    \[ b_z= \frac{\sigma _x}{b}\]
+    \[ b_Z= \frac{\sigma _x}{\bar{b}}\]
   \item Asymmetry coefficient
-   \[ b_s=\frac{(\frac{1}{\sigma ^3})(m-b)^3H_A(m)}{N\sum_{L-1}^{m=0}} = \frac{(m-b)^3H_A(m)}{\sigma ^3N\sum_{L-1}^{m=0}}\]
+   \[b_S = \frac{\sum_{L=1}^{m=0}(m-\bar{b})^3H_A(m)}{N\sigma^3 }\]
   \item Flattening coefficient
-   \[ b_K=\frac{(\frac{1}{\sigma ^4})(m-b)^4H_A(m)-3}{N\sum_{L-1}^{m=0}} = \frac{(m-b)^4H_A(m)-3}{\sigma ^4N\sum_{L-1}^{m=0}}
-\]
+   \[ b_K = \frac{\sum_{L=1}^{m=0}(m-\bar{b})^4H_A(m)-3}{N\sigma^4 }\]
   \item Variation coefficient II
-   \[ b_N=\frac{[H_A(m)]^2}{(N\sum_{L-1}^{m=0})^2}\]
+   \[ b_N = \frac{\sum_{L=1}^{m=0}H_A(m)^2}{N^2}\]
   \item Information source entropy
-   \[ b_I=-1\frac{H_A(m)log_2(\frac{H_A(m)}{N})}{N\sum_{L-1}^{m=0}}\]
+   \[ b_I = -1\frac{\sum_{L=1}^{m=0}H_A(m)log_2(\frac{H_A(m)}{N})}{N}\]
 \end{itemize}
 
-For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table.
+For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table. 
 
-Based on this  comparison we can clearly see differences in these characteristics. The "biggest" difference we can observe is in Variance. The rest of the calculations do do not differ so much. Those changes in numbers are not the same because of change in pixels and furthermore in histogram. Because the luminosity of the pixels in much more neutral, less diverse in comparison to the original image the final result differs.  
-
-\begin{table}[h]\centering
+\begin{table}[H]\centering
     \begin{tabular}{ccccc}
 
         Operation 	
@@ -258,7 +255,7 @@ Based on this  comparison we can clearly see differences in these characteristic
     \end{tabular}
 \end{table}
 
-\begin{table}[h]\centering
+\begin{table}[H]\centering
     \begin{tabular}{cccccc}
 
         Standard deviation 	
@@ -280,7 +277,7 @@ Based on this  comparison we can clearly see differences in these characteristic
 
     \end{tabular}
 \end{table}
-\begin{table}[h]\centering
+\begin{table}[H]\centering
     \begin{tabular}{cc}
 
 
@@ -295,8 +292,10 @@ Based on this  comparison we can clearly see differences in these characteristic
        \\
 
     \end{tabular}
+    \caption{Results of characteristcs on the two pictures: original and modified with Ryleigh distribution.}
 \end{table}
-
+Based on this  comparison we can clearly see differences in these characteristics. The "biggest" difference we can observe is in Variance. The rest of the calculations do do not differ so much. Those changes in numbers are not the same because of change in pixels and furthermore in histogram. Because the luminosity of the pixels in much more neutral, less diverse in comparison to the original image the final result differs. 
+   
 \section{Description of the linear filter implementation}
 
 \subsection{General formulation}
@@ -601,6 +600,13 @@ We can clearly see that the filtered images are better than the unfiltered versi
 
 \section{Description of the non-linear filter implementation }
 
+In our project we are responsible for Uolis operator filtration. In order to calculate this enhancement we used a formula available on the Wikamp.
+
+\begin{equation}
+    g(n,m) = \frac{1}{4}log\left\{\frac{\left| x(n,m) \right|^4}{A_1A_3A_5A_7} \right\}
+\end{equation}
+
+
 \section{Analysis of the filtering results (non-linear filter)}
 \subsection{Results}
 For our project we were given Uolis operator filtration. In order to analyse the results we conducted this process on three different images: without a noise, with normal noise and with uniform noise. The results are presented below.
@@ -646,7 +652,7 @@ For our project we were given Uolis operator filtration. In order to analyse the
 
 \subsection{Complex analysis}
 
-As we can see the results differed between each other because of input images and their lack or not of noise. The biggest noticeable difference we can spot on the image with uniform noise.
+As we can see the results differed between each other because of input images and their lack or not of noise. The biggest noticeable difference we can spot on the image with uniform noise. It can signify that this filtration finds the pixels with noise and enhances them. While the picture is without a noise, the Uolis filtration avoids "smooth" pixels creating almost wholly black image. What is more, the Uolis filtration changes those pixels, which are the most grainy,to be more lime and green, and as result we can observe only the outline of the input image.
 
 \section{Description of other changes which took place in the application}
 
