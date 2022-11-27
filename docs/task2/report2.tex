@@ -394,20 +394,27 @@ vec3 convolution(mat3 mask, ivec2 xy)
 
 \subsection{Time comparison}
 
-For greater reliability, we run the tests on the bigger image size ($2560 \times 2560$), each 3 times.
+For greater reliability, we run the tests on the bigger image size ($2560 \times 2560$).
+Each implementation was run 3 times, and the average execution time was calculated. The results are shown in table \ref{tab:lowpass-execution-time}.
 
-\begin{table}[H]\centering
-    \begin{tabular}{c|ccc|c}
+\begin{table}[h]\centering
+    \begin{tabular}{ccc}
         \toprule
-        operation   & time 1 & time 2 & time 3 & average \\ \midrule
-        lowpass     & 12.983 & 12.996 & 12.975 & 12.985  \\
-        lowpass-gpu & 3.555  & 3.465  & 3.453  & 3.491   \\
+        Test N\textsuperscript{\underline{o}} & unoptimized & optimized \\\midrule
+        1                                     & 12.983      & 3.555     \\
+        2                                     & 12.996      & 3.465     \\
+        3                                     & 12.975      & 3.453     \\\midrule
+        \bf avg.                              & 12.985      & 3.491     \\
         \bottomrule
     \end{tabular}
-
+    \caption{Results of testing the execution times of unoptimized and optimized versions of low-pass filter.
+        The time values are given in seconds.}
+    \label{tab:lowpass-execution-time}
 \end{table}
 
-The optimized version is over 370\% faster.
+As we can see, there is a clear difference in the execution times. 
+The standard version took almost 13s to execute, while its optimized counterpart performed in less than 3.5 seconds.
+This is a huge increase in the execution speed; the optimized version is over 370\% faster than the standard one.
 
 \section{Analysis of the filtering results (linear filter)}
 
