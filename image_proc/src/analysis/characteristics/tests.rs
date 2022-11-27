@@ -6,7 +6,7 @@ fn mean(data: &[u8]) -> f64 {
 }
 
 #[test]
-fn median_test() {
+fn mean_test() {
     let pixels: Vec<u8> = (0..9u8).flat_map(|x| [x, x, x]).collect();
     let expected = mean(&pixels);
     let sample_image = image::RgbImage::from_raw(3, 3, pixels).unwrap();

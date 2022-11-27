@@ -1,13 +1,8 @@
-use image::{Rgb, RgbImage};
+use crate::histogram::Histogram;
+use image::RgbImage;
 use num::pow;
-/*
-(C1) Mean (--cmean). Variance (--cvariance).
-(C2) Standard deviation (--cstdev). Variation coefficient I (--cvarcoi).
-(C3) Asymmetry coefficient (--casyco).
-(C4) Flattening coefficient (--casyco).
-(C5) Variation coefficient II (--cvarcoii).
-(C6) Information source entropy (--centropy).
-*/
+use num::pow::Pow;
+
 pub trait Characteristic {
     fn analyze(&self, image: &RgbImage) -> Result<String, String>;
 }
@@ -35,16 +30,17 @@ impl Characteristic for CompositeCharacteristic {
     }
 }
 
-pub struct Mean {}
+pub struct Mean;
 
 impl Mean {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += luma as f64 * histogram[channel][luma] as f64;
+            }
+        }
         let mean = sum / (image.width() * image.height() * 3) as f64;
         mean
     }
@@ -57,18 +53,18 @@ impl Characteristic for Mean {
     }
 }
 
-pub struct Variance {}
+pub struct Variance;
 
 impl Variance {
     fn analyze(image: &RgbImage) -> f64 {
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .map(|x|pow(x-mean,2))
-            .sum();
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean, 2.0) * histogram[channel][luma] as f64;
+            }
+        }
         let variance = sum / (image.width() * image.height() * 3) as f64;
         variance
     }
@@ -81,12 +77,12 @@ impl Characteristic for Variance {
     }
 }
 
-pub struct StandardDeviation {}
+pub struct StandardDeviation;
 
 impl StandardDeviation {
     fn analyze(image: &RgbImage) -> f64 {
         let variance = Variance::analyze(image);
-        let std_deviation = variance.sqrt();
+        let std_deviation = f64::sqrt(variance);
         std_deviation
     }
 }
@@ -101,7 +97,7 @@ impl Characteristic for StandardDeviation {
     }
 }
 
-pub struct VarianceCoefficient1 {}
+pub struct VarianceCoefficient1;
 
 impl VarianceCoefficient1 {
     fn analyze(image: &RgbImage) -> f64 {
@@ -122,20 +118,20 @@ impl Characteristic for VarianceCoefficient1 {
     }
 }
 
-pub struct AsymmetryCoefficient {}
+pub struct AsymmetryCoefficient;
 
 impl AsymmetryCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .map(|x|pow(x-mean,3))
-            .sum();
-        let asymmetry = sum/(pow(std_deviation, 3)*(image.width() * image.height() * 3) as f64);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean, 3.0) * histogram[channel][luma] as f64;
+            }
+        }
+        let asymmetry = sum / (pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
         asymmetry
     }
 }
@@ -147,20 +143,20 @@ impl Characteristic for AsymmetryCoefficient {
     }
 }
 
-pub struct FlatteningCoefficient {}
+pub struct FlatteningCoefficient;
 
 impl FlatteningCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
         let std_deviation = StandardDeviation::analyze(image);
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .map(|x|pow(x-mean,4))
-            .sum();
-        let flat = sum - 3.0 / (pow(std_deviation, 4)*(image.width() * image.height() * 3)) as f64;
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean, 4.0) * histogram[channel][luma] as f64 - 3.0;
+            }
+        }
+        let flat = sum / (pow(std_deviation, 4) * (image.width() * image.height() * 3) as f64);
         flat
     }
 }
@@ -172,16 +168,17 @@ impl Characteristic for FlatteningCoefficient {
     }
 }
 
-pub struct VarianceCoefficient2 {}
+pub struct VarianceCoefficient2;
 
 impl VarianceCoefficient2 {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += pow(histogram[channel][luma], 2) as f64;
+            }
+        }
         let var2 = pow(sum, 2) / pow(image.width() * image.height() * 3, 2) as f64;
         var2
     }
@@ -194,18 +191,20 @@ impl Characteristic for VarianceCoefficient2 {
     }
 }
 
-pub struct InformationSourceEntropy {}
+pub struct InformationSourceEntropy;
 
 impl InformationSourceEntropy {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
-        let a = sum / (image.width() * image.height() * 3) as f64;
-        let info_src_ent = (-1.0 * sum * a.log2()) / (image.width() * image.height() * 3) as f64;
+        let n = (image.width() * image.height()) as f64;
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                let num_pixels = histogram[channel][luma] as f64;
+                sum += num_pixels * f64::log2(num_pixels / n);
+            }
+        }
+        let info_src_ent = -1.0 * sum / (n * 3.0) as f64;
         info_src_ent
     }
 }
