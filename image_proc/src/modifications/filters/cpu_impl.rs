@@ -158,6 +158,8 @@ pub struct Uolis;
 
 impl Transformation for Uolis {
     fn apply(&self, image: &mut RgbImage) {
+        const NORMALIZATION_FACTOR: f64 = 2550.0;
+
         let mut new_image: RgbImage = ImageBuffer::new(image.width(), image.height());
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
             if is_edge(image, x, y) {
@@ -179,7 +181,7 @@ impl Transformation for Uolis {
                 let power = (image.get_pixel(x, y)[channel] as f64).pow(4.0);
                 let log_base = power / product;
                 let log = f64::log10(log_base);
-                pixel[channel] = (log / 4.0) as u8
+                pixel[channel] = (NORMALIZATION_FACTOR * log / 4.0) as u8
             }
         }
         *image = new_image;
