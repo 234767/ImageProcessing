@@ -216,7 +216,7 @@ In this project we implemented and tested all 8 different characteristics for im
   \[ b=\frac{mH_A(m)}{N\sum_{L-1}^{m=0}}\]
    \[ D^2=\frac{(m-b)^2H_A(m)}{N\sum_{L-1}^{m=0}}\]
   \item Standard deviation and Variation coefficient I
-   \[ \sigma _x=\sqrt{}D^{2}\]
+   \[ \sigma _x=\sqrt{D^{2}}\]
     \[ b_z= \frac{\sigma _x}{b}\]
   \item Asymmetry coefficient
    \[ b_s=\frac{(\frac{1}{\sigma ^3})(m-b)^3H_A(m)}{N\sum_{L-1}^{m=0}} = \frac{(m-b)^3H_A(m)}{\sigma ^3N\sum_{L-1}^{m=0}}\]
@@ -230,6 +230,72 @@ In this project we implemented and tested all 8 different characteristics for im
 \end{itemize}
 
 For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table.
+
+Based on this  comparison we can clearly see differences in these characteristics. The "biggest" difference we can observe is in Variance. The rest of the calculations do do not differ so much. Those changes in numbers are not the same because of change in pixels and furthermore in histogram. Because the luminosity of the pixels in much more neutral, less diverse in comparison to the original image the final result differs.  
+
+\begin{table}[h]\centering
+    \begin{tabular}{ccccc}
+
+        Operation 	
+        & Input image 
+        & Dimentions 
+        &Mean 
+        &Variance 
+        \\\midrule
+        -                         
+        & lenac.bmp     
+        & 512x512      
+        &		128.216
+        &3471.789
+        \\
+       hraleigh -gmin=1 -gmax=200         
+       & lenah.bmp      
+       & 512x512    
+       &	50.865	
+       &697.735
+       \\
+
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]\centering
+    \begin{tabular}{cccccc}
+
+        Standard deviation 	
+        &  Variation Coefficient I
+        & Assymmetry coefficient
+        & Flattening coefficient
+        \\\midrule
+        58.992                        
+        &    0.460  
+        &      0.221 
+        &		2.106
+        \\
+         26.415      
+       &    0.519
+       &    0.741 
+       &	 3.894 
+
+       \\
+
+    \end{tabular}
+\end{table}
+\begin{table}[h]\centering
+    \begin{tabular}{cc}
+
+
+         Variation coefficient II
+        & Information source antropy
+        \\\midrule
+        hohoho2                   
+        &DODAC TU INFO
+        \\
+		DODAC TU VAR2
+       	& DODAC TU INFO
+       \\
+
+    \end{tabular}
+\end{table}
 
 \section{Description of the linear filter implementation}
 
@@ -401,7 +467,7 @@ vec3 convolution(mat3 mask, ivec2 xy)
 For greater reliability, we run the tests on the bigger image size ($2560 \times 2560$).
 Each implementation was run 3 times, and the average execution time was calculated. The results are shown in table \ref{tab:lowpass-execution-time}.
 
-\begin{table}[ht]\centering
+\begin{table}[h]\centering
     \begin{tabular}{ccc}
         \toprule
         Test N\textsuperscript{\underline{o}} & unoptimized & optimized \\\midrule
@@ -445,7 +511,7 @@ We run the low-pass filter with the 3 masks given in the instruction:
 
 The results are presented on fig. \ref{fig:lowpass-results-original}.
 
-\begin{figure}[ht]\centering
+\begin{figure}[h]\centering
     \begin{subfigure}[t]{.4\textwidth}
         \includegraphics[width=\textwidth]{lenac_small.png}
         \caption{original}
@@ -474,7 +540,7 @@ These rapid changes often occur at the edges of objects, therefore, the filtered
 However, since this filter is good at attenuating rapid changes in luminosity, it can be used as a way of reducing the noise in the image.
 The results of such experiment are presented on fig. \ref{fig:lowpass-results-noise}.
 
-\begin{figure}[ht]\centering
+\begin{figure}[h]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{lenac_uniform3.png}
         \caption{uniform noise}
@@ -594,9 +660,10 @@ which resulted in differences in running time and broadened our knowledge in cod
 
 \vfill
 \section*{Teacher's remarks}
-\begin{tabularx}{\textwidth}{|X| }
+\begin{tabularx}{\textwidth}{|X|}
     \hline
-    \TextField[multiline,invisible,height=7cm, width=.97\textwidth]{}\\
+    \vspace{7cm}
+    \phantom{.} \\
     \hline
 \end{tabularx}
 
