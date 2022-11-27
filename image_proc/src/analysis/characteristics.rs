@@ -1,5 +1,7 @@
 use image::{Rgb, RgbImage};
 use num::pow;
+use num::pow::Pow;
+use crate::histogram::Histogram;
 /*
 (C1) Mean (--cmean). Variance (--cvariance).
 (C2) Standard deviation (--cstdev). Variation coefficient I (--cvarcoi).
@@ -39,12 +41,13 @@ pub struct Mean;
 
 impl Mean {
     fn analyze(image: &RgbImage) -> f64 {
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
+        let histogram = Histogram::new(image);
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += luma as f64 * histogram[channel][luma] as f64;
+            }
+        }
         let mean = sum / (image.width() * image.height() * 3) as f64;
         mean
     }
@@ -61,14 +64,15 @@ pub struct Variance;
 
 impl Variance {
     fn analyze(image: &RgbImage) -> f64 {
+        let histogram = Histogram::new(image);
         let mean = Mean::analyze(image);
-        let sum: f64 = image
-            .pixels()
-            .flat_map(
-                |Rgb(pixel)| pixel.iter().map(|x| *x as f64), // converting &[u8;3] to 3 f64s
-            )
-            .sum();
-        let variance = pow(sum - mean, 2) / (image.width() * image.height() * 3) as f64;
+        let mut sum: f64 = 0.0;
+        for channel in 0..3 {
+            for luma in 0..=255 {
+                sum += f64::pow(luma as f64 - mean,2.0) * histogram[channel][luma] as f64;
+            }
+        }
+        let variance = sum / (image.width() * image.height() * 3) as f64;
         variance
     }
 }
