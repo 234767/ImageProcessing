@@ -186,32 +186,26 @@ In order to obtain that result, we chose those input numbers as an example.
 \subsection{Results}
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lenac.png}
-        \caption{original}
-    \end{subfigure}
-    \hspace{.05\textwidth}
-    \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lena_hraleigh_1_200.png}
-        \caption{modified}
-    \end{subfigure}
-    \caption{Image before and after Rayleigh distribution}
-\end{figure}
-
-\begin{figure}[H]\centering
-    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lenac.png}\\[1ex]
         \includegraphics[width=\textwidth]{lena_clear_histogram.png}
         \caption{original}
     \end{subfigure}
     \hspace{.05\textwidth}
     \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_hraleigh_1_200.png}\\[1ex]
         \includegraphics[width=\textwidth]{lena_hraleigh_1_200_histogram.png}
         \caption{modified}
     \end{subfigure}
-    \caption{Histogram before and after Rayleigh distribution}
+    \caption{Image before and after Rayleigh distribution correction}
 \end{figure}
-\subsection{Complex analysis}
 
-As we can see, the difference is huge. the output picture is less red and more neutral for the viewer. The same difference we can observe on the histogram created on the before and after picture. While on the original image most of the colors are taking the whole histogram and only part of them are interfering with each other, on the modified picture almost all the colors are interfering, which resulted in very neutral picture for the viewer, which is not that diverse in colors. The histogram of the original image has majority of the red channel, which can be seen on the original image as having red undertones. On the histogram of the modified picture came out with majority of blue tones, which can be clearly seen on the image. These comparisons can perfectly present a fully working histogram on all the channels at the same time.
+As we can see, the difference is huge. the output picture is less red and more neutral for the viewer. 
+The same difference we can observe on the histogram created on the before and after picture. 
+While on the original image most of the colors are taking the whole histogram and only part of them are interfering with each other, 
+on the modified picture almost all the colors are interfering, which resulted in very neutral picture for the viewer, which is not that diverse in colors. 
+The histogram of the original image has majority of the red channel, which can be seen on the original image as having red undertones. 
+On the histogram of the modified picture came out with majority of blue tones, which can be clearly seen on the image. 
+These comparisons can perfectly present a fully working histogram on all the channels at the same time.
 
 \subsection{Characteristics analysis}
 
