@@ -29,7 +29,7 @@ The equation for calculating the new luminosity values were given as:
     \label{eq:rayleigh-initial}
 \end{equation}
 
-We immediately noticed, that the numer under the logarithm is a partial sum of the normalized histogram values for luminosities smaller or equal $f$.
+We immediately noticed, that the number under the logarithm is a partial sum of the normalized histogram values for luminosities smaller or equal $f$.
 We can refactor the equation, by introducing a partial sum function $ps(f)$:
 \begin{equation}
     ps(f) = \sum\limits_{k=0}^f H(f)
@@ -47,11 +47,11 @@ Equation (\ref{eq:rayleigh-initial}) then takes form:
 Note that,
 \(
 \bigforall_{f \in \langle f_{min},f_{max}\rangle} : 0 < ps(f) \leq N
-\), and $ps(f)$ is monotinically non-decreasing.
-That means that $\frac{N}{ps(f)}$ is monotinically non-increasing, and as follows, $g(f)$ is also non-increasing.
+\), and $ps(f)$ is monotonically non-decreasing.
+That means that $\frac{N}{ps(f)}$ is monotonically non-increasing, and as follows, $g(f)$ is also non-increasing.
 
 However, this is not what we want from image transformation, as it would produce a negative image.
-Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offseting it by $N$, to keep the domain the same.
+Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offsetting it by $N$, to keep the domain the same.
 
 \begin{equation}
     g(f) = g_{min} + \sqrt{
@@ -173,6 +173,59 @@ for pixel in image.pixels_mut() {
 
 
 \section{Image analysis on the basis of the histogram}
+\subsection{Implementation}
+
+After conducting an image improvement by using Rayleigh distribution described in the previous section, we could see tremendous differences presented below.
+
+In order to obtain that result, we chose those input numbers as an example.
+\begin{align*}
+    g_{max} & = 1                                                                     \\[1ex]
+    g_{max} & = 200                    
+\end{align*}
+
+\subsection{Results}
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{.05\textwidth}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_hraleigh_1_200.png}
+        \caption{modified}
+    \end{subfigure}
+    \caption{Image before and after Rayleigh distribution}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_clear_histogram.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{.05\textwidth}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_hraleigh_1_200_histogram.png}
+        \caption{modified}
+    \end{subfigure}
+    \caption{Histogram before and after Rayleigh distribution}
+\end{figure}
+\subsection{Complex analysis}
+
+As we can see, the difference is huge. the output picture is less red and more neutral for the viewer. The same difference we can observe on the histogram created on the before and after picture. While on the original image most of the colors are taking the whole histogram and only part of them are interfering with each other, on the modified picture almost all the colors are interfering, which resulted in very neutral picture for the viewer, which is not that diverse in colors. The histogram of the original image has majority of the red channel, which can be seen on the original image as having red undertones. On the histogram of the modified picture came out with majority of blue tones, which can be clearly seen on the image. These comparisons can perfectly present a fully working histogram on all the channels at the same time.
+
+\subsection{Characteristics analysis}
+
+In this project we implemented and tested all 8 different characteristics for image transformations which are:
+\begin{itemize}
+  \item Mean and Variance
+  \item Standard deviation and Variation coefficient I 
+  \item Asymmetry coefficient
+  \item Flattening coefficient
+  \item Variation coefficient II
+  \item Information source entropy
+\end{itemize}
+
+For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table.
 
 \section{Description of the linear filter implementation}
 
