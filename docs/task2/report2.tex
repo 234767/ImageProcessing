@@ -198,6 +198,7 @@ In order to obtain that result, we chose those input numbers as an example.
     \end{subfigure}
     \caption{Image before and after Rayleigh distribution correction}
 \end{figure}
+\subsection{Complex analysis}
 
 As we can see, the difference is huge. the output picture is less red and more neutral for the viewer.
 The same difference we can observe on the histogram created on the before and after picture.
@@ -211,12 +212,21 @@ These comparisons can perfectly present a fully working histogram on all the cha
 
 In this project we implemented and tested all 8 different characteristics for image transformations which are:
 \begin{itemize}
-    \item Mean and Variance
-    \item Standard deviation and Variation coefficient I
-    \item Asymmetry coefficient
-    \item Flattening coefficient
-    \item Variation coefficient II
-    \item Information source entropy
+  \item Mean and Variance
+  \[ b=\frac{mH_A(m)}{N\sum_{L-1}^{m=0}}\]
+   \[ D^2=\frac{(m-b)^2H_A(m)}{N\sum_{L-1}^{m=0}}\]
+  \item Standard deviation and Variation coefficient I
+   \[ \sigma _x=\sqrt{}D^{2}\]
+    \[ b_z= \frac{\sigma _x}{b}\]
+  \item Asymmetry coefficient
+   \[ b_s=\frac{(\frac{1}{\sigma ^3})(m-b)^3H_A(m)}{N\sum_{L-1}^{m=0}} = \frac{(m-b)^3H_A(m)}{\sigma ^3N\sum_{L-1}^{m=0}}\]
+  \item Flattening coefficient
+   \[ b_K=\frac{(\frac{1}{\sigma ^4})(m-b)^4H_A(m)-3}{N\sum_{L-1}^{m=0}} = \frac{(m-b)^4H_A(m)-3}{\sigma ^4N\sum_{L-1}^{m=0}}
+\]
+  \item Variation coefficient II
+   \[ b_N=\frac{[H_A(m)]^2}{(N\sum_{L-1}^{m=0})^2}\]
+  \item Information source entropy
+   \[ b_I=-1\frac{H_A(m)log_2(\frac{H_A(m)}{N})}{N\sum_{L-1}^{m=0}}\]
 \end{itemize}
 
 For all of the calculations we used formulas available on the Task 2 exercise on Wikamp. The result of all of those calculations for the original and modified picture are presented below in the table.
@@ -406,7 +416,7 @@ Each implementation was run 3 times, and the average execution time was calculat
     \label{tab:lowpass-execution-time}
 \end{table}
 
-As we can see, there is a clear difference in the execution times.
+As we can see, there is a clear difference in the execution times. 
 The standard version took almost 13s to execute, while its optimized counterpart performed in less than 3.5 seconds.
 This is a huge increase in the execution speed; the optimized version is over 370\% faster than the standard one.
 
@@ -526,9 +536,60 @@ We can clearly see that the filtered images are better than the unfiltered versi
 \section{Description of the non-linear filter implementation }
 
 \section{Analysis of the filtering results (non-linear filter)}
+\subsection{Results}
+For our project we were given Uolis operator filtration. In order to analyse the results we conducted this process on three different images: without a noise, with normal noise and with uniform noise. The results are presented below.
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{.05\textwidth}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_uolis_clear.png}
+        \caption{modified}
+    \end{subfigure}
+    \caption{Image without noise before and after Uolis operation}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{.05\textwidth}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_uolis_normal.png}
+        \caption{modified}
+    \end{subfigure}
+    \caption{Image with normal noise before and after Uolis operation}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lenac.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{.05\textwidth}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{lena_uolis_uniform.png}
+        \caption{modified}
+    \end{subfigure}
+    \caption{Image with uniform noise before and after Uolis operation}
+\end{figure}
+
+\subsection{Complex analysis}
+
+As we can see the results differed between each other because of input images and their lack or not of noise. The biggest noticeable difference we can spot on the image with uniform noise.
 
 \section{Description of other changes which took place in the application}
 
+During our project we divided the work equally,
+which enabled us to work faster and more efficiently.
+When it comes to the application itself we created unit tests for our calculations in order to avoid mistakes.
+Those tests quickly came to use, because of minor difficulties with mathematical equations.
+We also tried to do as much as we can operations on GPU instead of only CPU,
+which resulted in differences in running time and broadened our knowledge in coding.
 
 
 \vfill
