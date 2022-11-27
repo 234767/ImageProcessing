@@ -35,7 +35,7 @@ impl Characteristic for CompositeCharacteristic {
     }
 }
 
-pub struct Mean;
+pub struct Mean {}
 
 impl Mean {
     fn analyze(image: &RgbImage) -> f64 {
@@ -57,7 +57,7 @@ impl Characteristic for Mean {
     }
 }
 
-pub struct Variance;
+pub struct Variance {}
 
 impl Variance {
     fn analyze(image: &RgbImage) -> f64 {
@@ -80,12 +80,12 @@ impl Characteristic for Variance {
     }
 }
 
-pub struct StandardDeviation;
+pub struct StandardDeviation {}
 
 impl StandardDeviation {
     fn analyze(image: &RgbImage) -> f64 {
         let variance = Variance::analyze(image);
-        let std_deviation = f64::sqrt(variance);
+        let std_deviation = variance.sqrt();
         std_deviation
     }
 }
@@ -100,7 +100,7 @@ impl Characteristic for StandardDeviation {
     }
 }
 
-pub struct VarianceCoefficient1;
+pub struct VarianceCoefficient1 {}
 
 impl VarianceCoefficient1 {
     fn analyze(image: &RgbImage) -> f64 {
@@ -121,7 +121,7 @@ impl Characteristic for VarianceCoefficient1 {
     }
 }
 
-pub struct AsymmetryCoefficient;
+pub struct AsymmetryCoefficient {}
 
 impl AsymmetryCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
@@ -146,7 +146,7 @@ impl Characteristic for AsymmetryCoefficient {
     }
 }
 
-pub struct FlatteningCoefficient;
+pub struct FlatteningCoefficient {}
 
 impl FlatteningCoefficient {
     fn analyze(image: &RgbImage) -> f64 {
@@ -171,7 +171,7 @@ impl Characteristic for FlatteningCoefficient {
     }
 }
 
-pub struct VarianceCoefficient2;
+pub struct VarianceCoefficient2 {}
 
 impl VarianceCoefficient2 {
     fn analyze(image: &RgbImage) -> f64 {
@@ -193,7 +193,7 @@ impl Characteristic for VarianceCoefficient2 {
     }
 }
 
-pub struct InformationSourceEntropy;
+pub struct InformationSourceEntropy {}
 
 impl InformationSourceEntropy {
     fn analyze(image: &RgbImage) -> f64 {

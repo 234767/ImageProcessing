@@ -114,5 +114,14 @@ Options:
 \t --pmse               \t Display peak mean square error
 \t --snr                \t Display signal to nose ratio
 \t --psnr               \t Display peak signal to noise ratio
-\t --md                 \t Display max difference 
+\t --md                 \t Display max difference
+
+\t --cmean              \t Mean
+\t --cvariance          \t Variance
+\t --cstdev             \t Standard deviation
+\t --cvarcoi            \t Variation coefficient I
+\t --casyco             \t Asymmetry coefficient
+\t --casyco2            \t Flattening coefficient
+\t --cvarcoii           \t Variation coefficient II
+\t --centropy           \t Information source entropy
 ";
