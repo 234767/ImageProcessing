@@ -52,7 +52,8 @@ impl Transformation for HRaleigh {
                     let log_base = image_size as f64 / (image_size - partial_sum + 1) as f64;
                     let root_base = 2.0 * alpha * alpha * f64::ln(log_base);
                     brightness_lookup[channel][i] = self.gmin
-                        + f64::clamp(f64::sqrt(root_base), 0.0, (self.gmax - self.gmin) as f64) as u8;
+                        + f64::clamp(f64::sqrt(root_base), 0.0, (self.gmax - self.gmin) as f64)
+                            as u8;
                     if partial_sums[channel][i] == image_size {
                         break;
                     }

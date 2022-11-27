@@ -5,6 +5,7 @@ mod analysis;
 mod parsing;
 mod transformations;
 
+use crate::analysis::get_characteristic;
 use analysis::get_comparers;
 use transformations::get_transformation;
 
@@ -60,6 +61,15 @@ fn main() {
             },
             &altered_image,
         );
+        match comparison_result {
+            Ok(result) => print!("{}", result),
+            Err(e) => eprintln!("Error: {}", e),
+        }
+    }
+
+    if args.command != "--histogram" {
+        let characteristics = get_characteristic(&args);
+        let comparison_result = characteristics.analyze(&altered_image);
         match comparison_result {
             Ok(result) => print!("{}", result),
             Err(e) => eprintln!("Error: {}", e),

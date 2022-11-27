@@ -66,7 +66,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--lowpass" => Ok(Box::new(util::try_new_lowpass(args)?)),
         "--lowpass-gpu" => Ok(Box::new(util::try_new_lowpass_gpu(args)?)),
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
-        "--uolis" => Ok(Box::new(Uolis{})),
+        "--uolis" => Ok(Box::new(Uolis {})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

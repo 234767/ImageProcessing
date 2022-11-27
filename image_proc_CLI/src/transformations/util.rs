@@ -74,7 +74,10 @@ fn try_parse_mask_scale(args: &Args) -> Option<Result<f64, String>> {
     const MASK_SEPARATOR: &str = "/";
     match args.args.get("-mask-scale") {
         Some(fraction) if fraction.contains(MASK_SEPARATOR) => {
-            let nums: Vec<_> = fraction.split(MASK_SEPARATOR).map(|s| s.parse::<f64>()).collect();
+            let nums: Vec<_> = fraction
+                .split(MASK_SEPARATOR)
+                .map(|s| s.parse::<f64>())
+                .collect();
             if nums.len() != 2 {
                 return Some(Err(format!(
                     "Mask scale in fraction form expected to have 2 parts, got {}",
