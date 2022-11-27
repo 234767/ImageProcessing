@@ -217,7 +217,7 @@ impl Transformation for LowPassFilter {
         let mut new_image: RgbImage = RgbImage::new(image.width(), image.height());
         for (x, y, pixel) in new_image.enumerate_pixels_mut() {
             if is_edge(image, x, y) {
-                *pixel = *image.get_pixel(x,y);
+                *pixel = *image.get_pixel(x, y);
                 continue;
             }
 

@@ -1,15 +1,8 @@
-use image::{Rgb, RgbImage};
+use crate::histogram::Histogram;
+use image::RgbImage;
 use num::pow;
 use num::pow::Pow;
-use crate::histogram::Histogram;
-/*
-(C1) Mean (--cmean). Variance (--cvariance).
-(C2) Standard deviation (--cstdev). Variation coefficient I (--cvarcoi).
-(C3) Asymmetry coefficient (--casyco).
-(C4) Flattening coefficient (--casyco).
-(C5) Variation coefficient II (--cvarcoii).
-(C6) Information source entropy (--centropy).
-*/
+
 pub trait Characteristic {
     fn analyze(&self, image: &RgbImage) -> Result<String, String>;
 }
@@ -69,7 +62,7 @@ impl Variance {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                sum += f64::pow(luma as f64 - mean,2.0) * histogram[channel][luma] as f64;
+                sum += f64::pow(luma as f64 - mean, 2.0) * histogram[channel][luma] as f64;
             }
         }
         let variance = sum / (image.width() * image.height() * 3) as f64;
@@ -135,10 +128,10 @@ impl AsymmetryCoefficient {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                sum += f64::pow(luma as f64 - mean,3.0) * histogram[channel][luma] as f64;
+                sum += f64::pow(luma as f64 - mean, 3.0) * histogram[channel][luma] as f64;
             }
         }
-        let asymmetry = sum / (pow(std_deviation, 3)*(image.width() * image.height() * 3) as f64);
+        let asymmetry = sum / (pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
         asymmetry
     }
 }
@@ -160,11 +153,10 @@ impl FlatteningCoefficient {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                sum += f64::pow(luma as f64 - mean,4.0) * histogram[channel][luma] as f64 -3.0;
-
+                sum += f64::pow(luma as f64 - mean, 4.0) * histogram[channel][luma] as f64 - 3.0;
             }
         }
-        let flat = sum / (pow(std_deviation, 4)*(image.width() * image.height() * 3) as f64);
+        let flat = sum / (pow(std_deviation, 4) * (image.width() * image.height() * 3) as f64);
         flat
     }
 }
@@ -184,7 +176,7 @@ impl VarianceCoefficient2 {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                sum += pow(histogram[channel][luma],2) as f64;
+                sum += pow(histogram[channel][luma], 2) as f64;
             }
         }
         let var2 = pow(sum, 2) / pow(image.width() * image.height() * 3, 2) as f64;
@@ -209,10 +201,10 @@ impl InformationSourceEntropy {
         for channel in 0..3 {
             for luma in 0..=255 {
                 let num_pixels = histogram[channel][luma] as f64;
-                sum += num_pixels * f64::log2(num_pixels/n);
+                sum += num_pixels * f64::log2(num_pixels / n);
             }
         }
-        let info_src_ent = -1.0 * sum / (n*3.0) as f64;
+        let info_src_ent = -1.0 * sum / (n * 3.0) as f64;
         info_src_ent
     }
 }
