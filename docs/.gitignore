@@ -2,3 +2,4 @@
 *.synctex.gz
 *.log
 *.aux
+*.out
