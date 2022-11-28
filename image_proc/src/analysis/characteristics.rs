@@ -1,6 +1,5 @@
 use crate::histogram::Histogram;
 use image::RgbImage;
-use num::pow;
 use num::pow::Pow;
 
 pub trait Characteristic {
@@ -131,7 +130,7 @@ impl AsymmetryCoefficient {
                 sum += f64::pow(luma as f64 - mean, 3.0) * histogram[channel][luma] as f64;
             }
         }
-        let asymmetry = sum / (pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
+        let asymmetry = sum / (f64::pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
         asymmetry
     }
 }
@@ -156,7 +155,7 @@ impl FlatteningCoefficient {
                 sum += f64::pow(luma as f64 - mean, 4.0) * histogram[channel][luma] as f64 - 3.0;
             }
         }
-        let flat = sum / (pow(std_deviation, 4) * (image.width() * image.height() * 3) as f64);
+        let flat = sum / (f64::pow(std_deviation, 4) * (image.width() * image.height() * 3) as f64);
         flat
     }
 }
@@ -176,10 +175,12 @@ impl VarianceCoefficient2 {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                sum += pow(histogram[channel][luma], 2) as f64;
+                sum += f64::pow(histogram[channel][luma] as f64, 2) as f64;
             }
         }
-        let var2 = sum / pow(image.width() * image.height() * 3, 2) as f64;
+        let image_size = image.width() * image.height();
+        let n2 = f64::pow(image_size as f64, 2);
+        let var2 = sum / (n2 * 3.0);
         var2
     }
 }
@@ -200,8 +201,11 @@ impl InformationSourceEntropy {
         let mut sum: f64 = 0.0;
         for channel in 0..3 {
             for luma in 0..=255 {
-                let num_pixels = histogram[channel][luma] as f64;
-                sum += num_pixels * f64::log2(num_pixels / n);
+                let num_pixels = histogram[channel][luma];
+                if num_pixels == 0 {
+                    continue;
+                }
+                sum += num_pixels as f64 * f64::log2(num_pixels as f64 / n);
             }
         }
         let info_src_ent = -1.0 * sum / (n * 3.0) as f64;
@@ -212,7 +216,10 @@ impl InformationSourceEntropy {
 impl Characteristic for InformationSourceEntropy {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let info_src_ent = Self::analyze(image);
-        Ok(format!("{:10} {:6.6}", "Information source entropy:", info_src_ent))
+        Ok(format!(
+            "{:10} {:6.6}",
+            "Information source entropy:", info_src_ent
+        ))
     }
 }
 
