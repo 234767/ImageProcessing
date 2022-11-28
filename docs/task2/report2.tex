@@ -598,55 +598,156 @@ The result of this comparison is presented in table \ref*{tab:lowpass-results-no
 We can clearly see that the filtered images are better than the unfiltered versions.
 
 
-
+\pagebreak[3]
 \section{Description of the non-linear filter implementation }
+
+\subsection{Mathematical description}
+
+Our task was to implement the uolis operator, which was defined as the following:
+\begin{equation}
+    g(x,y) = \frac{1}{4} \log \left(
+        \frac{f(x,y)^4}{A_1 A_3 A_5 A_7}
+    \right)
+    \label{eq:uolis}
+\end{equation}
+where,
+\begin{align*}
+    A_1 &= f(x,y-1) \\
+    A_3 &= f(x+1,y) \\
+    A_5 &= f(x,y+1) \\
+    A_7 &= f(x-1,y)
+\end{align*}
+
+Since the logaritm base was not explicitly stated, we assumed $\log_{10}$, according to standard mathematical notation.
+Note that equation (\ref{eq:uolis}) can be expressed as
+\begin{equation*}
+    g(x,y) = \frac{1}{4} \left[
+        \log\left(\frac{f(x,y)}{A_1}\right) +
+        \log\left(\frac{f(x,y)}{A_3}\right) +
+        \log\left(\frac{f(x,y)}{A_5}\right) +
+        \log\left(\frac{f(x,y)}{A_7}\right)
+    \right]
+\end{equation*}
+which is just the arithmetic means of the logarithms of the ratios of the horizontally and vertically neighboring pixels.
+For similar pixels, the values of the logarithms will be close to 0, therefore the resulting image will be close to black.
+However, if there is a drastic change in the luminosity values, the logaritm will be a positive value, resulting in a brighter pixel in the output image.
+
+Note that for 255 discrete luminosity levels, the maximum value that the uolis operator can output is $\log_{10}(255) \approx 3$ (assuming there is no division by 0, in which case it would be $+\infty$).
+This is very dim, almost not visible in the result.
+That is because, the uolis operator does not take into account the representation of the pixel luminosity.
+It is best suited for formats, where luminosity is stored as a floating point number in the range $\langle 0, 1 \rangle$.
+Therefore, we must normalize the output to our format (integer in the range $\langle 0, 255 \rangle$), by multiplying by 255.
+However, we noticed that the output is still not very visible, so we decided to multiply it by additional factor of 10, resulting in final multiplication by 2550.
+
+Therefore, eq. (\ref{eq:uolis}) will take the final form:
+\begin{equation}
+    g(x,y) = 2550 \cdot \frac{1}{4} \log \left(
+        \frac{f(x,y)^4}{A_1 A_3 A_5 A_7}
+    \right)
+    \label{eq:uolis-normalized}
+\end{equation}
+
+The comparison between results obtained from equations (\ref*{eq:uolis}) and (\ref*{eq:uolis-normalized}) is shown on fig.~\ref{fig:uolis}.
+
+\pagebreak[3]
+\subsection{Implementation}
+
+Having the equation (\ref{eq:uolis-normalized}), implementing the operator is very straightforward.
+Fistly we collect the neighboring pixels ($A_1,A_3,A_5,A_7$).
+Secondly, we calculate their product, and input all the other values to the equation.
+Finally, we multiply by the abovementioned normalization factor of 2550.
+
+\begin{lstlisting}[
+    morekeywords={const}
+]
+const NORMALIZATION_FACTOR: f64 = 2550.0;
+/* ... */
+let neighbors = {
+    let mut neighbors: Vec<&Rgb<u8>> = vec![];
+    for (i, j) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+        let xi = (x as i32 + i) as u32;
+        let yi = (y as i32 + j) as u32;
+        if xi < image.width() && yi < image.height() {
+            neighbors.push(image.get_pixel(xi, yi));
+        }
+    }
+    neighbors
+};
+for channel in 0..3 {
+    let product = neighbors.iter()
+        .map(|x| x[channel] as f64)
+        .product::<f64>();
+    let power = (image.get_pixel(x, y)[channel] as f64).pow(4.0);
+    let log_base = power / product;
+    let log = f64::log10(log_base);
+    pixel[channel] = (NORMALIZATION_FACTOR * log / 4.0) as u8
+}
+\end{lstlisting}
+
+For pixels on edges, some of the $A$ neighbors do not exist, therefore, we just skip the edge pixels, leaving them black.
 
 \section{Analysis of the filtering results (non-linear filter)}
 \subsection{Results}
-For our project we were given Uolis operator filtration. In order to analyse the results we conducted this process on three different images: without a noise, with normal noise and with uniform noise. The results are presented below.
+
+The results of running the uolis operator are presented on fig. \ref{fig:uolis}.
+As we can see, the not normalized version is completely unreadable. 
+However, when we boost the output,
+ we can clearly see that this operator highlited the most prominent edges in the image.
 
 \begin{figure}[H]\centering
-    \begin{subfigure}[t]{\subfiguresize}\centering
+    \hfill
+    \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{lenac.png}
         \caption{original}
     \end{subfigure}
-    \hspace{.05\textwidth}
-    \begin{subfigure}[t]{\subfiguresize}\centering
+    \hfill
+    \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{lena_uolis_clear.png}
-        \caption{modified}
+        \caption{ordinary uolis operator}
     \end{subfigure}
-    \caption{Image without noise before and after Uolis operation}
-\end{figure}
+    \hfill
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena_uolis_normalized.png}
+        \caption{normalized uolis}
+    \end{subfigure}
+    \hfill
+    \caption{Difference between ordinary and normalized uolis operator}
+    \label{fig:uolis}
+\end{figure}    
 
 \begin{figure}[H]\centering
-    \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lenac_normal3.png}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{baboon.png}
         \caption{original}
     \end{subfigure}
-    \hspace{.05\textwidth}
-    \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lena_uolis_normal.png}
-        \caption{modified}
+    \hspace{1em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{baboon_uolis.png}
+        \caption{after uolis operator}
     \end{subfigure}
-    \caption{Image with normal noise before and after Uolis operation}
-\end{figure}
-
-\begin{figure}[H]\centering
-    \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lenac_uniform3.png}
+    \\
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{cameraman.png}
         \caption{original}
     \end{subfigure}
-    \hspace{.05\textwidth}
-    \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{lena_uolis_uniform.png}
-        \caption{modified}
+    \hspace{1em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{cameraman_uolis.png}
+        \caption{after uolis operator}
     \end{subfigure}
-    \caption{Image with uniform noise before and after Uolis operation}
+    \\
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{boats.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{1em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{boats_uolis.png}
+        \caption{after uolis operator}
+    \end{subfigure}
+    \caption{Results of applying uolis operator to various images}
+    \label{fig:uolis-more}
 \end{figure}
-
-\subsection{Complex analysis}
-
-As we can see the results differed between each other because of input images and their lack or not of noise. The biggest noticeable difference we can spot on the image with uniform noise.
 
 \section{Description of other changes which took place in the application}
 
