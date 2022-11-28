@@ -629,6 +629,7 @@ Secondly, we calculate their product, and input all the other values to the equa
 Finally, we multiply by the abovementioned normalization factor of 2550.
 
 \begin{lstlisting}[
+    basicstyle=\footnotesize\ttfamily,
     morekeywords={const}
 ]
 const NORMALIZATION_FACTOR: f64 = 2550.0;
@@ -649,8 +650,7 @@ for channel in 0..3 {
         .map(|x| x[channel] as f64)
         .product::<f64>();
     let power = (image.get_pixel(x, y)[channel] as f64).pow(4.0);
-    let log_base = power / product;
-    let log = f64::log10(log_base);
+    let log = f64::log10(power / product);
     pixel[channel] = (NORMALIZATION_FACTOR * log / 4.0) as u8
 }
 \end{lstlisting}
@@ -660,10 +660,7 @@ For pixels on edges, some of the $A$ neighbors do not exist, therefore, we just 
 \section{Analysis of the filtering results (non-linear filter)}
 \subsection{Results}
 
-The results of running the uolis operator are presented on fig. \ref{fig:uolis}.
-As we can see, the not normalized version is completely unreadable.
-However, when we boost the output,
-we can clearly see that this operator highlited the most prominent edges in the image.
+
 
 \begin{figure}[H]\centering
     \hfill
@@ -685,6 +682,11 @@ we can clearly see that this operator highlited the most prominent edges in the 
     \caption{Difference between ordinary and normalized uolis operator}
     \label{fig:uolis}
 \end{figure}
+
+The results of running the uolis operator are presented on fig. \ref{fig:uolis}.
+As we can see, the not normalized version is completely unreadable.
+However, when we boost the output,
+we can clearly see that this operator highlited the most prominent edges in the image.
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}
@@ -722,13 +724,14 @@ we can clearly see that this operator highlited the most prominent edges in the 
 
 \section{Description of other changes which took place in the application}
 
-During our project we divided the work equally,
-which enabled us to work faster and more efficiently.
-When it comes to the application itself we created unit tests for our calculations in order to avoid mistakes.
-Those tests quickly came to use, because of minor difficulties with mathematical equations.
-We also tried to do as much as we can operations on GPU instead of only CPU,
-which resulted in differences in running time and broadened our knowledge in coding.
+The application has a big change in terms of the structure, 
+we divided the monolythic project into a library responsible for image operations,
+and a binary, responsible for interfacing with user via CLI.
+This made the development process more easy, as the responsibilities were clearly divided and the project was easier to navigate.
 
+Learing from previous mistakes with implementing signal to noise ration,
+this time we created unit tests for our calculations in order to avoid mistakes.
+Those tests quickly came to use, because of minor difficulties with mathematical equations.
 
 \vfill
 \section*{Teacher's remarks}
