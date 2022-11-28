@@ -179,7 +179,7 @@ impl VarianceCoefficient2 {
                 sum += pow(histogram[channel][luma], 2) as f64;
             }
         }
-        let var2 = pow(sum, 2) / pow(image.width() * image.height() * 3, 2) as f64;
+        let var2 = sum / pow(image.width() * image.height() * 3, 2) as f64;
         var2
     }
 }
@@ -187,7 +187,7 @@ impl VarianceCoefficient2 {
 impl Characteristic for VarianceCoefficient2 {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let var2 = Self::analyze(image);
-        Ok(format!("{:10} {:6.3}", "Flattening Coefficient:", var2))
+        Ok(format!("{:10} {:6.6}", "Flattening Coefficient:", var2))
     }
 }
 
@@ -212,10 +212,7 @@ impl InformationSourceEntropy {
 impl Characteristic for InformationSourceEntropy {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let info_src_ent = Self::analyze(image);
-        Ok(format!(
-            "{:10} {:6.3}",
-            "Information source entropy:", info_src_ent
-        ))
+        Ok(format!("{:10} {:6.6}", "Information source entropy:", info_src_ent))
     }
 }
 
