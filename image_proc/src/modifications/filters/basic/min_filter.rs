@@ -2,16 +2,16 @@ use crate::modifications::filters::iterating::Neighbourhood;
 use crate::modifications::Transformation;
 use image::{ImageBuffer, Rgb, RgbImage};
 
-pub struct MinimumFilter {
+pub struct MinFilter {
     width: u32,
     height: u32,
 }
 
-impl MinimumFilter {
+impl MinFilter {
     impl_new!();
 }
 
-impl Transformation for MinimumFilter {
+impl Transformation for MinFilter {
     fn apply(&self, image: &mut RgbImage) {
         let h_offset = self.height / 2;
         let w_offset = self.width / 2;

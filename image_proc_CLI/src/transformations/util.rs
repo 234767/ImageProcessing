@@ -2,7 +2,7 @@ use crate::parsing::Args;
 use crate::transformations::histogram;
 use crate::transformations::histogram::HistogramConverter;
 use image_proc::modifications::filters::linear::optimized::LinearFilterGPU;
-use image_proc::modifications::geometric::scale::Scale;
+use image_proc::modifications::geometric::Scale;
 use image_proc::modifications::prelude::*;
 use num::Integer;
 use std::num::ParseFloatError;

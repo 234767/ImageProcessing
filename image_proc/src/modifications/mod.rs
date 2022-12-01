@@ -7,7 +7,9 @@ pub mod histogram_modifications;
 
 pub mod prelude {
     pub use super::elementary::*;
-    pub use super::filters::*;
+    pub use super::filters::basic::{GeometricMeanFilter, MaxFilter, MedianFilter, MinFilter};
+    pub use super::filters::linear::LinearFilter;
+    pub use super::filters::nonlinear::UolisOperator;
     pub use super::geometric::*;
     pub use super::histogram_modifications::*;
 }

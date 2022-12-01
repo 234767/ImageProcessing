@@ -6,6 +6,6 @@ mod min_filter;
 pub use gmean_filter::GeometricMeanFilter;
 pub use max_filter::MaxFilter;
 pub use median_filter::MedianFilter;
-pub use min_filter::MinimumFilter;
+pub use min_filter::MinFilter;
 
 pub mod gpu;

@@ -1,11 +1,7 @@
 use crate::parsing::Args;
-use image_proc::modifications::elementary::brightness::Brightness;
-use image_proc::modifications::elementary::contrast::Contrast;
-use image_proc::modifications::elementary::negative::Negative;
-use image_proc::modifications::geometric::flips::{DiagonalFlip, HorizontalFlip, VerticalFlip};
-use image_proc::modifications::prelude::gpu::*;
+use image_proc::modifications::filters::basic::gpu::*;
 use image_proc::modifications::prelude::*;
-use image_proc::modifications::*;
+use image_proc::modifications::{IdTransform, Transformation};
 use util::try_new_raleigh;
 
 mod histogram;
@@ -66,7 +62,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--minimum" => {
             let (width, height) = util::get_width_and_height(args)?;
-            Ok(Box::new(MinimumFilter::new(width, height)))
+            Ok(Box::new(MinFilter::new(width, height)))
         }
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
         "--lowpass" => Ok(Box::new(util::try_new_linear(args)?)),
