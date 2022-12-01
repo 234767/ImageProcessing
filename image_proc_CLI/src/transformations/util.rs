@@ -1,11 +1,11 @@
 use crate::parsing::Args;
 use crate::transformations::histogram;
 use crate::transformations::histogram::HistogramConverter;
-use image_proc::modifications::prelude::*;
 use image_proc::modifications::filters::linear::optimized::LinearFilterGPU;
+use image_proc::modifications::geometric::scale::Scale;
+use image_proc::modifications::prelude::*;
 use num::Integer;
 use std::num::ParseFloatError;
-use image_proc::modifications::geometric::scale::Scale;
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
     let factor = args.try_get_arg("amount")?;
@@ -112,15 +112,9 @@ pub fn try_new_linear(args: &Args) -> Result<LinearFilter, String> {
                 "Error while parsing -mask-scale argument: {}",
                 e.to_string()
             );
-            Ok(LinearFilter::from_flat_mask(
-                mask.try_into().unwrap(),
-                None,
-            ))
+            Ok(LinearFilter::from_flat_mask(mask.try_into().unwrap(), None))
         }
-        _ => Ok(LinearFilter::from_flat_mask(
-            mask.try_into().unwrap(),
-            None,
-        )),
+        _ => Ok(LinearFilter::from_flat_mask(mask.try_into().unwrap(), None)),
     }
 }
 

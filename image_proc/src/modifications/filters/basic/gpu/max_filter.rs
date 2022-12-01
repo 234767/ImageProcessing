@@ -1,6 +1,6 @@
-use image::RgbImage;
 use crate::gpu::{GPUConfig, InOutImageTransformationPipeline};
 use crate::modifications::Transformation;
+use image::RgbImage;
 
 pub struct MaxFilterGPU {
     x_radius: u32,

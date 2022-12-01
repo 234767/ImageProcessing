@@ -130,7 +130,8 @@ impl AsymmetryCoefficient {
                 sum += f64::pow(luma as f64 - mean, 3.0) * histogram[channel][luma] as f64;
             }
         }
-        let asymmetry = sum / (f64::pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
+        let asymmetry =
+            sum / (f64::pow(std_deviation, 3) * (image.width() * image.height() * 3) as f64);
         asymmetry
     }
 }

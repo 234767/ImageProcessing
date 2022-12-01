@@ -1,5 +1,5 @@
-use image::RgbImage;
 use crate::modifications::Transformation;
+use image::RgbImage;
 
 //(G1) Horizontal flip (--hflip)
 pub struct HorizontalFlip;

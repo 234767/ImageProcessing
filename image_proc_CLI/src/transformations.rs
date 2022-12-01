@@ -1,11 +1,11 @@
 use crate::parsing::Args;
-use image_proc::modifications::*;
 use image_proc::modifications::elementary::brightness::Brightness;
 use image_proc::modifications::elementary::contrast::Contrast;
 use image_proc::modifications::elementary::negative::Negative;
 use image_proc::modifications::geometric::flips::{DiagonalFlip, HorizontalFlip, VerticalFlip};
-use image_proc::modifications::prelude::*;
 use image_proc::modifications::prelude::gpu::*;
+use image_proc::modifications::prelude::*;
+use image_proc::modifications::*;
 use util::try_new_raleigh;
 
 mod histogram;

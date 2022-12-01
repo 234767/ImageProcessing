@@ -1,6 +1,6 @@
-use image::{ImageBuffer, Rgb, RgbImage};
 use crate::modifications::filters::iterating::Neighbourhood;
 use crate::modifications::Transformation;
+use image::{ImageBuffer, Rgb, RgbImage};
 
 pub struct MinimumFilter {
     width: u32,

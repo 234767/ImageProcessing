@@ -16,11 +16,10 @@ macro_rules! impl_try_new {
     };
 }
 
-
-mod median_filter;
 mod gmean_filter;
 mod max_filter;
+mod median_filter;
 
-pub use median_filter::MedianFilterGPU;
 pub use gmean_filter::GMeanFilterGPU;
 pub use max_filter::MaxFilterGPU;
+pub use median_filter::MedianFilterGPU;

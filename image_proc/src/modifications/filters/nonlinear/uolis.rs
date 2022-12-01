@@ -1,7 +1,7 @@
-use image::{ImageBuffer, Rgb, RgbImage};
-use num::pow::Pow;
 use crate::modifications::filters::is_edge;
 use crate::modifications::Transformation;
+use image::{ImageBuffer, Rgb, RgbImage};
+use num::pow::Pow;
 
 pub struct UolisOperator;
 

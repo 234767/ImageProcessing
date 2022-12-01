@@ -1,5 +1,5 @@
-use image::{Pixel, RgbImage};
 use crate::modifications::Transformation;
+use image::{Pixel, RgbImage};
 
 //(B1) Image brightness modification (--brightness)
 pub struct Brightness {

@@ -1,6 +1,6 @@
-use image::RgbImage;
 use crate::modifications::filters::is_edge;
 use crate::modifications::Transformation;
+use image::RgbImage;
 
 pub struct LinearFilter {
     mask: [[f64; 3]; 3],

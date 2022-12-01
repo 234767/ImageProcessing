@@ -1,7 +1,7 @@
-use image::{ImageBuffer, Rgb, RgbImage};
-use num::pow::Pow;
 use crate::modifications::filters::iterating::Neighbourhood;
 use crate::modifications::Transformation;
+use image::{ImageBuffer, Rgb, RgbImage};
+use num::pow::Pow;
 
 //(N1) geometric mean filter (--gmean)
 pub struct GeometricMeanFilter {

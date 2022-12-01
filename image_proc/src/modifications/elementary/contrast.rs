@@ -1,5 +1,5 @@
-use image::{Pixel, RgbImage};
 use crate::modifications::Transformation;
+use image::{Pixel, RgbImage};
 
 //(B2) Image contrast modification (--contrast)
 pub struct Contrast {

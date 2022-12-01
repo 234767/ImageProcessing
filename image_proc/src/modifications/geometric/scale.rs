@@ -1,5 +1,5 @@
-use image::{ImageBuffer, RgbImage};
 use crate::modifications::Transformation;
+use image::{ImageBuffer, RgbImage};
 
 pub struct Scale {
     factor_x: f64,

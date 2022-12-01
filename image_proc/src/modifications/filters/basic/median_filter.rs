@@ -1,6 +1,6 @@
-use image::{ImageBuffer, Rgb, RgbImage};
 use crate::modifications::filters::iterating::Neighbourhood;
 use crate::modifications::Transformation;
+use image::{ImageBuffer, Rgb, RgbImage};
 
 //(N1) Median filter (--median)
 pub struct MedianFilter {
