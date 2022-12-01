@@ -1,14 +1,16 @@
 use image::RgbImage;
 
-mod elementary;
-mod filters;
-mod geometric;
-mod histogram_modifications;
+pub mod elementary;
+pub mod filters;
+pub mod geometric;
+pub mod histogram_modifications;
 
-pub use elementary::*;
-pub use filters::*;
-pub use geometric::*;
-pub use histogram_modifications::*;
+pub mod prelude {
+    pub use super::elementary::*;
+    pub use super::filters::*;
+    pub use super::geometric::*;
+    pub use super::histogram_modifications::*;
+}
 
 pub trait Transformation {
     fn apply(&self, image: &mut RgbImage);

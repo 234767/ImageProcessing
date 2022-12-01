@@ -1,10 +1,11 @@
 use crate::parsing::Args;
 use crate::transformations::histogram;
 use crate::transformations::histogram::HistogramConverter;
-use image_proc::modifications::gpu_optimized::LowPassFilterGPU;
-use image_proc::modifications::{HRaleigh, LowPassFilter, Scale};
+use image_proc::modifications::prelude::*;
+use image_proc::modifications::filters::linear::optimized::LinearFilterGPU;
 use num::Integer;
 use std::num::ParseFloatError;
+use image_proc::modifications::geometric::scale::Scale;
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
     let factor = args.try_get_arg("amount")?;
@@ -45,10 +46,10 @@ pub fn get_histogram_modifier(args: &Args) -> Result<HistogramConverter, String>
     }
 }
 
-pub fn try_new_raleigh(args: &Args) -> Result<HRaleigh, String> {
+pub fn try_new_raleigh(args: &Args) -> Result<RayleighModification, String> {
     let gmin: u8 = args.try_get_arg("-gmin")?;
     let gmax: u8 = args.try_get_arg("-gmax")?;
-    Ok(HRaleigh::new(gmin, gmax))
+    Ok(RayleighModification::new(gmin, gmax))
 }
 
 fn try_parse_mask(args: &Args) -> Result<[f64; 9], String> {
@@ -99,10 +100,10 @@ fn try_parse_mask_scale(args: &Args) -> Option<Result<f64, String>> {
     }
 }
 
-pub fn try_new_lowpass(args: &Args) -> Result<LowPassFilter, String> {
+pub fn try_new_linear(args: &Args) -> Result<LinearFilter, String> {
     let mask = try_parse_mask(args)?;
     match try_parse_mask_scale(args) {
-        Some(Ok(scale)) => Ok(LowPassFilter::from_flat_mask(
+        Some(Ok(scale)) => Ok(LinearFilter::from_flat_mask(
             mask.try_into().unwrap(),
             Some(scale),
         )),
@@ -111,22 +112,22 @@ pub fn try_new_lowpass(args: &Args) -> Result<LowPassFilter, String> {
                 "Error while parsing -mask-scale argument: {}",
                 e.to_string()
             );
-            Ok(LowPassFilter::from_flat_mask(
+            Ok(LinearFilter::from_flat_mask(
                 mask.try_into().unwrap(),
                 None,
             ))
         }
-        _ => Ok(LowPassFilter::from_flat_mask(
+        _ => Ok(LinearFilter::from_flat_mask(
             mask.try_into().unwrap(),
             None,
         )),
     }
 }
 
-pub fn try_new_lowpass_gpu(args: &Args) -> Result<LowPassFilterGPU, String> {
+pub fn try_new_linear_gpu(args: &Args) -> Result<LinearFilterGPU, String> {
     let mask = try_parse_mask(args)?;
     match try_parse_mask_scale(args) {
-        Some(Ok(scale)) => Ok(LowPassFilterGPU::try_new(
+        Some(Ok(scale)) => Ok(LinearFilterGPU::try_new(
             mask.try_into().unwrap(),
             Some(scale),
         )?),
@@ -135,8 +136,8 @@ pub fn try_new_lowpass_gpu(args: &Args) -> Result<LowPassFilterGPU, String> {
                 "Error while parsing -mask-scale argument: {}",
                 e.to_string()
             );
-            Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?)
+            Ok(LinearFilterGPU::try_new(mask.try_into().unwrap(), None)?)
         }
-        _ => Ok(LowPassFilterGPU::try_new(mask.try_into().unwrap(), None)?),
+        _ => Ok(LinearFilterGPU::try_new(mask.try_into().unwrap(), None)?),
     }
 }

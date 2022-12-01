@@ -3,19 +3,19 @@ use crate::modifications::Transformation;
 use image::RgbImage;
 
 ///(H3) Raleigh final probability density function (--hraleigh).
-pub struct HRaleigh {
-    gmin: u8,
-    gmax: u8,
+pub struct RayleighModification {
+    g_min: u8,
+    g_max: u8,
 }
 
-impl HRaleigh {
-    pub fn new(gmin: u8, gmax: u8) -> Self {
-        assert!(gmax > gmin);
-        Self { gmin, gmax }
+impl RayleighModification {
+    pub fn new(g_min: u8, g_max: u8) -> Self {
+        assert!(g_max > g_min);
+        Self { g_min, g_max }
     }
 }
 
-impl Transformation for HRaleigh {
+impl Transformation for RayleighModification {
     fn apply(&self, image: &mut RgbImage) {
         let partial_sums: [[u32; 256]; 3] = {
             let histogram = Histogram::new(image);
@@ -38,7 +38,7 @@ impl Transformation for HRaleigh {
         };
 
         let image_size = image.width() * image.height();
-        let alpha = (self.gmax - self.gmin) as f64 / f64::sqrt(2.0 * f64::ln(image_size as f64));
+        let alpha = (self.g_max - self.g_min) as f64 / f64::sqrt(2.0 * f64::ln(image_size as f64));
 
         let brightness_lookup = {
             let mut brightness_lookup = [[0u8; 256]; 3];
@@ -51,8 +51,8 @@ impl Transformation for HRaleigh {
                     }
                     let log_base = image_size as f64 / (image_size - partial_sum + 1) as f64;
                     let root_base = 2.0 * alpha * alpha * f64::ln(log_base);
-                    brightness_lookup[channel][i] = self.gmin
-                        + f64::clamp(f64::sqrt(root_base), 0.0, (self.gmax - self.gmin) as f64)
+                    brightness_lookup[channel][i] = self.g_min
+                        + f64::clamp(f64::sqrt(root_base), 0.0, (self.g_max - self.g_min) as f64)
                             as u8;
                     if partial_sums[channel][i] == image_size {
                         break;

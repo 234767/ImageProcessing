@@ -1,6 +1,7 @@
 use crate::sample_image;
 use image::Rgb;
-use image_proc::modifications::{MaxFilter, Transformation};
+use image_proc::modifications::Transformation;
+use image_proc::modifications::filters::basic::max_filter::MaxFilter;
 
 fn test_max_filter(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();

@@ -1,5 +1,5 @@
 use crate::*;
-use image_proc::modifications::gpu_optimized::GMeanFilterGPU;
+use image_proc::modifications::filters::basic::gpu::gmean_filter::GMeanFilterGPU;
 
 fn test_gmean_filter_gpu(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();

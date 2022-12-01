@@ -1,5 +1,11 @@
 use crate::parsing::Args;
 use image_proc::modifications::*;
+use image_proc::modifications::elementary::brightness::Brightness;
+use image_proc::modifications::elementary::contrast::Contrast;
+use image_proc::modifications::elementary::negative::Negative;
+use image_proc::modifications::geometric::flips::{DiagonalFlip, HorizontalFlip, VerticalFlip};
+use image_proc::modifications::prelude::*;
+use image_proc::modifications::prelude::gpu::*;
 use util::try_new_raleigh;
 
 mod histogram;
@@ -24,7 +30,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--median-gpu" => {
             let (width, height) = util::get_width_and_height(args)?;
-            match gpu_optimized::MedianFilterGPU::try_new(width, height) {
+            match MedianFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
                     eprintln!("Error: {}", e);
@@ -39,7 +45,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--gmean-gpu" => {
             let (width, height) = util::get_width_and_height(args)?;
-            match gpu_optimized::GMeanFilterGPU::try_new(width, height) {
+            match GMeanFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
                     eprintln!("Error: {}", e);
@@ -50,7 +56,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         "--max-gpu" => {
             let (width, height) = util::get_width_and_height(args)?;
-            match gpu_optimized::MaxFilterGPU::try_new(width, height) {
+            match MaxFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
                     eprintln!("Error: {}", e);
@@ -63,10 +69,10 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             Ok(Box::new(MinimumFilter::new(width, height)))
         }
         "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
-        "--lowpass" => Ok(Box::new(util::try_new_lowpass(args)?)),
-        "--lowpass-gpu" => Ok(Box::new(util::try_new_lowpass_gpu(args)?)),
+        "--lowpass" => Ok(Box::new(util::try_new_linear(args)?)),
+        "--lowpass-gpu" => Ok(Box::new(util::try_new_linear_gpu(args)?)),
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
-        "--uolis" => Ok(Box::new(Uolis {})),
+        "--uolis" => Ok(Box::new(UolisOperator {})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

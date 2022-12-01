@@ -1,5 +1,5 @@
 use crate::*;
-use image_proc::modifications::MedianFilter;
+use image_proc::modifications::filters::basic::median_filter::MedianFilter;
 
 fn test_median_filter(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();

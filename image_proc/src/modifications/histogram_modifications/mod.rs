@@ -1,3 +1,3 @@
-mod raileigh;
+mod rayleigh;
 
-pub use raileigh::*;
+pub use rayleigh::*;

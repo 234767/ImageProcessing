@@ -6,9 +6,13 @@ macro_rules! impl_new {
     };
 }
 
-mod cpu_impl;
-pub mod gpu_optimized;
-pub use cpu_impl::*;
+pub mod basic;
+pub mod linear;
+pub mod nonlinear;
+
+pub use basic::*;
+pub use linear::*;
+pub use nonlinear::*;
 
 mod iterating {
     use image::{Rgb, RgbImage};
@@ -176,4 +180,8 @@ mod iterating {
             assert_eq!(6, result);
         }
     }
+}
+
+fn is_edge(image: &image::RgbImage, x: u32, y: u32) -> bool {
+    0 == x || x == image.width() - 1 || 0 == y || y == image.height() - 1
 }
