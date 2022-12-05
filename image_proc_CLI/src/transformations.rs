@@ -1,5 +1,6 @@
 use crate::parsing::Args;
 use image_proc::modifications::filters::basic::gpu::*;
+use image_proc::modifications::filters::RobertsOperator1;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
 use util::try_new_raleigh;
@@ -69,6 +70,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--lowpass-gpu" => Ok(Box::new(util::try_new_linear_gpu(args)?)),
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
         "--uolis" => Ok(Box::new(UolisOperator {})),
+        "--orobertsi" => Ok(Box::new(RobertsOperator1 {})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
