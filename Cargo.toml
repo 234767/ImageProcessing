@@ -1,4 +1,4 @@
 [workspace]
 members = [
-    "image_proc", "image_proc_CLI"
+    "image_proc", "image_proc_CLI", "image_proc_gui/src-tauri"
 ]
