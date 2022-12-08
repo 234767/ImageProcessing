@@ -14,3 +14,9 @@
 <div class="histogram">
 	<img src={$activeHistogramPath} alt="image_histogram">
 </div>
+
+<style>
+	.histogram > img {
+			width: 100%;
+	}
+</style>

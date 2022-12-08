@@ -1,9 +1,10 @@
 <script lang="ts">
-    import Greet from './lib/Greet.svelte'
+    import Histogram from "./lib/Histogram.svelte";
     import {tauri} from "@tauri-apps/api";
     import {listen} from "@tauri-apps/api/event";
     import {activeImagePath} from "./lib/stores";
-    import Histogram from "./lib/Histogram.svelte";
+    import Adjustments from "./lib/Adjustments.svelte";
+
     listen("file-open", (e) => {
         let path: string = e.payload.path
         activeImagePath.set(tauri.convertFileSrc(path))
@@ -14,12 +15,12 @@
 <main class="container">
 
 	<div class="image-view">
-		<!--suppress HtmlRequiredAltAttribute -->
 		<img id="active-image" src={$activeImagePath} alt="No image loaded. Use File->Open" />
 	</div>
 	<div class="column" id="adjustments-view">
-		<Histogram/>
-		<div class:Greet></div>
+		<p>Histogram</p>
+		<Histogram />
+		<Adjustments/>
 	</div>
 
 
