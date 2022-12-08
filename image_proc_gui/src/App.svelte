@@ -2,25 +2,23 @@
     import Greet from './lib/Greet.svelte'
     import {tauri} from "@tauri-apps/api";
     import {listen} from "@tauri-apps/api/event";
-    let img_src = "";
+    import {activeImagePath} from "./lib/stores";
+    import Histogram from "./lib/Histogram.svelte";
     listen("file-open", (e) => {
         let path: string = e.payload.path
-        loadImage(path)
+        activeImagePath.set(tauri.convertFileSrc(path))
     })
 
-    function loadImage(path: string) {
-        img_src = tauri.convertFileSrc(path)
-    }
 </script>
 
 <main class="container">
 
 	<div class="image-view">
 		<!--suppress HtmlRequiredAltAttribute -->
-		<img id="active-image" src={img_src} alt="No image loaded. Use File->Open" />
+		<img id="active-image" src={$activeImagePath} alt="No image loaded. Use File->Open" />
 	</div>
 	<div class="column" id="adjustments-view">
-		<div class="histogram">Histogram</div>
+		<Histogram/>
 		<div class:Greet></div>
 	</div>
 

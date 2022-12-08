@@ -512,7 +512,7 @@ Let $w,h$ be the dimensions of the image, and $m,n$, the dimensions of the sampl
 For each pixel, i.e.\ $wh$ times, we must calculate the median, which takes $\mathcal{O}(mn)$.
 Therefore, the total computational complexity is $\mathcal{O}(whmn)$.
 
-In terms of space complexity, since our computation operates on not one pixel, but a neighbourhood, we must avoid corrupting the state.
+In terms of space complexity, since our computation operates on not one pixel, but a neighbourhood, we must avoid corrupting the STATE.
 We cannot perform the operation in-place, but rather must create a second image buffer.
 Therefore the spacial complexity of the median filter is $\mathcal{O}(wh)$.
 

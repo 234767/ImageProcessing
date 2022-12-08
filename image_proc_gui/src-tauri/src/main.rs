@@ -3,33 +3,32 @@
     windows_subsystem = "windows"
 )]
 
-use image;
+use crate::histogram::update_active_image_histogram;
+use crate::state::STATE;
 use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, Window, Wry};
 use tauri_api::dialog::Response::*;
 
-#[derive(Clone, serde::Serialize)]
-struct OpenFileEventArgs {
-    path: String,
-}
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+mod events;
+mod histogram;
+mod state;
 
 fn open_file(window: &Window<Wry>) {
     let filter_list: Option<&str> = None::<&str>;
     let file = tauri_api::dialog::select(filter_list, None::<&str>);
+    let mut state = STATE.lock().unwrap();
     if let Ok(Okay(file)) = file {
-        window
-            .emit_all("file-open", OpenFileEventArgs { path: file.clone() })
-            .unwrap();
-        let image = image::io::Reader::open(file)
-            .unwrap()
-            .decode()
-            .unwrap()
-            .to_rgb8();
+        match &state.open_image(&file) {
+            Ok(_) => {
+                window
+                    .emit_all(
+                        "file-open",
+                        events::PathChangeEventArgs { path: file.clone() },
+                    )
+                    .unwrap();
+                update_active_image_histogram(&state, window);
+            }
+            Err(e) => panic!("{}", e),
+        }
     }
 }
 
@@ -49,7 +48,7 @@ fn main() {
             "open" => open_file(event.window()),
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        // .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

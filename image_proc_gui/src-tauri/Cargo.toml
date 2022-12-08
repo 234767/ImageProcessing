@@ -17,6 +17,8 @@ tauri = { version = "1.2", features = ["protocol-asset"] }
 tauri-api = "0.7.6"
 image_proc = { path = "../../image_proc" }
 image = "*"
+lazy_static = "1.4.0"
+uuid = "1.2.2"
 
 [features]
 # by default Tauri runs in production mode
