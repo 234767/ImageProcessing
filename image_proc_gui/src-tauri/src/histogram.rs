@@ -1,40 +1,22 @@
-use crate::events;
+use crate::util;
 use crate::state::AppState;
 use image::{ImageBuffer, RgbImage};
 use image_proc::histogram::Histogram;
-use std::fmt::format;
-use std::fs;
 use std::path::Path;
 use tauri::{Manager, Window, Wry};
-use uuid::Uuid;
+use crate::util::prepare_new_filename;
 
 pub fn update_active_image_histogram(state: &AppState, window: &Window<Wry>) {
     const FILE_PREFIX: &str = "histogram-original";
     match &state.active_image {
         None => {}
         Some(img) => {
-            for file in fs::read_dir(&state.temp_dir).unwrap() {
-                if file
-                    .as_ref()
-                    .unwrap()
-                    .path()
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with(FILE_PREFIX)
-                {
-                    fs::remove_file(file.unwrap().path()).unwrap();
-                }
-            }
-            let path = &state
-                .temp_dir
-                .join(format!("{}{}.bmp", FILE_PREFIX, Uuid::new_v4()));
+            let path = prepare_new_filename(&state.temp_dir, FILE_PREFIX);
             create_histogram(img, path.as_path());
             window
                 .emit_all(
                     "active-histogram-update",
-                    events::PathChangeEventArgs {
+                    util::PathChangeEventArgs {
                         path: String::from(path.to_str().unwrap()),
                     },
                 )
@@ -70,6 +52,5 @@ pub fn create_histogram(image: &RgbImage, path: &Path) {
         image::Rgb(pixel)
     });
 
-    println!("Saving histogram to {}", path.to_str().unwrap());
     histogram_image.save(path).unwrap();
 }

@@ -5,7 +5,7 @@
     import {activeImagePath} from "./lib/stores";
     import Adjustments from "./lib/Adjustments.svelte";
 
-    listen("file-open", (e) => {
+    listen("active-path-change", (e) => {
         let path: string = e.payload.path
         activeImagePath.set(tauri.convertFileSrc(path))
     })
