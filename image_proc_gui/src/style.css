@@ -23,16 +23,6 @@
 	text-align: center;
 }
 
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: 0.75s;
-}
-
-.logo.tauri:hover {
-	filter: drop-shadow(0 0 2em #24C8DB);
-}
 
 .row {
 	display: flex;
@@ -78,10 +68,6 @@ button:hover {
 input,
 button {
 	outline: none;
-}
-
-#greet-input {
-	margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
