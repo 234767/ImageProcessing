@@ -59,7 +59,7 @@ fn create_filter_submenu() -> Submenu {
     let conv = CustomMenuItem::new("convolution", "Convolution linear filter");
 
     let uolis = CustomMenuItem::new("uolis", "Uolis operator");
-    let roberts = CustomMenuItem::new("roberts","Roberts operator");
+    let roberts = CustomMenuItem::new("roberts", "Roberts operator");
 
     let operators_menu = Menu::new().add_item(uolis).add_item(roberts);
 
@@ -91,16 +91,16 @@ pub fn setup_menu_events(builder: Builder) -> Builder {
         let window = event.window();
         match event.menu_item_id() {
             "quit" => std::process::exit(0),
-            "open" => open_file(window),
-            "negative" => apply_negative(window),
-            "hflip" => apply_hflip(window),
-            "vflip" => apply_vflip(window),
-            "dflip" => apply_dflip(window),
-            "min" => apply_min_filter(window,3,3),
-            "max" => apply_max_filter(window,3,3),
-            "median" => apply_median_filter(window,3,3),
-            "gmean" => apply_gmean_filter(window,3,3),
-            "rayleigh" => apply_raleigh(window),
+            "open" => apply_and_update(open_file, window),
+            "negative" => apply_and_update(apply_negative, window),
+            "hflip" => apply_and_update(apply_hflip, window),
+            "vflip" => apply_and_update(apply_vflip, window),
+            "dflip" => apply_and_update(apply_dflip, window),
+            "min" => apply_and_update(|| apply_min_filter(3, 3), window),
+            "max" => apply_and_update(|| apply_max_filter(3, 3), window),
+            "median" => apply_and_update(|| apply_median_filter(3, 3), window),
+            "gmean" => apply_and_update(|| apply_gmean_filter(3, 3), window),
+            "rayleigh" => apply_and_update(apply_raleigh, window),
             _ => {}
         }
     })
