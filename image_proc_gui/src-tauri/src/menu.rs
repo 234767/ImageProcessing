@@ -101,6 +101,10 @@ pub fn setup_menu_events(builder: Builder) -> Builder {
             "median" => apply_and_update(|| apply_median_filter(3, 3), window),
             "gmean" => apply_and_update(|| apply_gmean_filter(3, 3), window),
             "rayleigh" => apply_and_update(apply_raleigh, window),
+            "mean" => apply_and_update(apply_linear_blur, window),
+            "gaussian-blur" => apply_and_update(apply_gaussian_blur, window),
+            "uolis" => apply_and_update(apply_uolis_operator, window),
+            "roberts" => apply_and_update(apply_roberts_operator1, window),
             _ => {}
         }
     })

@@ -94,6 +94,36 @@ pub fn apply_raleigh() -> String {
     apply_transfrom(&transform)
 }
 
+#[tauri::command]
+pub fn apply_linear_blur() -> String {
+    let transform = LinearFilter::from_flat_mask(
+        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        Some(1.0 / 9.0),
+    );
+    apply_transfrom(&transform)
+}
+
+#[tauri::command]
+pub fn apply_gaussian_blur() -> String {
+    let transform = LinearFilter::from_flat_mask(
+        [1.0, 2.0, 1.0, 2.0, 4.0, 2.0, 1.0, 2.0, 1.0],
+        Some(1.0 / 16.0),
+    );
+    apply_transfrom(&transform)
+}
+
+#[tauri::command]
+pub fn apply_uolis_operator() -> String {
+    let transform = UolisOperator{};
+    apply_transfrom(&transform)
+}
+
+#[tauri::command]
+pub fn apply_roberts_operator1() -> String {
+    let transform = RobertsOperator1{};
+    apply_transfrom(&transform)
+}
+
 pub fn apply_and_update<F>(command: F, window: &Window)
 where
     F: FnOnce() -> String,
