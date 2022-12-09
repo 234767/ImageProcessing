@@ -28,7 +28,10 @@ fn create_image_submenu() -> Submenu {
     let invert = CustomMenuItem::new("negative", "Invert");
     let submenu = Menu::new()
         .add_item(invert)
-        .add_submenu(create_transform_submenu());
+        .add_submenu(create_transform_submenu())
+        .add_submenu(create_filter_submenu())
+        .add_submenu(create_blur_submenu())
+        .add_submenu(create_histogram_submenu());
 
     Submenu::new("Image", submenu)
 }
@@ -40,6 +43,47 @@ fn create_transform_submenu() -> Submenu {
     let submenu = Menu::new().add_item(hflip).add_item(vflip).add_item(dflip);
 
     Submenu::new("Transform", submenu)
+}
+
+fn create_filter_submenu() -> Submenu {
+    let min = CustomMenuItem::new("min", "Minimum filter");
+    let max = CustomMenuItem::new("max", "Maximum filter");
+    let median = CustomMenuItem::new("median", "Median filter");
+    let gmean = CustomMenuItem::new("median", "Geometric mean filter");
+    let basic_filters = Menu::new()
+        .add_item(min)
+        .add_item(max)
+        .add_item(median)
+        .add_item(gmean);
+
+    let conv = CustomMenuItem::new("convolution", "Convolution linear filter");
+
+    let uolis = CustomMenuItem::new("uolis", "Uolis operator");
+    let roberts = CustomMenuItem::new("roberts","Roberts operator");
+
+    let operators_menu = Menu::new().add_item(uolis).add_item(roberts);
+
+    let submenu = Menu::new()
+        .add_submenu(Submenu::new("Basic", basic_filters))
+        .add_item(conv)
+        .add_submenu(Submenu::new("Non-linear operators", operators_menu));
+
+    Submenu::new("Filter", submenu)
+}
+
+fn create_blur_submenu() -> Submenu {
+    let mean = CustomMenuItem::new("mean", "Linear blur");
+    let gaussian_blur = CustomMenuItem::new("gaussian-blur", "Gaussian blur");
+    let blur_menu = Menu::new().add_item(mean).add_item(gaussian_blur);
+
+    Submenu::new("Blur", blur_menu)
+}
+
+fn create_histogram_submenu() -> Submenu {
+    let rayleigh = CustomMenuItem::new("hrayleigh", "Rayleigh PDF equalization");
+    let submenu = Menu::new().add_item(rayleigh);
+
+    Submenu::new("Histogram", submenu)
 }
 
 pub fn setup_menu_events(builder: Builder) -> Builder {
