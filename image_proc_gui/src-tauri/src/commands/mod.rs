@@ -2,6 +2,8 @@ use crate::histogram::update_active_image_histogram;
 use crate::state::STATE;
 use crate::util;
 use crate::util::prepare_new_filename;
+use image_proc::modifications::filters::*;
+use image_proc::modifications::prelude::*;
 use image_proc::modifications::Transformation;
 use tauri::Manager;
 use tauri_api::dialog::Response::Okay;
@@ -34,18 +36,58 @@ pub fn apply_negative(window: &Window) {
 }
 
 pub fn apply_hflip(window: &Window) {
-    let flip = image_proc::modifications::geometric::HorizontalFlip{};
+    let flip = image_proc::modifications::geometric::HorizontalFlip {};
     apply_transfrom(window, &flip);
 }
 
 pub fn apply_vflip(window: &Window) {
-    let flip = image_proc::modifications::geometric::VerticalFlip{};
+    let flip = image_proc::modifications::geometric::VerticalFlip {};
     apply_transfrom(window, &flip);
 }
 
 pub fn apply_dflip(window: &Window) {
-    let flip = image_proc::modifications::geometric::DiagonalFlip{};
+    let flip = image_proc::modifications::geometric::DiagonalFlip {};
     apply_transfrom(window, &flip);
+}
+
+pub fn apply_min_filter(window: &Window, width: u32, height: u32) {
+    let transform = MinFilter::new(width, height);
+    apply_transfrom(window, &transform);
+}
+
+pub fn apply_max_filter(window: &Window, width: u32, height: u32) {
+    match gpu::MaxFilterGPU::try_new(width, height) {
+        Ok(transform) => apply_transfrom(window, &transform),
+        Err(_) => {
+            let transform = MaxFilter::new(width, height);
+            apply_transfrom(window, &transform);
+        }
+    }
+}
+
+pub fn apply_median_filter(window: &Window, width: u32, height: u32) {
+    match gpu::MedianFilterGPU::try_new(width, height) {
+        Ok(transform) => apply_transfrom(window, &transform),
+        Err(_) => {
+            let transform = MedianFilter::new(width, height);
+            apply_transfrom(window, &transform);
+        }
+    }
+}
+
+pub fn apply_gmean_filter(window: &Window, width: u32, height: u32) {
+    match gpu::GMeanFilterGPU::try_new(width, height) {
+        Ok(transform) => apply_transfrom(window, &transform),
+        Err(_) => {
+            let transform = GeometricMeanFilter::new(width, height);
+            apply_transfrom(window, &transform);
+        }
+    }
+}
+
+pub fn apply_raleigh(window: &Window) {
+    let transform = RayleighModification::new(0, 255);
+    apply_transfrom(window, &transform);
 }
 
 fn apply_transfrom(window: &Window, transform: &impl Transformation) {

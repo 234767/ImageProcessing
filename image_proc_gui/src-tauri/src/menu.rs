@@ -49,7 +49,7 @@ fn create_filter_submenu() -> Submenu {
     let min = CustomMenuItem::new("min", "Minimum filter");
     let max = CustomMenuItem::new("max", "Maximum filter");
     let median = CustomMenuItem::new("median", "Median filter");
-    let gmean = CustomMenuItem::new("median", "Geometric mean filter");
+    let gmean = CustomMenuItem::new("gmean", "Geometric mean filter");
     let basic_filters = Menu::new()
         .add_item(min)
         .add_item(max)
@@ -80,7 +80,7 @@ fn create_blur_submenu() -> Submenu {
 }
 
 fn create_histogram_submenu() -> Submenu {
-    let rayleigh = CustomMenuItem::new("hrayleigh", "Rayleigh PDF equalization");
+    let rayleigh = CustomMenuItem::new("rayleigh", "Rayleigh PDF equalization");
     let submenu = Menu::new().add_item(rayleigh);
 
     Submenu::new("Histogram", submenu)
@@ -96,6 +96,11 @@ pub fn setup_menu_events(builder: Builder) -> Builder {
             "hflip" => apply_hflip(window),
             "vflip" => apply_vflip(window),
             "dflip" => apply_dflip(window),
+            "min" => apply_min_filter(window,3,3),
+            "max" => apply_max_filter(window,3,3),
+            "median" => apply_median_filter(window,3,3),
+            "gmean" => apply_gmean_filter(window,3,3),
+            "rayleigh" => apply_raleigh(window),
             _ => {}
         }
     })

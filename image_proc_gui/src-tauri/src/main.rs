@@ -9,8 +9,6 @@ mod state;
 mod util;
 mod commands;
 
-use commands::*;
-
 fn main() {
     let builder = tauri::Builder::default();
     let builder = menu::set_menu(builder);
