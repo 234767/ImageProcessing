@@ -24,6 +24,7 @@ pub fn get_comparers(args: &Args) -> Box<dyn ImageComparer> {
     return Box::new(composite);
 }
 
+//noinspection ALL
 pub fn get_characteristic(args: &Args) -> Box<dyn Characteristic> {
     let _args: &HashMap<String, String> = &args.args;
     let mut characteristics = CompositeCharacteristic::new();

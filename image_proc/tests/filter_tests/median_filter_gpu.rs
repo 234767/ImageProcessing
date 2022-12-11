@@ -1,5 +1,5 @@
 use crate::*;
-use image_proc::modifications::filters::basic::gpu::median_filter::MedianFilterGPU;
+use image_proc::modifications::filters::basic::gpu::MedianFilterGPU;
 
 fn test_median_filter_gpu(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();
