@@ -1,5 +1,5 @@
 use crate::*;
-use image_proc::modifications::filters::basic::gmean_filter::GeometricMeanFilter;
+use image_proc::modifications::filters::basic::GeometricMeanFilter;
 
 fn test_gmean_filter(width: u32, height: u32, channel: usize) {
     let mut image = sample_image();
