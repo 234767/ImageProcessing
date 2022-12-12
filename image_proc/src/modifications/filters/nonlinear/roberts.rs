@@ -1,4 +1,4 @@
-use crate::modifications::filters::is_edge;
+use crate::modifications::is_edge;
 use crate::modifications::Transformation;
 use image::{ImageBuffer, RgbImage};
 use num::traits::Pow;

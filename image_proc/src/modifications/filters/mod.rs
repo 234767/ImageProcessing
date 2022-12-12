@@ -181,7 +181,3 @@ mod iterating {
         }
     }
 }
-
-fn is_edge(image: &image::RgbImage, x: u32, y: u32) -> bool {
-    0 == x || x == image.width() - 1 || 0 == y || y == image.height() - 1
-}

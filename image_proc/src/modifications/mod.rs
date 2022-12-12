@@ -1,5 +1,5 @@
-use image::RgbImage;
-
+use image::{Pixel, RgbImage};
+use std::ops::Deref;
 pub mod elementary;
 pub mod filters;
 pub mod geometric;
@@ -24,4 +24,12 @@ pub struct IdTransform;
 
 impl Transformation for IdTransform {
     fn apply(&self, _image: &mut RgbImage) {}
+}
+
+fn is_edge<P, Container>(image: &image::ImageBuffer<P, Container>, x: u32, y: u32) -> bool
+where
+    P: Pixel,
+    Container: Deref<Target = [P::Subpixel]>,
+{
+    0 == x || x == image.width() - 1 || 0 == y || y == image.height() - 1
 }

@@ -1,4 +1,5 @@
-use image::RgbImage;
+use image::imageops::grayscale;
+use image::{ImageBuffer, RgbImage};
 use image_proc::modifications::Transformation;
 
 mod analysis;
