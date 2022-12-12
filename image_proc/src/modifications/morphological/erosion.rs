@@ -20,9 +20,8 @@ impl MorphologicalTransform for Erosion {
             if !is_foreground(pixel) {
                 continue;
             }
-            let new_image_mask = Mask::from_image(&image, x, y);
-            let mask = self.mask & new_image_mask;
-            if !mask.is_empty() {
+            let mask = self.mask & Mask::from_image(&image, x, y);
+            if mask == self.mask {
                 new_image.put_pixel(x, y, FOREGROUND_PIXEL);
             }
         }

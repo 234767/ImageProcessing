@@ -2,7 +2,7 @@ use super::is_foreground;
 use image::{GrayImage, ImageBuffer, Luma, Pixel};
 use std::ops::Deref;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Mask {
     data: u16, // 9 bits needed, so 2 bytes
 }
@@ -81,7 +81,7 @@ impl Mask {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.data != 0
+        self.data == 0
     }
 }
 
