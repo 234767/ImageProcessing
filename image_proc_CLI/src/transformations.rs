@@ -3,6 +3,7 @@ use image_proc::modifications::filters::basic::gpu::*;
 use image_proc::modifications::filters::RobertsOperator1;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
+use image_proc::modifications::filters::SobelOperator;
 use util::try_new_raleigh;
 
 mod histogram;
@@ -71,6 +72,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
         "--uolis" => Ok(Box::new(UolisOperator {})),
         "--orobertsi" => Ok(Box::new(RobertsOperator1 {})),
+        "--osobel" => Ok(Box::new(SobelOperator {})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
