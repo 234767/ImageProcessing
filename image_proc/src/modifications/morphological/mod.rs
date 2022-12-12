@@ -3,6 +3,9 @@ use image::imageops::grayscale;
 use image::{DynamicImage, GrayImage, Luma, RgbImage};
 
 const LUMA_THRESHOLD: u8 = 128;
+const FOREGROUND_PIXEL: Luma<u8> = Luma([255]);
+#[allow(dead_code)]
+const BACKGROUND_PIXEL: Luma<u8> = Luma([0]);
 
 pub trait MorphologicalTransform: Transformation {
     fn apply_morph_operation(&self, image: &mut GrayImage);
@@ -30,4 +33,6 @@ fn is_foreground(pixel: &Luma<u8>) -> bool {
 }
 
 pub mod mask;
+pub use mask::Mask;
 pub mod dilation;
+pub mod erosion;

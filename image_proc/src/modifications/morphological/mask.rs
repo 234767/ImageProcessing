@@ -79,6 +79,10 @@ impl Mask {
             false => Luma::from([0]),
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.data != 0
+    }
 }
 
 impl std::ops::BitAnd<Mask> for Mask {
