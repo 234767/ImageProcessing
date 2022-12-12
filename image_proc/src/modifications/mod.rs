@@ -4,6 +4,7 @@ pub mod elementary;
 pub mod filters;
 pub mod geometric;
 pub mod histogram_modifications;
+pub mod morphological;
 
 pub mod prelude {
     pub use super::elementary::*;
