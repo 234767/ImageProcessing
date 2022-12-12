@@ -5,6 +5,7 @@ pub mod filters;
 pub mod geometric;
 pub mod histogram_modifications;
 pub mod morphological;
+pub mod segmentation;
 
 pub mod prelude {
     pub use super::elementary::*;

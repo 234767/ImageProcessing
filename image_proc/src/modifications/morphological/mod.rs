@@ -36,3 +36,5 @@ pub mod mask;
 pub use mask::Mask;
 pub mod dilation;
 pub mod erosion;
+pub mod opening;
+pub mod closing;
