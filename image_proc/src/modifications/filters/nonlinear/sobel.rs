@@ -13,19 +13,20 @@ impl Transformation for SobelOperator {
                 continue;
             }
             for channel in 0..3 {
-                let X = image.get_pixel(x + 1, y - 1)[channel] as f64
+                let sobel_x = image.get_pixel(x + 1, y - 1)[channel] as f64
                     + 2.0 * image.get_pixel(x + 1, y)[channel] as f64
-                    + image.get_pixel(x + 1, y + 1)[channel]as f64
+                    + image.get_pixel(x + 1, y + 1)[channel] as f64
                     - (image.get_pixel(x - 1, y - 1)[channel] as f64
-                    + 2.0 * image.get_pixel(x - 1, y)[channel] as f64
-                    + image.get_pixel(x - 1, y + 1)[channel] as f64);
-                let Y = image.get_pixel(x - 1, y - 1)[channel] as f64
-                    + 2.0 * image.get_pixel(x , y -1 )[channel] as f64
+                        + 2.0 * image.get_pixel(x - 1, y)[channel] as f64
+                        + image.get_pixel(x - 1, y + 1)[channel] as f64);
+                let sobel_y = image.get_pixel(x - 1, y - 1)[channel] as f64
+                    + 2.0 * image.get_pixel(x, y - 1)[channel] as f64
                     + image.get_pixel(x + 1, y - 1)[channel] as f64
                     - (image.get_pixel(x - 1, y + 1)[channel] as f64
-                    + 2.0 * image.get_pixel(x , y + 1)[channel] as f64
-                    + image.get_pixel(x + 1, y + 1)[channel] as f64);
-                pixel[channel] = f64::sqrt(f64::pow(X as f64,2.0) + f64::pow(Y as f64,2.0)) as u8;
+                        + 2.0 * image.get_pixel(x, y + 1)[channel] as f64
+                        + image.get_pixel(x + 1, y + 1)[channel] as f64);
+                pixel[channel] =
+                    f64::sqrt(f64::pow(sobel_x as f64, 2.0) + f64::pow(sobel_y as f64, 2.0)) as u8;
             }
         }
         *image = new_image;

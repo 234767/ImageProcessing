@@ -1,9 +1,9 @@
 use crate::parsing::Args;
 use image_proc::modifications::filters::basic::gpu::*;
 use image_proc::modifications::filters::RobertsOperator1;
+use image_proc::modifications::filters::SobelOperator;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
-use image_proc::modifications::filters::SobelOperator;
 use util::try_new_raleigh;
 
 mod histogram;
