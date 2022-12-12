@@ -23,8 +23,7 @@ impl MorphologicalTransform for Dilation {
                 continue;
             }
             let new_image_mask = Mask::from_image(&new_image, x, y);
-            let mask =
-                self.mask | new_image_mask;
+            let mask = self.mask | new_image_mask;
             mask.write_to_image(&mut new_image, x, y);
         }
         *image = new_image;
