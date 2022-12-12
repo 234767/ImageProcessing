@@ -1,8 +1,24 @@
 use super::is_foreground;
-use image::{GrayImage, Luma};
+use image::{GrayImage, ImageBuffer, Luma, Pixel};
+use std::ops::Deref;
 
+#[derive(Copy, Clone)]
 pub struct Mask {
     data: u16, // 9 bits needed, so 2 bytes
+}
+
+fn is_unwritable<P, Container>(
+    image: &ImageBuffer<P, Container>,
+    x: u32,
+    y: u32,
+    i: u32,
+    j: u32,
+) -> bool
+where
+    P: Pixel,
+    Container: Deref<Target = [P::Subpixel]>,
+{
+    x + i == 0 || y + i == 0 || x + i > image.width() || y + j > image.height()
 }
 
 impl Mask {
@@ -12,8 +28,11 @@ impl Mask {
 
     pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Self {
         let mut mask = Self::new();
-        for i in 0..2 {
-            for j in 0..2 {
+        for i in 0..3 {
+            for j in 0..3 {
+                if is_unwritable(image, x, y, i, j) {
+                    continue;
+                }
                 mask.set_pixel(i, j, image.get_pixel(x + i - 1, y + j - 1));
             }
         }
@@ -21,8 +40,11 @@ impl Mask {
     }
 
     pub fn write_to_image(&self, image: &mut GrayImage, x: u32, y: u32) {
-        for i in 0..2 {
-            for j in 0..2 {
+        for i in 0..3 {
+            for j in 0..3 {
+                if is_unwritable(image, x, y, i, j) {
+                    continue;
+                }
                 image.put_pixel(x + i - 1, y + j - 1, self.get_pixel(i, j))
             }
         }

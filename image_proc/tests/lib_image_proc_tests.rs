@@ -36,3 +36,4 @@ fn sample_image_setup_correctly() {
 }
 
 mod filter_tests;
+mod morphological_operations_tests;
