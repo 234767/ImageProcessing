@@ -60,8 +60,12 @@ fn create_filter_submenu() -> Submenu {
 
     let uolis = CustomMenuItem::new("uolis", "Uolis operator");
     let roberts = CustomMenuItem::new("roberts", "Roberts operator");
+    let sobel = CustomMenuItem::new("sobel", "Sobel operator");
 
-    let operators_menu = Menu::new().add_item(uolis).add_item(roberts);
+    let operators_menu = Menu::new()
+        .add_item(uolis)
+        .add_item(roberts)
+        .add_item(sobel);
 
     let submenu = Menu::new()
         .add_submenu(Submenu::new("Basic", basic_filters))
@@ -105,6 +109,7 @@ pub fn setup_menu_events(builder: Builder) -> Builder {
             "gaussian-blur" => apply_and_update(apply_gaussian_blur, window),
             "uolis" => apply_and_update(apply_uolis_operator, window),
             "roberts" => apply_and_update(apply_roberts_operator1, window),
+            "sobel" => apply_and_update(apply_sobel_operator, window),
             _ => {}
         }
     })

@@ -124,6 +124,12 @@ pub fn apply_roberts_operator1() -> String {
     apply_transfrom(&transform)
 }
 
+#[tauri::command]
+pub fn apply_sobel_operator() -> String {
+    let transform = SobelOperator{};
+    apply_transfrom(&transform)
+}
+
 pub fn apply_and_update<F>(command: F, window: &Window)
 where
     F: FnOnce() -> String,
