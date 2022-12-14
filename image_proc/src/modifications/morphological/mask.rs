@@ -1,4 +1,4 @@
-use super::is_foreground;
+use super::{is_foreground, BACKGROUND_PIXEL, FOREGROUND_PIXEL};
 use image::{GrayImage, ImageBuffer, Luma, Pixel};
 use std::ops::Deref;
 
@@ -75,8 +75,8 @@ impl Mask {
         let bit_mask = 1 << (y * 3 + x);
         let foreground = &self.data & bit_mask != 0;
         match foreground {
-            true => Luma::from([255]),
-            false => Luma::from([0]),
+            true => FOREGROUND_PIXEL,
+            false => BACKGROUND_PIXEL,
         }
     }
 
