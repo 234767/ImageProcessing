@@ -104,3 +104,13 @@ impl std::ops::BitOr<Mask> for Mask {
         }
     }
 }
+
+impl std::ops::Not for Mask {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Self::Output {
+            data: !self.data
+        }
+    }
+}
