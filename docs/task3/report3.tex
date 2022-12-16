@@ -1,0 +1,255 @@
+\documentclass[12pt]{article}
+
+\input{../prelude.tex}
+\graphicspath{{img},{../img}}
+
+\usetikzlibrary{matrix}
+\tikzset{square matrix/.style={
+    matrix of nodes,
+    nodes in empty cells,
+    column sep=-\pgflinewidth, row sep=-\pgflinewidth,
+    nodes={draw,
+      minimum height=#1,
+      anchor=center,
+      text width=#1,
+      align=center,
+      inner sep=0pt
+    },
+  },
+  square matrix/.default=1.5em
+}
+
+\title{Task No.~3}
+
+\begin{document}
+\maketitle
+
+\section{Description of the implementation of the basic \texorpdfstring{\\ }{} morphological operations}
+
+\subsection*{Optimization}
+
+To make operations on binary images more efficient,
+we represent the binary mask not as an image or collection of coordinates,
+but as a slice of memory where each bit corresponds to a specific pixel.
+This is done to firstly reduce the memory size, and secondly to make the operations faster by enabling the use of
+binary operators, which are $\mathcal{O}(1)$.
+
+Since the mask is a finite cartesian coordinate plane, we can assign each point $(x,y)$,
+a unique number $n = x + wy$, where $w$ is the width of the coordinate plane.
+The pixel will be assigned the $n$-th bit.
+
+Therefore, for a $3\times3$ mask, it will be represented in the following way
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(Center.base)]
+        \matrix[square matrix]
+        {
+        |[fill=gray]| & |[fill=gray]| & \\
+        & |(Center)[fill=gray]| & \\
+        & & |[fill=gray]| \\
+        };
+    \end{tikzpicture}
+    $\; \Longleftrightarrow \; (100010011)_2$
+\end{center}
+
+\vfill
+
+However, since the input is in the image form, we need a function to convert between the image and binary representations.
+This function will take the image, as well as a set of $(x,y)$ coordinates, and construct the mask from the pixels neighboring $(x,y)$.
+
+\begin{equation}
+    \mathbf{M}(A,x,y) \to B
+\end{equation}
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(Center.base)]
+        \matrix[square matrix]
+        {
+        |[fill=gray]|&&|[fill=gray]|&&|[fill=gray]|\\
+        |[fill=gray]|&|[fill=gray]| & |[fill=gray]| && \\
+        && |(Center)[fill=gray]|{$\bullet$} && \\
+        && & |[fill=gray]| &|[fill=gray]| \\
+        &|[fill=gray]|&|[fill=gray]|&&|[fill=gray]|\\
+        };
+    \end{tikzpicture}
+    $\; \mapsto \; $
+    \begin{tikzpicture}[baseline=(Center.base)]
+        \matrix[square matrix]
+        {
+        |[fill=gray]| & |[fill=gray]| & \\
+        & |(Center)[fill=gray]| & \\
+        & & |[fill=gray]| \\
+        };
+    \end{tikzpicture}
+\end{center}
+
+\vfill
+\pagebreak[2]
+
+\begin{lstlisting}
+pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Mask {
+    let mut mask = Mask::new();
+    for i in 0..3 {
+        for j in 0..3 {
+            if is_unwritable(image, x, y, i, j) {
+                continue;
+            }
+            mask.set_pixel(
+                i, 
+                j, 
+                image.get_pixel(x + i - 1, y + j - 1)
+            );
+        }
+    }
+    mask
+}
+\end{lstlisting}
+
+\vspace{2em}
+We have also implemented the reverse function, to set the pixels in the image from the binary implementation.
+
+\begin{lstlisting}
+pub fn write_to_image(
+    &self, 
+    image: &mut GrayImage, 
+    x: u32, 
+    y: u32
+) {
+    for i in 0..3 {
+        for j in 0..3 {
+            if is_unwritable(image, x, y, i, j) {
+                continue;
+            }
+            image.put_pixel(
+                x + i - 1, 
+                y + j - 1, 
+                self.get_pixel(i, j)
+            );
+        }
+    }
+}
+\end{lstlisting}
+
+Note that this function, will overwrite the existing pixels if they are foreground in image, but background in mask.
+
+\pagebreak[4]
+\subsection{Dilation}
+
+The dilation of a binary image $A$ by a binary mask $B$ is defined as
+\begin{equation}
+    A \oplus B = \bigcup_{a \in A} B_a
+\end{equation}
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &&\\
+        &|(A)[fill=gray]|&|[fill=gray]|\\
+        |[fill=gray]|&|[fill=gray]|&\\
+        };
+    \end{tikzpicture}
+    $\; \oplus \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        & |[fill=gray]| & \\
+        & |[fill=gray]|$\odot$ & \\
+        & &  \\
+        };
+    \end{tikzpicture}
+    $\; = \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &|[fill=gray]|&|[fill=gray]|\\
+        |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+        |[fill=gray]|&|[fill=gray]|&\\
+        };
+    \end{tikzpicture}
+\end{center}
+
+To calculate the dilation of image $A$ by mask $B$, we first need to allocate a new image $A'$.
+This is done, because the dilation operating on more than one pixel, so we cannot corrupt the original data.
+
+Then, for each pixel $(x,y) \in A$, if $A(x,y)$ is foreground, 
+we perform the folliwing steps:
+\begin{enumerate}
+    \item Convert the neighbourhood of $(x,y)$ from $A'$ to binary mask $B'$
+    \item Binary or the acquired mask with the mask $B$
+    \item Save the result to the image $A'$
+\end{enumerate}
+
+\begin{lstlisting}
+for (x, y, pixel) in image.enumerate_pixels() {
+    if !is_foreground(pixel) {
+        continue;
+    }
+    let new_image_mask = Mask::from_image(&new_image, x, y);
+    let mask = self.mask | new_image_mask;
+    mask.write_to_image(&mut new_image, x, y);
+}
+\end{lstlisting}
+
+\subsection{Erosion}
+
+Erosion of $A$ by $B$ is defined as 
+\begin{equation}
+    A \ominus B = \left\{ (x,y) \mid B_{(x,y)} \subseteq A \right\}
+\end{equation}
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &&|[fill=gray]|\\
+        &|(A)[fill=gray]|&|[fill=gray]|\\
+        |[fill=gray]|&|[fill=gray]|&\\
+        };
+    \end{tikzpicture}
+    $\; \ominus \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        & |[fill=gray]| & \\
+        & |[fill=gray]|$\odot$ & \\
+        & &  \\
+        };
+    \end{tikzpicture}
+    $\; = \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &&\\
+        &&|[fill=gray]|\\
+        &|[fill=gray]|&\\
+        };
+    \end{tikzpicture}
+\end{center}
+
+We can check the condition that $B_{(x,y)} \subseteq A$ very easily by usin the binary and operation.
+\begin{equation}
+    B_{(x,y)} \subseteq A \;\Leftrightarrow\; B = \left( B \land \mathbf{M}(A,x,y) \right)
+\end{equation}
+
+\pagebreak[2]
+Therefore, to calculate $A \ominus B$, for each $(x,y) \in A$, we perform the following steps:
+\begin{enumerate}
+    \item Convert the neighbourhood of $(x,y)$ from $A$ to binary mask $B'$
+    \item Binary and the acquired mask with the mask $B$
+    \item If the result of the prevous step is equal to $B$, we set $A'(x,y)$ to foreground
+\end{enumerate}
+
+\pagebreak[3]
+\begin{lstlisting}
+for (x, y, pixel) in image.enumerate_pixels() {
+    let mask = self.mask & Mask::from_image(&image, x, y);
+    if mask == self.mask {
+        new_image.put_pixel(x, y, FOREGROUND_PIXEL);
+    }
+}
+\end{lstlisting}
+
+\section{Analysis of the results of the basic morphological operations}
+
+\end{document}
