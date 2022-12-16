@@ -250,6 +250,60 @@ for (x, y, pixel) in image.enumerate_pixels() {
 }
 \end{lstlisting}
 
+\subsection{Hit-or-miss transform}
+
+The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_1,B_2)$, is defined as
+\begin{equation}
+    A \circledast \mathbf{B} = \left\{ p \mid \biggerforall\limits_{\substack{b_1 \in B_1 \\ b_2 \in B_2}}\; p + b_1 \in A \land p + b_2 \notin A  \right\}
+\end{equation}
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &&|[fill=gray]|&&\\
+        &|[fill=gray]|&&|[fill=gray]|&\\
+        &|[fill=gray]|&|(A)[fill=gray]|&|[fill=gray]|&\\
+        &|[fill=gray]|&&|[fill=gray]|&\\
+        &&&&\\
+        };
+    \end{tikzpicture}
+    $\; \ominus \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        & |[fill=green]| & \\
+        & $\odot$ & |[fill=red]| \\
+        & &|[fill=red]|  \\
+        };
+    \end{tikzpicture}
+    $\; = \; $
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &&&&\\
+        &&&&\\
+        &&&|[fill=gray]|&\\
+        &|[fill=gray]|&&|[fill=gray]|&\\
+        &|[fill=gray]|&&|[fill=gray]|&\\
+        };
+    \end{tikzpicture}
+\end{center}
+
+However, for our implementation, we will use the following property: 
+\begin{equation}
+    A \circledast \mathbf{B} = (A \ominus B_1) \cap (A^C \ominus B_2)
+\end{equation}
+
+Which we can rewrite to make use of the binary operators as the following:
+
+\begin{equation}
+    A \circledast \mathbf{B} = \left\{ (x,y) \mid 
+    \Big(B_1 = \big(B_1 \land \mathbf{M}(A,x,y)\big)\Big) 
+    \land \Big( B_2 = \big( B_2 \land \neg \mathbf{M}(A,x,y) \big) \Big)
+    \right\}
+\end{equation}
+
 \section{Analysis of the results of the basic morphological operations}
 
 \end{document}
