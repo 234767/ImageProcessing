@@ -22,8 +22,12 @@ where
 }
 
 impl Mask {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { data: 0u16 }
+    }
+
+    pub const fn from_raw_bits(data: u16) -> Self {
+        Self { data }
     }
 
     pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Self {
@@ -109,8 +113,6 @@ impl std::ops::Not for &Mask {
     type Output = Mask;
 
     fn not(self) -> Self::Output {
-        Self::Output {
-            data: !self.data
-        }
+        Self::Output { data: !self.data }
     }
 }
