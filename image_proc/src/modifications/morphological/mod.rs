@@ -34,7 +34,9 @@ fn is_foreground(pixel: &Luma<u8>) -> bool {
 
 pub mod mask;
 pub use mask::Mask;
+
 pub mod dilation;
 pub mod erosion;
 pub mod opening;
 pub mod closing;
+pub mod hmt;
