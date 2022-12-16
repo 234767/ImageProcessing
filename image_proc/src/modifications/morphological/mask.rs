@@ -18,7 +18,7 @@ where
     P: Pixel,
     Container: Deref<Target = [P::Subpixel]>,
 {
-    x + i == 0 || y + i == 0 || x + i > image.width() || y + j > image.height()
+    x + i == 0 || y + j == 0 || x + i > image.width() || y + j > image.height()
 }
 
 impl Mask {
