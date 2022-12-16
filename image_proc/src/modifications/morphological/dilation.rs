@@ -22,8 +22,8 @@ impl MorphologicalTransform for Dilation {
             if !is_foreground(pixel) {
                 continue;
             }
-            let new_image_mask = Mask::from_image(&new_image, x, y);
-            let mask = self.mask | new_image_mask;
+            let new_image_mask = &Mask::from_image(&new_image, x, y);
+            let mask = &self.mask | new_image_mask;
             mask.write_to_image(&mut new_image, x, y);
         }
         *image = new_image;

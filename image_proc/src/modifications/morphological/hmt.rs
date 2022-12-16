@@ -25,9 +25,9 @@ impl MorphologicalTransform for HitOrMissTransform {
             if !is_foreground(pixel) {
                 continue;
             }
-            let img_mask = Mask::from_image(image, x, y);
-            let is_hit = self.hit_mask == (self.hit_mask & img_mask);
-            let is_miss = self.miss_mask == (self.miss_mask & (!img_mask));
+            let img_mask = &Mask::from_image(image, x, y);
+            let is_hit = self.hit_mask == (&self.hit_mask & img_mask);
+            let is_miss = self.miss_mask == (&self.miss_mask & &(!img_mask));
 
             if is_hit && is_miss {
                 new_image.put_pixel(x, y, FOREGROUND_PIXEL)

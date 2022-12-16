@@ -40,3 +40,4 @@ pub mod erosion;
 pub mod opening;
 pub mod closing;
 pub mod hmt;
+pub mod convex_hull;

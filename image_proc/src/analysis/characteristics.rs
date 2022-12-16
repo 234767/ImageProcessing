@@ -139,7 +139,7 @@ impl AsymmetryCoefficient {
 impl Characteristic for AsymmetryCoefficient {
     fn analyze(&self, image: &RgbImage) -> Result<String, String> {
         let asymmetry = Self::analyze(image);
-        Ok(format!("{:10} {:6.3}", "Asymmetry Coeficcient:", asymmetry))
+        Ok(format!("{:10} {:6.3}", "Asymmetry Coefficient:", asymmetry))
     }
 }
 
