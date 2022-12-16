@@ -1,5 +1,5 @@
-use image::imageops::grayscale;
-use image::{ImageBuffer, RgbImage};
+use std::process::exit;
+use image::{RgbImage};
 use image_proc::modifications::Transformation;
 
 mod analysis;
@@ -21,25 +21,27 @@ fn try_get_image(path: &String) -> Option<RgbImage> {
 }
 
 fn main() {
-    let args = parsing::parse_args();
+    let args = match parsing::parse_args() {
+        Some(args) => args,
+        None => {
+            eprintln!("Error: no arguments supplied");
+            exit(1);
+        }
+    };
 
-    if args.is_none() {
-        return ();
-    }
-
-    let args = args.unwrap();
-
-    let img = image::io::Reader::open(&args.input_file)
-        .unwrap()
-        .decode()
-        .unwrap()
-        .to_rgb8();
+    let img = match try_get_image(&args.input_file) {
+        Some(image) => image,
+        None => {
+            eprintln!("Error: could not find file {}", &args.input_file);
+            exit(1);
+        }
+    };
 
     let transformation: Box<dyn Transformation> = match get_transformation(&args) {
         Ok(t) => t,
         Err(e) => {
             eprintln!("Error: {}", e);
-            return ();
+            exit(1);
         }
     };
 
