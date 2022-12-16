@@ -2,7 +2,7 @@ use super::{is_foreground, BACKGROUND_PIXEL, FOREGROUND_PIXEL};
 use image::{GrayImage, ImageBuffer, Luma, Pixel};
 use std::ops::Deref;
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Mask {
     data: u16, // 9 bits needed, so 2 bytes
 }
@@ -85,28 +85,28 @@ impl Mask {
     }
 }
 
-impl std::ops::BitAnd<Mask> for Mask {
-    type Output = Self;
+impl std::ops::BitAnd<&Mask> for &Mask {
+    type Output = Mask;
 
-    fn bitand(self, rhs: Mask) -> Self::Output {
+    fn bitand(self, rhs: &Mask) -> Self::Output {
         Self::Output {
             data: self.data & rhs.data,
         }
     }
 }
 
-impl std::ops::BitOr<Mask> for Mask {
-    type Output = Self;
+impl std::ops::BitOr<&Mask> for &Mask {
+    type Output = Mask;
 
-    fn bitor(self, rhs: Mask) -> Self::Output {
+    fn bitor(self, rhs: &Mask) -> Self::Output {
         Self::Output {
             data: self.data | rhs.data,
         }
     }
 }
 
-impl std::ops::Not for Mask {
-    type Output = Self;
+impl std::ops::Not for &Mask {
+    type Output = Mask;
 
     fn not(self) -> Self::Output {
         Self::Output {
