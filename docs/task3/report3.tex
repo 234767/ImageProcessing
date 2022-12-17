@@ -2,7 +2,7 @@
 
 \input{../prelude.tex}
 \graphicspath{{img},{../img}}
-\usepackage{listings}
+
 \usetikzlibrary{matrix}
 \tikzset{square matrix/.style={
     matrix of nodes,
@@ -435,40 +435,63 @@ Our implementation uses a breadth-first search algorithm to expand the region fr
 
 \subsection{Implementation}
 
-In our implementation, $seed_x$ and $seed_y$ represent the x and y coordinates, respectively, of the seed point in the image chosen by the user. The seed point is also the starting point for the region growing algorithm. The $tolerance$ is also chosen by the user. Therefore, the 'RegionGrowing' struct was implement by declaring all of these three fields. Firstly, we are checking whether the chosen pixel is within the dimensions of the input image. If the seed point is within the image dimensions, the transformation for region growing can be performed.  Below the implementation of the 'Transformation' for 'Region Growing':
+In our implementation, \lstinline{seed_x} and \lstinline{seed_y} represent the $x$ and $y$ coordinates respectively, 
+of the seed point in the image chosen by the user. 
+The seed point is also the starting point for the region growing algorithm. 
+The \lstinline{tolerance} is also chosen by the user. 
+Firstly, we are checking whether the chosen pixel is within the dimensions of the input image. 
+If the seed point is within the image dimensions, 
+the transformation for region growing can be performed.  
+Below the implementation of the \lstinline{Transformation} trait for \lstinline{RegionGrowing}:
 
 \begin{lstlisting}
-impl Transformation for RegionGrowing {
-    fn apply(&self, image: &mut image::ImageBuffer<Rgb<u8>, Vec<u8>>) {
-        let mut new_image: GrayImage = ImageBuffer::new(image.width(), image.height());
-        let mut queue = VecDeque::new();
-        queue.push_back((self.seed_x, self.seed_y));
-        let seed_pixel = image.get_pixel(self.seed_x, self.seed_y);
-        while let Some((x, y)) = queue.pop_front() {
-            if x >= image.width() || y >= image.height() {
-                continue;
-            }
-            let pixel = image.get_pixel(x as u32, y as u32);
-            let new_image_pixel = new_image.get_pixel(x as u32, y as u32);
-            if new_image_pixel[0] == 0 && is_similar(pixel, seed_pixel , self.tolerance) {
-                new_image.put_pixel(x as u32, y as u32, Luma([255]));
-                queue.push_back((x + 1, y));
-                queue.push_back((x, y + 1));
-                queue.push_back((x - 1, y));
-                queue.push_back((x, y - 1));
-            }
-        }
-        //*image = new_image;
+    
+/* ensure seed_x and seed_y are within image */
+
+let mut new_image: GrayImage = 
+    ImageBuffer::new(image.width(), image.height());
+let seed_pixel = 
+    image.get_pixel(self.seed_x.get(), self.seed_y.get());
+let mut queue = VecDeque::new();
+queue.push_back((self.seed_x.get(), self.seed_y.get()));
+
+while let Some((x, y)) = queue.pop_front() {
+    if x >= image.width() || y >= image.height() {
+        continue;
+    }
+    let pixel = image.get_pixel(x as u32, y as u32);
+    let new_image_pixel = new_image.get_pixel(x as u32, y as u32);
+
+    if new_image_pixel[0] == 0 
+        && is_similar(pixel, seed_pixel, self.tolerance) {
+        new_image.put_pixel(x as u32, y as u32, Luma([255]));
+
+        queue.push_back((x + 1, y));
+        queue.push_back((x, y + 1));
+        queue.push_back((x - 1, y));
+        queue.push_back((x, y - 1));
     }
 }
+*image = DynamicImage::from(new_image).to_rgb8();
 \end{lstlisting}
-The 'is_similar' function was implemented by taking in a reference to a pixel of type Rgb<u8> and a reference to a seed pixel of the same type, as well as a tolerance value of type u8. It calculates the difference between the value of the pixel and the seed pixel and returns true if the difference is less than or equal to the tolerance value. Below the implementation of the 'is_similar' function:
+
+The \lstinline{is_similar} function was implemented by taking in a reference to a pixel
+and a reference to a seed pixel,
+as well as a tolerance value. 
+It calculates the difference between the value of the pixel 
+and the seed pixel and returns true if the difference is less than or equal 
+to the tolerance value. Below the implementation of the \lstinline{is_similar} function:
+
 \begin{lstlisting}
-fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) -> bool {
+fn is_similar(
+    pixel: &Rgb<u8>, 
+    seed_pixel: &Rgb<u8>, 
+    tolerance: u8
+) -> bool {
     (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
 }
-
 \end{lstlisting}
+
 \section{Analysis of the results of the assigned segmentation variant}
 \section{Description of other changes which took place in the application}
 
