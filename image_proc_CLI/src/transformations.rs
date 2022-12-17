@@ -5,8 +5,7 @@ use image_proc::modifications::filters::SobelOperator;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
 use image_proc::modifications::morphological::{dilation::Dilation, erosion::Erosion, hmt::HitOrMissTransform, convex_hull::ConvexHull, Mask};
-use util::{try_new_raleigh,try};
-use crate::transformations::util::{try_parse_hmt_kernel, try_parse_kernel};
+use util::{try_new_raleigh,try_parse_hmt_kernel, try_parse_kernel};
 
 mod histogram;
 mod util;
