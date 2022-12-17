@@ -56,8 +56,8 @@ fn hmt_convex_hull_test() {
     image.put_pixel(2, 1, fg);
 
     let transformation = HitOrMissTransform::new(
-        Mask::from_raw_bits(0b000000111),
-        Mask::from_raw_bits(0b000010000),
+        Mask::from_raw_data(0b000000111),
+        Mask::from_raw_data(0b000010000),
     );
 
     transformation.apply_morph_operation(&mut image);

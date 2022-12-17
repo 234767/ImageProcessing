@@ -7,20 +7,20 @@ pub struct ConvexHull;
 
 static STRUCTURAL_ELEMENTS: [(Mask, Mask); 4] = [
     (
-        Mask::from_raw_bits(0b001001001),
-        Mask::from_raw_bits(0b000010000),
+        Mask::from_raw_data(0b001001001),
+        Mask::from_raw_data(0b000010000),
     ),
     (
-        Mask::from_raw_bits(0b000000111),
-        Mask::from_raw_bits(0b000010000),
+        Mask::from_raw_data(0b000000111),
+        Mask::from_raw_data(0b000010000),
     ),
     (
-        Mask::from_raw_bits(0b100100100),
-        Mask::from_raw_bits(0b000010000),
+        Mask::from_raw_data(0b100100100),
+        Mask::from_raw_data(0b000010000),
     ),
     (
-        Mask::from_raw_bits(0b111000000),
-        Mask::from_raw_bits(0b000010000),
+        Mask::from_raw_data(0b111000000),
+        Mask::from_raw_data(0b000010000),
     ),
 ];
 
@@ -74,8 +74,8 @@ mod tests {
         image.put_pixel(2, 1, FOREGROUND_PIXEL);
 
         let transformation = HitOrMissTransform::new(
-            Mask::from_raw_bits(0b000000111),
-            Mask::from_raw_bits(0b000010000),
+            Mask::from_raw_data(0b000000111),
+            Mask::from_raw_data(0b000010000),
         );
 
         saturate_with_transform(&mut image, &transformation);
