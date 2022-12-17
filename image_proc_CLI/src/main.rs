@@ -1,5 +1,3 @@
-extern crate core;
-
 use std::process::exit;
 use image::{RgbImage};
 use image_proc::modifications::Transformation;

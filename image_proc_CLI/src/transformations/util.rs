@@ -5,7 +5,6 @@ use image_proc::modifications::filters::linear::optimized::LinearFilterGPU;
 use image_proc::modifications::geometric::Scale;
 use image_proc::modifications::prelude::*;
 use num::Integer;
-use std::num::ParseFloatError;
 use image_proc::modifications::segmentation::RegionGrowing;
 use std::num::{ParseFloatError, ParseIntError};
 
@@ -179,5 +178,5 @@ pub fn try_new_region_grow(args: &Args) -> Result<RegionGrowing, String> {
     let seed_x: u32 = args.try_get_arg("-x")?;
     let seed_y: u32 = args.try_get_arg("-y")?;
     let tolerance: u8 = args.try_get_arg("-tolerance")?;
-    Ok(RegionGrowing::new(seed_x, seed_y, tolerance).unwrap())
+    Ok(RegionGrowing::new(seed_x, seed_y, tolerance))
 }
