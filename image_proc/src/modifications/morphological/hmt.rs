@@ -14,7 +14,7 @@ impl HitOrMissTransform {
         }
     }
 
-    pub(crate) fn get_white_pixels<'img, 's>(
+    pub(crate) fn get_matching_pixels<'img, 's>(
         &'s self,
         image: &'img GrayImage,
     ) -> impl Iterator<Item = (u32, u32)> + 'img
@@ -39,7 +39,7 @@ impl_transform!(HitOrMissTransform);
 impl MorphologicalTransform for HitOrMissTransform {
     fn apply_morph_operation(&self, image: &mut GrayImage) {
         let mut new_image: GrayImage = ImageBuffer::new(image.width(), image.height());
-        for (x, y) in self.get_white_pixels(image) {
+        for (x, y) in self.get_matching_pixels(image) {
             new_image.put_pixel(x, y, FOREGROUND_PIXEL);
         }
         *image = new_image;

@@ -26,7 +26,7 @@ impl_transform!(ConvexHull);
 
 fn saturate_with_transform(image: &mut GrayImage, transform: &HitOrMissTransform) {
     loop {
-        let transform_result: Vec<_> = transform.get_white_pixels(image).collect();
+        let transform_result: Vec<_> = transform.get_matching_pixels(image).collect();
         if transform_result.len() == 0 {
             return;
         }
