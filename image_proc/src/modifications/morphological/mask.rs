@@ -26,8 +26,19 @@ impl Mask {
         Self { data: 0u16 }
     }
 
-    pub const fn from_raw_bits(data: u16) -> Self {
+    pub const fn from_raw_data(data: u16) -> Self {
         Self { data }
+    }
+
+    pub fn from_raw_bits(bits: &[u8]) -> Self {
+        debug_assert_eq!(bits.len(),9);
+        let mut mask = Self::new();
+        for (idx, &bit) in bits.iter().enumerate() {
+            if bit > 0 {
+                mask.data |= 1 << idx;
+            }
+        }
+        mask
     }
 
     pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Self {
