@@ -73,6 +73,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--uolis" => Ok(Box::new(UolisOperator {})),
         "--orobertsi" => Ok(Box::new(RobertsOperator1 {})),
         "--osobel" => Ok(Box::new(SobelOperator {})),
+        "--convexhull" => Ok(Box::new(image_proc::modifications::morphological::convex_hull::ConvexHull{})),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

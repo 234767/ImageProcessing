@@ -44,3 +44,25 @@ fn hmt_test() {
     assert!(!is_foreground(image.get_pixel(2, 1)));
     assert!(!is_foreground(image.get_pixel(1, 0)));
 }
+
+#[test]
+fn hmt_convex_hull_test() {
+    let fg = Luma::from([255u8]);
+    let mut image: GrayImage = ImageBuffer::new(3, 3);
+    image.put_pixel(0, 0, fg);
+    image.put_pixel(1, 0, fg);
+    image.put_pixel(2, 0, fg);
+    image.put_pixel(0, 1, fg);
+    image.put_pixel(2, 1, fg);
+
+    let transformation = HitOrMissTransform::new(
+        Mask::from_raw_bits(0b000000111),
+        Mask::from_raw_bits(0b000010000),
+    );
+
+    transformation.apply_morph_operation(&mut image);
+
+    assert!(is_foreground(image.get_pixel(1,1)));
+
+    assert!(!is_foreground(image.get_pixel(1,2)));
+}
