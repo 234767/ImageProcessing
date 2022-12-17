@@ -5,6 +5,7 @@ use image_proc::modifications::filters::SobelOperator;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
 use util::try_new_raleigh;
+use crate::transformations::util::try_new_region_grow;
 
 mod histogram;
 mod util;
@@ -73,6 +74,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--uolis" => Ok(Box::new(UolisOperator {})),
         "--orobertsi" => Ok(Box::new(RobertsOperator1 {})),
         "--osobel" => Ok(Box::new(SobelOperator {})),
+        "--region" => Ok(Box::new(try_new_region_grow(args)?)),
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
