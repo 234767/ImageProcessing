@@ -1,7 +1,7 @@
 use super::{Mask, MorphologicalTransform};
 use crate::modifications::morphological::hmt::HitOrMissTransform;
 use crate::modifications::morphological::{is_foreground, BACKGROUND_PIXEL, FOREGROUND_PIXEL};
-use image::{GrayImage};
+use image::GrayImage;
 
 pub struct ConvexHull;
 
@@ -30,11 +30,10 @@ fn saturate_with_transform(image: &mut GrayImage, transform: &impl Morphological
     loop {
         let mut new_image = image.clone();
         transform.apply_morph_operation(&mut new_image);
-        image_union(&mut new_image, image);
-        if new_image == *image {
+        if new_image.pixels().all(|p| !is_foreground(p)) {
             return;
         }
-        *image = new_image;
+        image_union(image, &new_image);
     }
 }
 
@@ -60,10 +59,10 @@ impl MorphologicalTransform for ConvexHull {
 
 #[cfg(test)]
 mod tests {
-    use image::{GrayImage, ImageBuffer};
-    use crate::modifications::morphological::{FOREGROUND_PIXEL, is_foreground, Mask};
-    use crate::modifications::morphological::hmt::HitOrMissTransform;
     use super::saturate_with_transform;
+    use crate::modifications::morphological::hmt::HitOrMissTransform;
+    use crate::modifications::morphological::{is_foreground, Mask, FOREGROUND_PIXEL};
+    use image::{GrayImage, ImageBuffer};
 
     #[test]
     fn saturate_with_transform_works() {
@@ -81,7 +80,7 @@ mod tests {
 
         saturate_with_transform(&mut image, &transformation);
 
-        assert!(is_foreground(image.get_pixel(1,1)));
-        assert!(is_foreground(image.get_pixel(1,2)));
+        assert!(is_foreground(image.get_pixel(1, 1)));
+        assert!(is_foreground(image.get_pixel(1, 2)));
     }
 }
