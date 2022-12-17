@@ -428,4 +428,48 @@ The second step is merging all of the resulting images into one.
     \caption{Result of applying the convex hull}
 \end{figure}
 
+\section{Description of the implementation of the assigned segmentation variant}
+\subsection{Description}
+Region growing is a simple region-based image segmentation method that involves starting from a seed point in the image and expanding the region to include neighboring pixels that have similar characteristics to the seed point. 
+Our implementation uses a breadth-first search algorithm to expand the region from the seed point. It maintains a queue of pixels to visit and adds the neighboring pixels of each pixel to the queue if they have a similar intensity value to the seed point, within a specified tolerance. The resulting image is a binary image with the region of interest marked in white and the rest of the image marked in black.
+
+\subsection{Implementation}
+
+In our implementation, $seed_x$ and $seed_y$ represent the x and y coordinates, respectively, of the seed point in the image chosen by the user. The seed point is also the starting point for the region growing algorithm. The $tolerance$ is also chosen by the user. Therefore, the 'RegionGrowing' struct was implement by declaring all of these three fields. Firstly, we are checking whether the chosen pixel is within the dimensions of the input image. If the seed point is within the image dimensions, the transformation for region growing can be performed.  Below the implementation of the 'Transformation' for 'Region Growing':
+
+impl Transformation for RegionGrowing {
+    fn apply(&self, image: &mut image::ImageBuffer<Rgb<u8>, Vec<u8>>) {
+        let mut new_image: GrayImage = ImageBuffer::new(image.width(), image.height());
+        let mut queue = VecDeque::new();
+        queue.push_back((self.seed_x, self.seed_y));
+        let seed_pixel = image.get_pixel(self.seed_x, self.seed_y);
+        while let Some((x, y)) = queue.pop_front() {
+            if x >= image.width() || y >= image.height() {
+                continue;
+            }
+            let pixel = image.get_pixel(x as u32, y as u32);
+            let new_image_pixel = new_image.get_pixel(x as u32, y as u32);
+            if new_image_pixel[0] == 0 && is_similar(pixel, seed_pixel , self.tolerance) {
+                new_image.put_pixel(x as u32, y as u32, Luma([255]));
+                queue.push_back((x + 1, y));
+                queue.push_back((x, y + 1));
+                queue.push_back((x - 1, y));
+                queue.push_back((x, y - 1));
+            }
+        }
+        //*image = new_image;
+    }
+}
+
+The 'is_similar' function was implemented by taking in a reference to a pixel of type Rgb<u8> and a reference to a seed pixel of the same type, as well as a tolerance value of type u8. It calculates the difference between the value of the pixel and the seed pixel and returns true if the difference is less than or equal to the tolerance value. Below the implementation of the 'is_similar' function:
+
+fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) -> bool {
+    (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
+}
+
+\section{Analysis of the results of the assigned segmentation variant}
+\section{Description of other changes which took place in the application}
+
+Your GUI ? <3
+
 \end{document}
