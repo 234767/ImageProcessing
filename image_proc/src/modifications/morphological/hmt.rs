@@ -1,5 +1,4 @@
-use super::{Mask, MorphologicalTransform};
-use crate::modifications::morphological::FOREGROUND_PIXEL;
+use super::{Mask, MorphologicalTransform, FOREGROUND_PIXEL};
 use image::{GrayImage, ImageBuffer};
 
 pub struct HitOrMissTransform {

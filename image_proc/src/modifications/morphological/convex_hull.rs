@@ -1,6 +1,4 @@
-use super::{Mask, MorphologicalTransform};
-use crate::modifications::morphological::hmt::HitOrMissTransform;
-use crate::modifications::morphological::{is_foreground, BACKGROUND_PIXEL, FOREGROUND_PIXEL};
+use super::{hmt::HitOrMissTransform, Mask, MorphologicalTransform, FOREGROUND_PIXEL};
 use image::GrayImage;
 
 pub struct ConvexHull;
@@ -26,25 +24,15 @@ static STRUCTURAL_ELEMENTS: [(Mask, Mask); 4] = [
 
 impl_transform!(ConvexHull);
 
-fn saturate_with_transform(image: &mut GrayImage, transform: &impl MorphologicalTransform) {
+fn saturate_with_transform(image: &mut GrayImage, transform: &HitOrMissTransform) {
     loop {
-        let mut new_image = image.clone();
-        transform.apply_morph_operation(&mut new_image);
-        if new_image.pixels().all(|p| !is_foreground(p)) {
+        let transform_result: Vec<_> = transform.get_white_pixels(image).collect();
+        if transform_result.len() == 0 {
             return;
         }
-        image_union(image, &new_image);
-    }
-}
-
-fn image_union(image: &mut GrayImage, new_image: &GrayImage) {
-    for (x, y, pixel) in image.enumerate_pixels_mut() {
-        let new_pixel = new_image.get_pixel(x, y);
-        *pixel = if is_foreground(pixel) || is_foreground(new_pixel) {
-            FOREGROUND_PIXEL
-        } else {
-            BACKGROUND_PIXEL
-        };
+        for (x, y) in transform_result {
+            image.put_pixel(x, y, FOREGROUND_PIXEL);
+        }
     }
 }
 
