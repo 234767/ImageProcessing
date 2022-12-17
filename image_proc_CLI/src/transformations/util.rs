@@ -7,6 +7,7 @@ use image_proc::modifications::prelude::*;
 use num::Integer;
 use std::num::ParseFloatError;
 use image_proc::modifications::segmentation::RegionGrowing;
+use std::num::{ParseFloatError, ParseIntError};
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
     let factor = args.try_get_arg("amount")?;
@@ -70,6 +71,43 @@ fn try_parse_mask(args: &Args) -> Result<[f64; 9], String> {
         }
         None => Err(String::from("Missing -mask argument")),
     }
+}
+
+pub fn try_parse_kernel(args: &Args) -> Result<Vec<i32>, String> {
+    match args.args.get("-kernel") {
+        Some(mask_string) => {
+            let mask: Vec<Result<i32, ParseIntError>> =
+                mask_string.split(";").map(|s| s.parse()).collect();
+            if mask.len() != 9 {
+                return Err(format!("Expected mask length of 9, got {}", mask.len()));
+            }
+            if let Some(Err(e)) = mask.iter().find(|x| x.is_err()) {
+                return Err(e.to_string());
+            }
+            let mask: Vec<i32> = mask.into_iter().map(|x| x.unwrap()).collect();
+            debug_assert_eq!(9, mask.len());
+            Ok(mask)
+        }
+        None => Err(String::from("Missing -mask argument")),
+    }
+}
+
+pub fn try_parse_hmt_kernel(args: &Args) -> Result<(Vec<u8>, Vec<u8>), String> {
+    let kernel = try_parse_kernel(args)?;
+
+    let hit: Vec<u8> = kernel
+        .clone()
+        .into_iter()
+        .map(|x| if x > 0 { 1 } else { 0 })
+        .collect();
+    let miss: Vec<u8> = kernel
+        .into_iter()
+        .map(|x| if x < 0 { 1 } else { 0 })
+        .collect();
+
+    debug_assert_eq!(hit.len(), miss.len());
+
+    Ok((hit, miss))
 }
 
 fn try_parse_mask_scale(args: &Args) -> Option<Result<f64, String>> {
