@@ -14,12 +14,13 @@ impl HitOrMissTransform {
         }
     }
 
-    pub(crate) fn get_matching_pixels<'img, 's>(
+    pub(crate) fn get_matching_pixels<'img, 's, 'out>(
         &'s self,
         image: &'img GrayImage,
-    ) -> impl Iterator<Item = (u32, u32)> + 'img
+    ) -> impl Iterator<Item = (u32, u32)> + 'out
     where
-        's: 'img,
+        'img: 'out,
+        's: 'out
     {
         image
             .enumerate_pixels()
