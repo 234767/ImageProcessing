@@ -2,7 +2,7 @@
 
 \input{../prelude.tex}
 \graphicspath{{img},{../img}}
-
+\usepackage{listings}
 \usetikzlibrary{matrix}
 \tikzset{square matrix/.style={
     matrix of nodes,
@@ -437,6 +437,7 @@ Our implementation uses a breadth-first search algorithm to expand the region fr
 
 In our implementation, $seed_x$ and $seed_y$ represent the x and y coordinates, respectively, of the seed point in the image chosen by the user. The seed point is also the starting point for the region growing algorithm. The $tolerance$ is also chosen by the user. Therefore, the 'RegionGrowing' struct was implement by declaring all of these three fields. Firstly, we are checking whether the chosen pixel is within the dimensions of the input image. If the seed point is within the image dimensions, the transformation for region growing can be performed.  Below the implementation of the 'Transformation' for 'Region Growing':
 
+\begin{lstlisting}
 impl Transformation for RegionGrowing {
     fn apply(&self, image: &mut image::ImageBuffer<Rgb<u8>, Vec<u8>>) {
         let mut new_image: GrayImage = ImageBuffer::new(image.width(), image.height());
@@ -460,13 +461,14 @@ impl Transformation for RegionGrowing {
         //*image = new_image;
     }
 }
-
+\end{lstlisting}
 The 'is_similar' function was implemented by taking in a reference to a pixel of type Rgb<u8> and a reference to a seed pixel of the same type, as well as a tolerance value of type u8. It calculates the difference between the value of the pixel and the seed pixel and returns true if the difference is less than or equal to the tolerance value. Below the implementation of the 'is_similar' function:
-
+\begin{lstlisting}
 fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) -> bool {
     (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
 }
 
+\end{lstlisting}
 \section{Analysis of the results of the assigned segmentation variant}
 \section{Description of other changes which took place in the application}
 
