@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 
 \input{../prelude.tex}
+\renewcommand{\subfiguresize}{.25\textwidth}
 \graphicspath{{img},{../img}}
 
 \usetikzlibrary{matrix}
@@ -390,6 +391,292 @@ for (x, y) in self.get_matching_pixels(image) {
 
 \pagebreak[2]
 \section{Analysis of the results of the basic morphological operations}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            &&\\
+            &|[fill=gray]|$\odot$&|[fill=gray]|\\
+            &&\\
+            };
+        \end{tikzpicture}
+        \caption{$B_1$}
+    \end{subfigure}
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            &&\\
+            &|[fill=gray]|$\odot$&\\
+            &|[fill=gray]|&\\
+            };
+        \end{tikzpicture}
+        \caption{$B_2$}
+    \end{subfigure}
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            };
+        \end{tikzpicture}
+        \caption{$B_3$}
+    \end{subfigure}
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            &|[fill=gray]|&\\
+            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
+            &|[fill=gray]|&\\
+            };
+        \end{tikzpicture}
+        \caption{$B_4$}
+    \end{subfigure}
+    \caption{Kernels used for testing}
+\end{figure}
+
+\subsection{Dilation}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-dilation-b1.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-dilation-b1.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of applying dilation with kernel $B_1$}
+\end{figure}   
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-dilation-b2.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-dilation-b2.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of applying dilation with kernel $B_1$}
+\end{figure}  
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-dilation-8adj.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-dilation-8adj.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of applying dilation with kernel $B_3$}
+\end{figure}    
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-dilation-4adj.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-dilation-4adj.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of applying dilation with kernel $B_4$}
+\end{figure} 
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat.png}}
+        \caption{original}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-dilation-b1.png}}
+        \caption{$B_1$}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-dilation-b2.png}}
+        \caption{$B_2$}
+    \end{subfigure}\\[1em]
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-dilation-b3.png}}
+        \caption{$B_3$}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-dilation-b4.png}}
+        \caption{$B_4$}
+    \end{subfigure}
+    \hspace{2em}
+    \caption{Results of applying dilation on the boat image}
+\end{figure} 
+
+\subsection{Erosion}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-erosion-b1.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-erosion-b1.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of erosion dilation with kernel $B_1$}
+\end{figure} 
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-erosion-b2.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-erosion-b2.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of erosion dilation with kernel $B_2$}
+\end{figure} 
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-erosion-8adj.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-erosion-8adj.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of erosion dilation with kernel $B_3$}
+\end{figure} 
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image1-erosion-4adj.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/image2-erosion-4adj.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Results of erosion dilation with kernel $B_4$}
+\end{figure} 
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat.png}}
+        \caption{original}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-erosion-b1.png}}
+        \caption{$B_1$}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-erosion-b2.png}}
+        \caption{$B_2$}
+    \end{subfigure}\\[1em]
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-erosion-b3.png}}
+        \caption{$B_3$}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \fbox{\includegraphics[width=.9\textwidth]{img/boat-erosion-b4.png}}
+        \caption{$B_4$}
+    \end{subfigure}
+    \hspace{2em}
+    \caption{Results of applying erosion on the boat image}
+\end{figure} 
 
 \section{Description of the implementation of the assigned variant of morphological algorithm}
 
