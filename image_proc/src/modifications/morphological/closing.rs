@@ -18,6 +18,6 @@ impl_transform!(Closing);
 impl MorphologicalTransform for Closing {
     fn apply_morph_operation(&self, image: &mut GrayImage) {
         Dilation::apply(&self.mask, image);
-        Erosion::applly(&self.mask, image);
+        Erosion::apply(&self.mask, image);
     }
 }
