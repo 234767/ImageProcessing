@@ -1097,10 +1097,34 @@ The results of applying the region merging are presented below:
         \includegraphics[width=\textwidth]{img/magda/region_output2.png}
         \caption{after}
     \end{subfigure}
-    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 8-bit gray cale images}
+    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 8-bits gray scale images}
 \end{figure}
 
+\begin{figure}[h]\centering
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/girlbw.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/region_output_new1.png}
+        \caption{after}
+    \end{subfigure}\\[2em]
+    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 1-bit binary image}
+\end{figure}
 
+\begin{figure}[h]\centering
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/girlc.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/region_output_new2.png}
+        \caption{after}
+    \end{subfigure}\\[2em]
+    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 24-bits color image}
+\end{figure}
 
 As we can clearly see, depending on a user input, the output picture can change. In both cases, the program did indeed 'merged' pixels of the same value and produced the pictures above. Overall, the success of a region merging operation will depend on the specific input of the data by a user and an input image. By carefully selecting appropriate criteria for merging and carefully evaluating the results, it is possible to achieve good results with region merging in many image processing applications.
 
