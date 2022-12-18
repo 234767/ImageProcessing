@@ -1097,12 +1097,14 @@ The results of applying the region merging are presented below:
         \includegraphics[width=\textwidth]{img/magda/region_output2.png}
         \caption{after}
     \end{subfigure}
-    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100}
+    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 8-bit gray cale images}
 \end{figure}
+
+
 
 As we can clearly see, depending on a user input, the output picture can change. In both cases, the program did indeed 'merged' pixels of the same value and produced the pictures above. Overall, the success of a region merging operation will depend on the specific input of the data by a user and an input image. By carefully selecting appropriate criteria for merging and carefully evaluating the results, it is possible to achieve good results with region merging in many image processing applications.
 
-The results of a region merging operation can be evaluated in a number of ways. One common metric is the mean squared error (MSE) between the original image and the merged regions. This can be used to measure the accuracy of the region merging operation and to identify any artifacts or distortions that may have been introduced. Below we present a table with this comparison.
+The results of a region merging operation can be evaluated in a number of ways. One common metric is the mean squared error (MSE) between the original image and the merged regions. This can be used to measure the accuracy of the region merging operation and to identify any artifacts or distortions that may have been introduced. 
 
 
 \section{Description of other changes which took place in the application}
