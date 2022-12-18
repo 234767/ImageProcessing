@@ -1000,6 +1000,26 @@ fn is_similar(
 \section{Analysis of the results of the assigned segmentation variant}
 \section{Description of other changes which took place in the application}
 
-Your GUI ? <3
+Using the console interface proved to be very tedious to use for a long time,
+especially with repeated transformations and long filepaths.
+Additionally, to view the results, we would have to save to external file and open it every time.
+
+To make things more easy to use, we started work on a graphical user interface for our project.
+
+This was pretty straightforward to set up, as all of our image operations were in form of a static library, 
+decoupled from the console interface. 
+Thus, it was just a matter of creating another binary with a reference to our image operations.
+
+For the framework, we decided to try Tauri (see \href{https://tauri.app/about/intro}{tauri webpage}), which is similar to elecron, with the key difference that has better performance, and smaller executable size.
+The backend code is written in Rust, and consists mostly of calling our image operations library,
+and the frontend is done using Svelte (see \href{https://svelte.dev}{svelte webpage}) with typescript.
+
+So far, we were only able to implement some of the transformations from the previous tasks,
+but with some free time we might expand the functionality in the future.
+
+\begin{figure}[H]\centering
+    \includegraphics[width=.8\textwidth]{gui_screenshot.png}
+    \caption{Graphical user interface for our image processing application}
+\end{figure}
 
 \end{document}
