@@ -459,6 +459,15 @@ for (x, y) in self.get_matching_pixels(image) {
 
 \subsection{Dilation}
 
+The result of running dilation with different kernels are presented below.
+The operation seems to behave correctly, 
+adding pixels to the image exactly as expected.
+
+As the morphological operations are very simple, there is not much possibility for conclusions.
+
+The only remark that comes to head is that the shape of the kernel greately influences the shape of the output,
+namely kernel $B_3$ is very ``blocky'' and so are the results of applying it, whereas $B_4$ and its outputs are more ``round''.
+
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
         \includegraphics[width=\textwidth]{img/image1.png}
@@ -695,6 +704,16 @@ for (x, y) in self.get_matching_pixels(image) {
     \caption{Results of applying erosion on the boat image}
 \end{figure} 
 
+Similarly to dilation, the erosion is also a very simple operation so there is not much to say as conclusions.
+
+All of the structuring elements had the effect that would be logically expected knowing the principle of erosion.
+Kernel $B_1$ removed left-most pixels, whereas $B_2$ removed pixels from the bottom of the shape,
+thus resulting in $B_1$ removing thin vertical lines, and $B_2$ removing thin horizontal lines.
+
+As for kernels $B_3$ and $B_4$ the results look similar.
+They both removed pixels from all of the sides of the image, with only difference that $B_3$ removed more pixels,
+and $B_4$ being more subtle, leaving the result with less straight lines, overall looking more ``smooth'' for lack of a better word.
+
 \subsection{Opening}
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -726,7 +745,7 @@ for (x, y) in self.get_matching_pixels(image) {
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{img/magda/output3.png}
+        % \includegraphics[width=\textwidth]{img/magda/output3.png}
         \caption{after}
     \end{subfigure}\\[1em]
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -735,7 +754,7 @@ for (x, y) in self.get_matching_pixels(image) {
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{img/magda/output4.png}
+        % \includegraphics[width=\textwidth]{img/magda/output4.png}
         \caption{after}
     \end{subfigure}
     \caption{Results of applying closing operation}
@@ -1077,7 +1096,7 @@ fn is_similar(
 
 The results of applying the region merging are presented below:
 
-\begin{figure}[h]\centering
+\begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/magda/boat.png}
         \caption{before}
@@ -1100,7 +1119,7 @@ The results of applying the region merging are presented below:
     \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 8-bits gray scale images}
 \end{figure}
 
-\begin{figure}[h]\centering
+\begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/magda/girlbw.png}
         \caption{before}
@@ -1113,7 +1132,7 @@ The results of applying the region merging are presented below:
     \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100 on 1-bit binary image}
 \end{figure}
 
-\begin{figure}[h]\centering
+\begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/magda/girlc.png}
         \caption{before}
