@@ -5,6 +5,8 @@ use image_proc::modifications::filters::SobelOperator;
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
 use image_proc::modifications::morphological::{dilation::Dilation, erosion::Erosion, hmt::HitOrMissTransform, convex_hull::ConvexHull, Mask};
+use image_proc::modifications::morphological::closing::Closing;
+use image_proc::modifications::morphological::opening::Opening;
 use util::{try_new_raleigh,try_parse_hmt_kernel, try_parse_kernel};
 use crate::transformations::util::try_new_region_grow;
 
@@ -92,6 +94,14 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             )))
         }
         "--convexhull" => Ok(Box::new(ConvexHull{})),
+        "--opening"=>{
+            let kernel: Vec<u8> = try_parse_kernel(args)?.into_iter().map(|x| if x > 0 {1} else {0}).collect();
+            Ok(Box::new(Opening{ dilation: Dilation::new(Mask::from_raw_bits(&kernel)), erosion: Erosion::new(Mask::from_raw_bits(&kernel)) }))
+        }
+        "--closing"=> {
+            let kernel: Vec<u8> = try_parse_kernel(args)?.into_iter().map(|x| if x > 0 {1} else {0}).collect();
+            Ok(Box::new(Closing{ erosion: Erosion::new(Mask::from_raw_bits(&kernel)), dilation: Dilation::new(Mask::from_raw_bits(&kernel)) }))
+        }
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }

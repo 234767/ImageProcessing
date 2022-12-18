@@ -54,5 +54,6 @@ impl Transformation for RegionGrowing {
 }
 
 fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) -> bool {
-    (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
+    let diff: i64 = (pixel[0] as i32).wrapping_sub(seed_pixel[0] as i32).abs() as i64;
+    diff <= tolerance as i64
 }

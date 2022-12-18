@@ -4,8 +4,8 @@ use crate::modifications::morphological::erosion::Erosion;
 use crate::modifications::morphological::{Mask, MorphologicalTransform};
 
 pub struct Opening {
-    dilation: Dilation,
-    erosion: Erosion,
+    pub dilation: Dilation,
+    pub erosion: Erosion,
 }
 
 impl Opening {
