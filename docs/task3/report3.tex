@@ -678,6 +678,12 @@ for (x, y) in self.get_matching_pixels(image) {
     \caption{Results of applying erosion on the boat image}
 \end{figure} 
 
+\subsection{Opening}
+
+\subsection{Closing}
+
+\subsection{Hit-or-miss transform}
+
 \section{Description of the implementation of the assigned variant of morphological algorithm}
 
 \subsection{Description}
@@ -766,7 +772,7 @@ The final result of the computation is the union of all $D^i$ for all $i$.
 \subsection*{The error in the formula}
 
 If the task was to be followed exactly as given in the instruction, it would not yield the desired result.
-To be precise, for all $\mathbf{B}^i$ in fig. \ref{fig:convex-hull-kernels}:
+To be precise, for all $\mathbf{B}^i$ in fig. \ref{fig:convex-hull-kernels}, for any image $A$:
 \begin{equation*}
     (A \otimes \mathbf{B}^i) \neq \emptyset \implies \mbox{\large$\mathsurround0pt\nexists$} D^i
 \end{equation*}
