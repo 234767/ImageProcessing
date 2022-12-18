@@ -20,7 +20,6 @@
 	<div class="column" id="adjustments-view">
 		<p>Histogram</p>
 		<Histogram />
-		<Adjustments/>
 	</div>
 
 
