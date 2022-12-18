@@ -905,7 +905,9 @@ for (hit, miss) in &STRUCTURAL_ELEMENTS {
 
 \section{Analysis of the results of the assigned variant of morphological algorithm}
 
-\begin{figure}[H]\centering
+The results of applying the convex hull are presented below:
+
+\begin{figure}[h]\centering
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/image1.png}
         \caption{before}
@@ -927,6 +929,38 @@ for (hit, miss) in &STRUCTURAL_ELEMENTS {
     \end{subfigure}
     \caption{Result of applying the convex hull}
 \end{figure}
+
+As we can see, the convex hull worked as expected, eliminating any concavities in the input shape.
+It procuded a diagonal rectangle, completely containing the original shape.
+The downside of the algorithm is that it often outputs more pixels that are actually needed for the shape to be convex.
+
+For testing we chose custom shapes, prepared in such a way, that has a diagonal skeleton, while the other has an orthogonal one.
+The algorithm yielded much better result for the othogonal-based shape, 
+because it outputs less unnecessary pixels.
+
+This behaviour is to be expected, because the choice of the structuring elements on fig. \ref{fig:convex-hull-kernels}, 
+is such, that the algorithm will expand the shape in the orthogonal directions.
+Therefore, the resulting shape will be rectangle composed of $45^\circ$-rotated lines.
+
+As a consequence, the dimensions of output shape will be dictated by the maximum taxicab distance from the corners of the image.
+
+That is, let $C$ be the set of the corners of an image:
+\begin{equation*}
+    C = \big\{ (0,0),\, (x_{max},0),\, (y_{max},0),\, (x_{max},y_{max}) \big\}
+\end{equation*}
+Then, if $A$ is the image before applying convex hull, and $A'$ is after:
+\begin{equation*}
+    \biggerforall_{(x_0,y_0) \in C} \;
+    \max\limits_{(x,y) \in A}\Big\{ |x - x_0| + |y - y_0| \Big\} = \max\limits_{(x,y) \in A'} \Big\{ |x - x_0| + |y - y_0| \Big\}
+\end{equation*}
+
+Therefore, although the diagonal and orthogonal shapes have the similar dimensions in the sense of euclidean geometry,
+in taxicab distance, the orthogonal shape will have much smaller dimensions, and thus, much smaller dovex hull.
+
+If, however, instead of structuring elements from fig. \ref{fig:convex-hull-kernels}, 
+we used such elements, that the image would expand diagonally, thus producing convex hull in the shape of an orthogonal rectangle,
+we would find that the dimensions of the hull are determined by the dimensions of the shape in terms of the chebyshev distance,
+thus yielding better results for the diagonal shape.
 
 \section{Description of the implementation of the assigned segmentation variant}
 \subsection{Description}
