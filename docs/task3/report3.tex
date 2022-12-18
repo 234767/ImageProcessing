@@ -1074,6 +1074,31 @@ fn is_similar(
 \end{lstlisting}
 
 \section{Analysis of the results of the assigned segmentation variant}
+
+The results of applying the region merging are presented below:
+
+\begin{figure}[h]\centering
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/boat.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/region_output.png}
+        \caption{after}
+    \end{subfigure}\\[2em]
+
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/camera.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/magda/region_output2.png}
+        \caption{after}
+    \end{subfigure}
+    \caption{Result of applying region merging of a chosen randomly pixel (100,100) and tolerance of 100}
+\end{figure}
 \section{Description of other changes which took place in the application}
 
 Using the console interface proved to be very tedious to use for a long time,
