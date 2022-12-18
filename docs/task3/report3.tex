@@ -106,7 +106,7 @@ pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Mask {
 \end{lstlisting}
 
 \vspace{2em}
-We have also implemented the reverse function, 
+We have also implemented the reverse function,
 to set the pixels in the image from the binary implementation.
 
 \begin{lstlisting}
@@ -131,8 +131,8 @@ pub fn write_to_image(
 }
 \end{lstlisting}
 
-Note that this function, 
-will overwrite the existing pixels if they are foreground in image, 
+Note that this function,
+will overwrite the existing pixels if they are foreground in image,
 but background in mask.
 
 \pagebreak[4]
@@ -172,9 +172,9 @@ The dilation of a binary image $A$ by a binary mask $B$ is defined as
     \end{tikzpicture}
 \end{center}
 
-To calculate the dilation of image $A$ by mask $B$, 
+To calculate the dilation of image $A$ by mask $B$,
 we first need to allocate a new image $A'$.
-This is done, because the dilation operating on more than one pixel, 
+This is done, because the dilation operating on more than one pixel,
 so we cannot corrupt the original data.
 
 Then, for each pixel $(x,y) \in A$, if $A(x,y)$ is foreground,
@@ -308,18 +308,71 @@ The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_1,B_2)$, is defined as
 
 However, for our implementation, we will use the following property:
 \begin{equation}
-    A \circledast \mathbf{B} = (A \ominus B_1) \cap (A^C \ominus B_2)
+    A \otimes \mathbf{B} = (A \ominus B_1) \cap (A^C \ominus B_2)
 \end{equation}
 
 Which we can rewrite to make use of the binary operators as the following:
 
 \begin{equation}
-    A \circledast \mathbf{B} = \left\{ (x,y) \mid
+    A \otimes \mathbf{B} = \left\{ (x,y) \mid
     \Big(B_1 = \big(B_1 \land \mathbf{M}(A,x,y)\big)\Big)
     \land \Big( B_2 = \big( B_2 \land \neg \mathbf{M}(A,x,y) \big) \Big)
     \right\}
 \end{equation}
 
+The core of our HMT transform implementation is a helper function \lstinline{get_matching_pixels}, which operates on an iterator.
+It takes a reference to the image, and outputs the $(x,y)$ coordinates of the pixels that fullfill the conditions of the HMT.
+
+We could just use a for-loop and check the condition inside of it, however,
+a helper function operating on an iterator will prove to be very useful when implementing the convex hull in section \ref{sec:convex-hull-impl}.
+
+The function is implemented in the following way:
+
+\begin{lstlisting}
+pub(crate) fn get_matching_pixels<'img, 's, 'out>(
+    &'s self,
+    image: &'img GrayImage,
+) -> impl Iterator<Item = (u32, u32)> + 'out
+where
+    'img: 'out,
+    's: 'out
+{
+    image
+      .enumerate_pixels()
+      .map(|(x, y, _)| (x, y)) // discard the pixel reference
+      .filter(|(x, y)| {
+          let img_mask = &Mask::from_image(image, *x, *y);
+          let is_hit = 
+            self.hit_mask == (&self.hit_mask & img_mask);
+          let is_miss = 
+            self.miss_mask == (&self.miss_mask & &(!img_mask));  
+          
+          is_hit && is_miss
+      })
+}
+\end{lstlisting}
+
+\begin{remark}
+    Although the function signature might look a bit intimidating due to annotations such as \lstinline{'img}, \lstinline{'s}, and \lstinline{'out},
+    it is actually very straightforward.
+    These are so-called \emph{lifetime annotations} that helps the rust compiler ensure the memory safety at compile time.
+    Since the function result operates on the data from the image, and the HMT struct holding the structring elements,
+    we have to constraint the lifetime of the result, such that the HMT struct and the image both have to be valid for at least
+    as long as the result of the function.
+\end{remark}
+
+Finally, the implementation of the HMT is very straightforward, we just allocate a buffer for the new image
+and set all the pixels that match the HMT conditions as foreground.
+
+\begin{lstlisting}
+let mut new_image: GrayImage = /* ... */
+for (x, y) in self.get_matching_pixels(image) {
+    new_image.put_pixel(x, y, FOREGROUND_PIXEL);
+}
+*image = new_image;
+\end{lstlisting}
+
+\pagebreak[2]
 \section{Analysis of the results of the basic morphological operations}
 
 \section{Description of the implementation of the assigned variant of morphological algorithm}
@@ -330,15 +383,28 @@ The algorithm we had to implement is the convex hull.
 It is used to eliminate any concavities from the shape.
 The calculation of a convex hull of some image $A$ works as follows:
 
-\begin{enumerate}
-    \item For each structuring element $\mathbf{B}^i$ shown on fig. \ref{fig:convex-hull-kernels}:
-    \begin{enumerate}
-        \item We start with $X^i_0 = A$
-        \item We repeatedly calculate $X^i_k = (X^i_{k-1} \otimes \mathbf{B}^i) \cup A$
-        \item When $X^i_k = X^i_{k-1}$, we return $D^i = X^i_k$
-    \end{enumerate}
-    \item The final result is union of all $D^i$
-\end{enumerate}
+For each structuring element $\mathbf{B}^i$ from elements shown on fig. \ref{fig:convex-hull-kernels},
+we repeatedly apply the HMT, until there is no change.
+
+For calculating the subsequent iterations of applying the HMTs, we have formula
+\begin{equation}
+    X^i_k = (X^i_{k-1} \otimes \mathbf{B}^i) \cup A
+    \label{eq:convex-hull-iteration-err}
+\end{equation}
+Our starting condition is
+\begin{equation}
+    X^i_0 = A
+    \label{eq:convex-hull-start-condition}
+\end{equation}
+We apply equation (\ref*{eq:convex-hull-iteration-err}) until we find the smallest $k$ such that:
+\begin{equation}
+    X^i_k = X^i_{k-1}
+    \label{eq:convex-hull-final-condition}
+\end{equation}
+
+When we reach the final condition, we yield the result $X^i_k$ as $D^i$.
+
+The final result of the computation is the union of all $D^i$ for all $i$.
 
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{.2\textwidth}\centering
@@ -393,13 +459,81 @@ The calculation of a convex hull of some image $A$ works as follows:
     \label{fig:convex-hull-kernels}
 \end{figure}
 
+\pagebreak[4]
+\subsection*{The error in the formula}
+
+If the task was to be followed exactly as given in the instruction, it would not yield the desired result.
+To be precise, for all $\mathbf{B}^i$ in fig. \ref{fig:convex-hull-kernels}:
+\begin{equation*}
+    (A \otimes \mathbf{B}^i) \neq \emptyset \implies \mbox{\large$\mathsurround0pt\nexists$} D^i
+\end{equation*}
+
+\begin{proof}
+    In all of the structuring elements in fig.~\ref{fig:convex-hull-kernels}, the origin (marked $\odot$) is marked as `miss', meaning, that it must not be present in the original image.
+    As a consequence of that:
+    \begin{equation}
+        \biggerforall\nolimits_i\biggerforall\nolimits_k \; X^i_k \cap (X^i_k \otimes \mathbf{B}^i) = \emptyset
+        \label{eq:convex-hull-disjoint-hmt}
+    \end{equation}
+
+    Now, if we substitute the final condition (\ref{eq:convex-hull-final-condition}) to eq.~(\ref{eq:convex-hull-iteration-err}), we get:
+    \begin{equation}
+        X^i_k = (X^i_k \otimes \mathbf{B}^i) \cup A
+        \label{eq:convex-hull-iteration-error-substituted}
+    \end{equation}
+
+    Applying $X = X \cap X$, we get
+    \begin{align}
+        X^i_k & = X^i_k \cap \big((X^i_k \otimes \mathbf{B}^i) \cup A \big) \nonumber\\
+              & = \big(X^i_k \cap (X^i_k \otimes \mathbf{B}^i) \big) \cup (X^i_k \cap A)
+    \end{align}
+
+    Applying eq.~(\ref{eq:convex-hull-disjoint-hmt})
+    \begin{align}
+        X^i_k &= \emptyset \cup (X^i_k \cap A) \nonumber \\
+        &= X^i_k \cap A \nonumber \\
+        &= A \label{eq:convex-hull-only-zero-k}
+    \end{align}
+    Which is the same as eq.~(\ref{eq:convex-hull-start-condition}), so $k=0$.\\
+    Finally, substituting this equation to eq.~(\ref{eq:convex-hull-disjoint-hmt}), we get
+    \begin{equation}
+        A \cap (A \otimes \mathbf{B}^i) = \emptyset
+    \end{equation}
+
+    Which is true if and only if $A = \emptyset \lor (A\otimes\mathbf{B}^i) = \emptyset$.\\
+    Therefore,
+    \begin{align*}
+        \bigexists k \iff A = \emptyset \lor (A \otimes \mathbf{B}^i) = \emptyset \\
+        \mbox{\large$\mathsurround0pt\nexists$} k \iff A \neq \emptyset \land (A \otimes \mathbf{B}^i) \neq \emptyset
+    \end{align*}
+
+    Because $A = \emptyset \implies (A \otimes \mathbf{B}^i) = \emptyset$, $(A \otimes \mathbf{B}^i) \neq \emptyset \implies A \neq \emptyset$:
+    \begin{equation*}
+        (A \otimes \mathbf{B}^i) \neq \emptyset \implies \mbox{\large$\mathsurround0pt\nexists$} k \implies \mbox{\large$\mathsurround0pt\nexists$} D^i
+    \end{equation*}
+\end{proof}
+
+As the proof shows, there are two possibilities of running the algorithm:
+\begin{enumerate}
+    \item If $(A \otimes \mathbf{B}^i) = \emptyset$, then $k = 0$ and algorith return the original image unchanged
+    \item Else, the algorithm gets stuck in the infinite loop trying to find $k$ that does not exist
+\end{enumerate}
+
 \pagebreak[2]
 \subsection{Implementation}
+\label{sec:convex-hull-impl}
 
 The implementation can be split into 2 distinct parts.
 The first one is calculating $D^i$ for a given $B^i$.
 We will refer to this step as ``saturating'' the image with the hit-or-miss transformation.
 The second step is merging all of the resulting images into one.
+
+With standard implementation, we would have to loop over the entire image to calculate the HMT.
+Then, we would need to loop again to perform the image union with $A$.
+This would have to be performed $k$ times for each structuring element.
+Finally we would have to loop over the entire image once again to merge all of $D^i$.
+However, we are able to perform major optimization by removing the need of applying the union altogether.
+We can acomplish this by, instead of using standard HMT, making use of the abovementioned function that returns an iterator to all of the pixels that fullfill the HMT conditions.
 
 
 
@@ -430,18 +564,18 @@ The second step is merging all of the resulting images into one.
 
 \section{Description of the implementation of the assigned segmentation variant}
 \subsection{Description}
-Region growing is a simple region-based image segmentation method that involves starting from a seed point in the image and expanding the region to include neighboring pixels that have similar characteristics to the seed point. 
+Region growing is a simple region-based image segmentation method that involves starting from a seed point in the image and expanding the region to include neighboring pixels that have similar characteristics to the seed point.
 Our implementation uses a breadth-first search algorithm to expand the region from the seed point. It maintains a queue of pixels to visit and adds the neighboring pixels of each pixel to the queue if they have a similar intensity value to the seed point, within a specified tolerance. The resulting image is a binary image with the region of interest marked in white and the rest of the image marked in black.
 
 \subsection{Implementation}
 
-In our implementation, \lstinline{seed_x} and \lstinline{seed_y} represent the $x$ and $y$ coordinates respectively, 
-of the seed point in the image chosen by the user. 
-The seed point is also the starting point for the region growing algorithm. 
-The \lstinline{tolerance} is also chosen by the user. 
-Firstly, we are checking whether the chosen pixel is within the dimensions of the input image. 
-If the seed point is within the image dimensions, 
-the transformation for region growing can be performed.  
+In our implementation, \lstinline{seed_x} and \lstinline{seed_y} represent the $x$ and $y$ coordinates respectively,
+of the seed point in the image chosen by the user.
+The seed point is also the starting point for the region growing algorithm.
+The \lstinline{tolerance} is also chosen by the user.
+Firstly, we are checking whether the chosen pixel is within the dimensions of the input image.
+If the seed point is within the image dimensions,
+the transformation for region growing can be performed.
 Below the implementation of the \lstinline{Transformation} trait for \lstinline{RegionGrowing}:
 
 \begin{lstlisting}
@@ -477,9 +611,9 @@ while let Some((x, y)) = queue.pop_front() {
 
 The \lstinline{is_similar} function was implemented by taking in a reference to a pixel
 and a reference to a seed pixel,
-as well as a tolerance value. 
-It calculates the difference between the value of the pixel 
-and the seed pixel and returns true if the difference is less than or equal 
+as well as a tolerance value.
+It calculates the difference between the value of the pixel
+and the seed pixel and returns true if the difference is less than or equal
 to the tolerance value. Below the implementation of the \lstinline{is_similar} function:
 
 \begin{lstlisting}

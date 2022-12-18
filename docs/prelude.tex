@@ -21,6 +21,7 @@
 
 \theoremstyle{definition}
 \newtheorem*{example}{Example}
+\newtheorem*{remark}{Remark}
 \setlength{\headheight}{40pt}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{1ex}
@@ -32,7 +33,7 @@
 \DeclareMathOperator*{\biggerforall}{\mbox{\Large $\mathsurround0pt\forall$}} 
 \DeclareMathOperator*{\bigforall}{\mbox{\large $\mathsurround0pt\forall$}} 
 \DeclareMathOperator*{\biggerexists}{\mbox{\Large $\mathsurround0pt\exists$}} 
-\DeclareMathOperator*{\bigexists}{\mbox{\large $\mathsurround0pt\exists$}} 
+\DeclareMathOperator*{\bigexists}{\mbox{\large $\mathsurround0pt\exists$}}
 
 \lstset {
     captionpos = b,
@@ -52,11 +53,14 @@
         continue,
         break,
         pub,
+        fn,
+        crate,
         struct,
         impl,
         type,
         self,
         Self,
+        where,
         as,
         u8,u16,u32,u64,
         i8,i16,i32,i64,
