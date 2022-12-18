@@ -278,15 +278,15 @@ impl MorphologicalTransform for Opening {
     }
 }
 \end{lstlisting}
-The Opening struct has two fields, dilation and erosion, which are instances of the Dilation and Erosion structs, respectively. 
+The Opening struct has two fields, dilation and erosion, which are instances of the Dilation and Erosion structs, respectively.
 
 \subsection{Closing}
 
 \subsection{Hit-or-miss transform}
 
-The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_1,B_2)$, is defined as
+The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_{hit},B_{miss})$, is defined as
 \begin{equation}
-    A \otimes \mathbf{B} = \left\{ p \mid \biggerforall\limits_{\substack{b_1 \in B_1 \\ b_2 \in B_2}}\; p + b_1 \in A \land p + b_2 \notin A  \right\}
+    A \otimes \mathbf{B} = \left\{ p \mid \biggerforall\limits_{\substack{b_{hit} \in B_{hit} \\ b_{miss} \in B_{miss}}}\; p + b_{hit} \in A \land p + b_{miss} \notin A  \right\}
 \end{equation}
 
 \begin{center}
@@ -475,7 +475,7 @@ The final result of the computation is the union of all $D^i$ for all $i$.
     \label{fig:convex-hull-kernels}
 \end{figure}
 
-\pagebreak[4]
+\pagebreak[3 ]
 \subsection*{The error in the formula}
 
 If the task was to be followed exactly as given in the instruction, it would not yield the desired result.
@@ -500,58 +500,98 @@ To be precise, for all $\mathbf{B}^i$ in fig. \ref{fig:convex-hull-kernels}:
 
     Applying $X = X \cap X$, we get
     \begin{align}
-        X^i_k & = X^i_k \cap \big((X^i_k \otimes \mathbf{B}^i) \cup A \big) \nonumber\\
+        X^i_k & = X^i_k \cap \big((X^i_k \otimes \mathbf{B}^i) \cup A \big) \nonumber    \\
               & = \big(X^i_k \cap (X^i_k \otimes \mathbf{B}^i) \big) \cup (X^i_k \cap A)
     \end{align}
 
     Applying eq.~(\ref{eq:convex-hull-disjoint-hmt})
     \begin{align}
-        X^i_k &= \emptyset \cup (X^i_k \cap A) \nonumber \\
-        &= X^i_k \cap A \nonumber \\
-        &= A \label{eq:convex-hull-only-zero-k}
+        X^i_k & = \emptyset \cup (X^i_k \cap A) \nonumber \\
+              & = X^i_k \cap A \nonumber                  \\
+              & = A \label{eq:convex-hull-only-zero-k}
     \end{align}
     Which is the same as eq.~(\ref{eq:convex-hull-start-condition}), so $k=0$.\\
-    Finally, substituting this equation to eq.~(\ref{eq:convex-hull-disjoint-hmt}), we get
+    Finally, substituting this equation to eq.~(\ref{eq:convex-hull-iteration-error-substituted}), we get
     \begin{equation}
-        A \cap (A \otimes \mathbf{B}^i) = \emptyset
+        A = (A \otimes \mathbf{B}^i) \cup A
     \end{equation}
 
-    Which is true if and only if $A = \emptyset \lor (A\otimes\mathbf{B}^i) = \emptyset$.\\
+    Which is true if and only if $(A \otimes \mathbf{B}^i) \subseteq A$.\\
+    Since $(A \otimes \mathbf{B}^i) \subseteq A$ and from eq.~\eqref{eq:convex-hull-disjoint-hmt}, $(A \otimes \mathbf{B}^i) \cap A = \emptyset$, we have:
+    \begin{equation}
+        (A \otimes \mathbf{B}^i) = \emptyset
+    \end{equation}
     Therefore,
     \begin{align*}
-        \bigexists k \iff A = \emptyset \lor (A \otimes \mathbf{B}^i) = \emptyset \\
-        \mbox{\large$\mathsurround0pt\nexists$} k \iff A \neq \emptyset \land (A \otimes \mathbf{B}^i) \neq \emptyset
+        \bigexists k                              & \iff (A \otimes \mathbf{B}^i) = \emptyset    \\
+        \mbox{\large$\mathsurround0pt\nexists$} k & \iff (A \otimes \mathbf{B}^i) \neq \emptyset
     \end{align*}
-
-    Because $A = \emptyset \implies (A \otimes \mathbf{B}^i) = \emptyset$, $(A \otimes \mathbf{B}^i) \neq \emptyset \implies A \neq \emptyset$:
-    \begin{equation*}
-        (A \otimes \mathbf{B}^i) \neq \emptyset \implies \mbox{\large$\mathsurround0pt\nexists$} k \implies \mbox{\large$\mathsurround0pt\nexists$} D^i
-    \end{equation*}
+    Since $\nexists k \Rightarrow \nexists D^i$, we have
+    \begin{equation}
+        (A \otimes \mathbf{B}^i) \neq \emptyset \implies \mbox{\large$\mathsurround0pt\nexists$} D^i
+    \end{equation}
 \end{proof}
 
-As the proof shows, there are two possibilities of running the algorithm:
+As the above shows, there are two possibilities of running the algorithm:
 \begin{enumerate}
-    \item If $(A \otimes \mathbf{B}^i) = \emptyset$, then $k = 0$ and algorith return the original image unchanged
+    \item If $\bigforall_i \; (A \otimes \mathbf{B}^i) = \emptyset$, then all $k = 0$ and algorith returns the original image unchanged
     \item Else, the algorithm gets stuck in the infinite loop trying to find $k$ that does not exist
 \end{enumerate}
+
+Therefore, we concluded that for the algorithm to work as expected, we must change the eq.~\eqref{eq:convex-hull-iteration-err} to the following:
+\begin{equation}
+    X^i_k = (X^i_{k-1} \otimes \mathbf{B}^i) \cup X^i_{k-1}
+\end{equation}
+
+Now, $k$ will always exist, and it will be such $k$ that $(X^i_k \otimes \mathbf{B}^i) = \emptyset$.
 
 \pagebreak[2]
 \subsection{Implementation}
 \label{sec:convex-hull-impl}
 
 The implementation can be split into 2 distinct parts.
-The first one is calculating $D^i$ for a given $B^i$.
+The first one is calculating $D^i$ for a given $\mathbf{B}^i$.
 We will refer to this step as ``saturating'' the image with the hit-or-miss transformation.
 The second step is merging all of the resulting images into one.
 
 With standard implementation, we would have to loop over the entire image to calculate the HMT.
-Then, we would need to loop again to perform the image union with $A$.
+Then, we would need to loop again to perform the image union with $X^i_{k-1}$.
 This would have to be performed $k$ times for each structuring element.
 Finally we would have to loop over the entire image once again to merge all of $D^i$.
+
 However, we are able to perform major optimization by removing the need of applying the union altogether.
 We can acomplish this by, instead of using standard HMT, making use of the abovementioned function that returns an iterator to all of the pixels that fullfill the HMT conditions.
+We do this by not allocating a clear image buffer for the output of HMT, but instead output the result directy to the image in place.
+This firstly, reduces the number of operations significantly, and secondly, drastically reduces the memory complexity, as we will not allocate any aditional buffers.
 
+This also applies to union of $D^i$, because we can redefine the initial conditions from eq.~\eqref{eq:convex-hull-final-condition} as the following:
+\begin{equation*}
+    X^i_0 =
+    \begin{cases}
+        A       & \text{for $i = 0$}, \\
+        D^{i-1} & \text{for $i > 0$}
+    \end{cases}
+\end{equation*}
 
+\pagebreak[2]
+Below is our implementation of this algorithm:
+\begin{lstlisting}
+for (hit, miss) in &STRUCTURAL_ELEMENTS {
+    let transform = 
+        HitOrMissTransform::new(hit.clone(), miss.clone());
+
+    loop {
+        let transform_result: Vec<_> = 
+            transform.get_matching_pixels(image).collect();
+        if transform_result.len() == 0 {
+            break;
+        }
+        for (x, y) in transform_result {
+            image.put_pixel(x, y, FOREGROUND_PIXEL);
+        }
+    }
+}
+\end{lstlisting}
 
 \section{Analysis of the results of the assigned variant of morphological algorithm}
 
