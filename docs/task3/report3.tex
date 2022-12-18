@@ -267,7 +267,7 @@ for (x, y, pixel) in image.enumerate_pixels() {
 An opening morphological operation can be implemented by adding a new method to the Dilation struct that performs an erosion operation on the image before applying the dilation. The erosion operation removes small elements from the image, while the dilation operation expands the remaining elements. The representation of this operation as mathematical equation is below.
 
 \begin{equation}
-    A \ominus B = \left\{ (x,y) \mid B = \big( B \land \mathbf{M}(A,x,y) \big) \right\}
+   A \circ B  = ( A \ominus B )\oplus B
 \end{equation}
 
 Below is the implementation we used in the project.
@@ -283,6 +283,23 @@ The Opening struct has two fields, dilation and erosion, which are instances of 
 
 \subsection{Closing}
 
+The closing operation is performed by first dilating the image and then eroding it. This has the effect of "closing" small gaps or holes within an object, and can be useful for smoothing out noise or filling in small defects in an image. It can also be used to extract specific features from an image, such as blobs or connected components, by removing small, isolated pixels or structures that do not contribute to the overall shape of the object.The representation of this operation as mathematical equation is below.
+
+\begin{equation}
+   A \bullet B  = ( A \oplus B )\ominus B
+\end{equation}
+
+Below is the implementation we used in the project.
+\begin{lstlisting}
+impl MorphologicalTransform for Closing {
+    fn apply_morph_operation(&self, image: &mut GrayImage) {
+    	self.dilation.apply_morph_operation(image);
+        self.erosion.apply_morph_operation(image);
+    }
+}
+\end{lstlisting}
+
+The Closing struct has two fields, dilation and erosion, which are instances of the Erosion and Dilation structs, respectively.
 \subsection{Hit-or-miss transform}
 
 The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_{hit},B_{miss})$, is defined as
@@ -913,7 +930,12 @@ for (hit, miss) in &STRUCTURAL_ELEMENTS {
 
 \section{Description of the implementation of the assigned segmentation variant}
 \subsection{Description}
-Region growing is a simple region-based image segmentation method that involves starting from a seed point in the image and expanding the region to include neighboring pixels that have similar characteristics to the seed point.
+Region growing is a type of image segmentation technique that is used to identify and separate different objects or regions within an image. It works by starting from a seed point within an image and then iteratively expanding the region by adding adjacent pixels that meet certain criteria, such as being within a certain range of intensity or color.
+
+To perform region growing, the image is first divided into a set of small, connected regions, or seeds. Each seed represents a potential region within the image, and the algorithm starts by selecting one of these seeds as the starting point for region growing. The algorithm then compares the values of the pixels in the seed to the values of the pixels in the surrounding area. If the values of the surrounding pixels meet certain criteria, such as being within a certain range of intensity or color, they are added to the growing region. This process is repeated until all adjacent pixels have been examined, at which point the region is complete.
+
+Region growing is useful for separating objects or regions within an image that have similar characteristics, such as intensity or color. It is a popular technique in image processing because it is relatively simple to implement and can be used to segment images of various types, including binary, grayscale, and color images.
+
 Our implementation uses a breadth-first search algorithm to expand the region from the seed point. It maintains a queue of pixels to visit and adds the neighboring pixels of each pixel to the queue if they have a similar intensity value to the seed point, within a specified tolerance. The resulting image is a binary image with the region of interest marked in white and the rest of the image marked in black.
 
 \subsection{Implementation}
