@@ -4,8 +4,8 @@ use crate::transformations::histogram::HistogramConverter;
 use image_proc::modifications::filters::linear::optimized::LinearFilterGPU;
 use image_proc::modifications::geometric::Scale;
 use image_proc::modifications::prelude::*;
-use num::Integer;
 use image_proc::modifications::segmentation::RegionGrowing;
+use num::Integer;
 use std::num::{ParseFloatError, ParseIntError};
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
