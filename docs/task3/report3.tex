@@ -263,6 +263,22 @@ for (x, y, pixel) in image.enumerate_pixels() {
 \end{lstlisting}
 
 \subsection{Opening}
+An opening morphological operation can be implemented by adding a new method to the Dilation struct that performs an erosion operation on the image before applying the dilation. The erosion operation removes small elements from the image, while the dilation operation expands the remaining elements. The representation of this operation as mathematical equation is below.
+
+\begin{equation}
+    A \ominus B = \left\{ (x,y) \mid B = \big( B \land \mathbf{M}(A,x,y) \big) \right\}
+\end{equation}
+
+Below is the implementation we used in the project.
+\begin{lstlisting}
+impl MorphologicalTransform for Opening {
+    fn apply_morph_operation(&self, image: &mut GrayImage) {
+        self.erosion.apply_morph_operation(image);
+        self.dilation.apply_morph_operation(image);
+    }
+}
+\end{lstlisting}
+The Opening struct has two fields, dilation and erosion, which are instances of the Dilation and Erosion structs, respectively. 
 
 \subsection{Closing}
 
