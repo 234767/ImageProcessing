@@ -44,8 +44,12 @@ impl Transformation for RegionGrowing {
 
                 queue.push_back((x + 1, y));
                 queue.push_back((x, y + 1));
-                queue.push_back((x - 1, y));
-                queue.push_back((x, y - 1));
+                if x > 0 {
+                    queue.push_back((x - 1, y));
+                }
+                if y > 0 {
+                    queue.push_back((x, y - 1));
+                }
             }
         }
 
@@ -54,5 +58,6 @@ impl Transformation for RegionGrowing {
 }
 
 fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) -> bool {
-    (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
+    let diff: i16 = (pixel[0] as i16 - seed_pixel[0] as i16).abs() as i16;
+    diff <= tolerance as i16
 }

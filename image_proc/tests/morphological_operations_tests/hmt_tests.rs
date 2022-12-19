@@ -62,7 +62,7 @@ fn hmt_convex_hull_test() {
 
     transformation.apply_morph_operation(&mut image);
 
-    assert!(is_foreground(image.get_pixel(1,1)));
+    assert!(is_foreground(image.get_pixel(1, 1)));
 
-    assert!(!is_foreground(image.get_pixel(1,2)));
+    assert!(!is_foreground(image.get_pixel(1, 2)));
 }

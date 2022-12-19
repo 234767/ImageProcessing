@@ -1,6 +1,6 @@
-use std::process::exit;
-use image::{RgbImage};
+use image::RgbImage;
 use image_proc::modifications::Transformation;
+use std::process::exit;
 
 mod analysis;
 mod parsing;

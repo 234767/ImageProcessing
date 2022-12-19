@@ -31,7 +31,7 @@ impl Mask {
     }
 
     pub fn from_raw_bits(bits: &[u8]) -> Self {
-        debug_assert_eq!(bits.len(),9);
+        debug_assert_eq!(bits.len(), 9);
         let mut mask = Self::new();
         for (idx, &bit) in bits.iter().enumerate() {
             if bit > 0 {

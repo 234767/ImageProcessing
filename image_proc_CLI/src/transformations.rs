@@ -1,12 +1,16 @@
 use crate::parsing::Args;
+use crate::transformations::util::try_new_region_grow;
 use image_proc::modifications::filters::basic::gpu::*;
 use image_proc::modifications::filters::RobertsOperator1;
 use image_proc::modifications::filters::SobelOperator;
+use image_proc::modifications::morphological::closing::Closing;
+use image_proc::modifications::morphological::opening::Opening;
+use image_proc::modifications::morphological::{
+    convex_hull::ConvexHull, dilation::Dilation, erosion::Erosion, hmt::HitOrMissTransform, Mask,
+};
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
-use image_proc::modifications::morphological::{dilation::Dilation, erosion::Erosion, hmt::HitOrMissTransform, convex_hull::ConvexHull, Mask};
-use util::{try_new_raleigh,try_parse_hmt_kernel, try_parse_kernel};
-use crate::transformations::util::try_new_region_grow;
+use util::{try_new_raleigh, try_parse_hmt_kernel, try_parse_kernel};
 
 mod histogram;
 mod util;
@@ -77,21 +81,41 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--osobel" => Ok(Box::new(SobelOperator {})),
         "--region" => Ok(Box::new(try_new_region_grow(args)?)),
         "--dilation" => {
-            let kernel: Vec<u8> = try_parse_kernel(args)?.into_iter().map(|x| if x > 0 {1} else {0}).collect();
+            let kernel: Vec<u8> = try_parse_kernel(args)?
+                .into_iter()
+                .map(|x| if x > 0 { 1 } else { 0 })
+                .collect();
             Ok(Box::new(Dilation::new(Mask::from_raw_bits(&kernel))))
-        },
+        }
         "--erosion" => {
-            let kernel: Vec<u8> = try_parse_kernel(args)?.into_iter().map(|x| if x > 0 {1} else {0}).collect();
+            let kernel: Vec<u8> = try_parse_kernel(args)?
+                .into_iter()
+                .map(|x| if x > 0 { 1 } else { 0 })
+                .collect();
             Ok(Box::new(Erosion::new(Mask::from_raw_bits(&kernel))))
-        },
+        }
         "--hmt" => {
-            let (hit,miss) = try_parse_hmt_kernel(args)?;
+            let (hit, miss) = try_parse_hmt_kernel(args)?;
             Ok(Box::new(HitOrMissTransform::new(
                 Mask::from_raw_bits(&hit),
                 Mask::from_raw_bits(&miss),
             )))
         }
-        "--convexhull" => Ok(Box::new(ConvexHull{})),
+        "--convexhull" => Ok(Box::new(ConvexHull {})),
+        "--opening" => {
+            let kernel: Vec<u8> = try_parse_kernel(args)?
+                .into_iter()
+                .map(|x| if x > 0 { 1 } else { 0 })
+                .collect();
+            Ok(Box::new(Opening::new(Mask::from_raw_bits(&kernel))))
+        }
+        "--closing" => {
+            let kernel: Vec<u8> = try_parse_kernel(args)?
+                .into_iter()
+                .map(|x| if x > 0 { 1 } else { 0 })
+                .collect();
+            Ok(Box::new(Closing::new(Mask::from_raw_bits(&kernel))))
+        }
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
