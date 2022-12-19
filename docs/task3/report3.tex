@@ -273,7 +273,11 @@ for (x, y, pixel) in image.enumerate_pixels() {
 \end{lstlisting}
 
 \subsection{Opening}
-An opening morphological operation can be implemented by adding a new method to the Dilation struct that performs an erosion operation on the image before applying the dilation. The erosion operation removes small elements from the image, while the dilation operation expands the remaining elements. The representation of this operation as mathematical equation is below.
+The opening is simply defined as applying opening after erosion with the same kernel.
+The erosion operation removes small elements from the image, 
+while the dilation operation expands the remaining elements. 
+
+The formal definition of this operation is:
 
 \begin{equation}
    A \circ B  = ( A \ominus B )\oplus B
@@ -283,62 +287,38 @@ Below is the implementation we used in the project.
 \begin{lstlisting}
 impl MorphologicalTransform for Opening {
     fn apply_morph_operation(&self, image: &mut GrayImage) {
-        self.erosion.apply_morph_operation(image);
-        self.dilation.apply_morph_operation(image);
+        Erosion::apply(&self.mask, image);
+        Dilation::apply(&self.mask, image);
     }
 }
 \end{lstlisting}
-The Opening struct has two fields, dilation and erosion, which are instances of the Dilation and Erosion structs, respectively.
-
-In our result images we used the mask below for processing them.
-\begin{figure}[H]\centering
-    \begin{subfigure}[t]{.2\textwidth}\centering
-        \begin{tikzpicture}
-            \matrix[square matrix]
-            {
-            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
-            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
-            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
-            };
-        \end{tikzpicture}
-    \end{subfigure}
-    \caption{Kernel used for testing}
-\end{figure}
 
 \subsection{Closing}
 
-The closing operation is performed by first dilating the image and then eroding it. This has the effect of "closing" small gaps or holes within an object, and can be useful for smoothing out noise or filling in small defects in an image. It can also be used to extract specific features from an image, such as blobs or connected components, by removing small, isolated pixels or structures that do not contribute to the overall shape of the object.The representation of this operation as mathematical equation is below.
+The closing operation is performed by first dilating the image and then eroding it. 
+This has the effect of ``closing'' small gaps or holes within an object, 
+and can be useful for smoothing out noise or filling in small defects in an image. 
+It can also be used to extract specific features from an image, 
+such as blobs or connected components, by removing small, 
+isolated pixels or structures that do not contribute to the overall shape of the object.
+
+\pagebreak[2]
+The formal definition of this operation is:
 
 \begin{equation}
    A \bullet B  = ( A \oplus B )\ominus B
 \end{equation}
 
+\pagebreak[2]
 Below is the implementation we used in the project.
 \begin{lstlisting}
 impl MorphologicalTransform for Closing {
     fn apply_morph_operation(&self, image: &mut GrayImage) {
-    	self.dilation.apply_morph_operation(image);
-        self.erosion.apply_morph_operation(image);
+        Dilation::apply(&self.mask, image);
+        Erosion::apply(&self.mask, image);
     }
 }
 \end{lstlisting}
-
-The Closing struct has two fields, dilation and erosion, which are instances of the Erosion and Dilation structs, respectively.
-
-In our result images we used the mask below for processing them.
-\begin{figure}[H]\centering
-    \begin{subfigure}[t]{.2\textwidth}\centering
-        \begin{tikzpicture}
-            \matrix[square matrix]
-            {
-            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
-            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
-            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
-            };
-        \end{tikzpicture}
-    \end{subfigure}
-    \caption{Kernel used for testing}
-\end{figure}
 
 \subsection{Hit-or-miss transform}
 
@@ -400,6 +380,7 @@ It takes a reference to the image, and outputs the $(x,y)$ coordinates of the pi
 We could just use a for-loop and check the condition inside of it, however,
 a helper function operating on an iterator will prove to be very useful when implementing the convex hull in section \ref{sec:convex-hull-impl}.
 
+\pagebreak[2]
 The function is implemented in the following way:
 
 \begin{lstlisting}
@@ -777,7 +758,7 @@ After applying the opening operation on 1-bit images the results are presented b
          \includegraphics[width=\textwidth]{img/magda/output2.png}
         \caption{after}
     \end{subfigure}
-    \caption{Results of applying opening operation}
+    \caption{Results of applying opening operation with kernel $B_3$}
 \end{figure}  
 
 Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, the opening operation is effective at removing small objects from an image, such as noise or small unwanted details. Secondly, The shape of the structuring element used in the opening operation can influence the final result, with different shapes producing different levels of detail and overall image quality. It happened in the first, where those input images had either small unwanted details or noise. However, when applying opening operation on the second picture, the result came out as worse. It is hard to see the details and almost majority of the picture is black. 
@@ -807,7 +788,7 @@ After applying the closing operation on 1-bit images the results are presented b
          \includegraphics[width=\textwidth]{img/magda/output5.png}
         \caption{after}
     \end{subfigure}
-    \caption{Results of applying closing operation}
+    \caption{Results of applying closing operation with kernel $B_3$}
 \end{figure}  
 
 Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, The closing operation is effective at filling small holes or gaps in an image, such as those caused by noise or other types of image degradation. Secondly, The shape of the structuring element used in the closing operation can influence the final result, with different shapes producing different levels of detail and overall image quality. Contrary to the opening result images, the first image came out as worse and the second picture came out as better. The woman in the second picture thanks to closing operation has more visually noticeable details  on her face. The first and last picture however lost all the details and it is hard to notice anything from them.
