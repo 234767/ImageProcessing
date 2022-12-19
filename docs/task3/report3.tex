@@ -281,6 +281,21 @@ impl MorphologicalTransform for Opening {
 \end{lstlisting}
 The Opening struct has two fields, dilation and erosion, which are instances of the Dilation and Erosion structs, respectively.
 
+In our result images we used the mask below for processing them.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            };
+        \end{tikzpicture}
+    \end{subfigure}
+    \caption{Mask used for testing}
+\end{figure}
+
 \subsection{Closing}
 
 The closing operation is performed by first dilating the image and then eroding it. This has the effect of "closing" small gaps or holes within an object, and can be useful for smoothing out noise or filling in small defects in an image. It can also be used to extract specific features from an image, such as blobs or connected components, by removing small, isolated pixels or structures that do not contribute to the overall shape of the object.The representation of this operation as mathematical equation is below.
@@ -300,6 +315,22 @@ impl MorphologicalTransform for Closing {
 \end{lstlisting}
 
 The Closing struct has two fields, dilation and erosion, which are instances of the Erosion and Dilation structs, respectively.
+
+In our result images we used the mask below for processing them.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{.2\textwidth}\centering
+        \begin{tikzpicture}
+            \matrix[square matrix]
+            {
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|$\odot$&|[fill=gray]|\\
+            |[fill=gray]|&|[fill=gray]|&|[fill=gray]|\\
+            };
+        \end{tikzpicture}
+    \end{subfigure}
+    \caption{Mask used for testing}
+\end{figure}
+
 \subsection{Hit-or-miss transform}
 
 The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_{hit},B_{miss})$, is defined as
@@ -740,7 +771,7 @@ After applying the opening operation on 1-bit images the results are presented b
     \caption{Results of applying opening operation}
 \end{figure}  
 
-Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, the opening operation is effective at removing small objects from an image, such as noise or small unwanted details. Secondly, The shape of the structuring element used in the opening operation can influence the final result, with different shapes producing different levels of detail and overall image quality. It happened in the first, third picture, where those input images had either small unwanted details or noise. However, when applying opening operation on the second picture, the result came out as worse. It is hard to see the details and almost majority of the picture is black. 
+Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, the opening operation is effective at removing small objects from an image, such as noise or small unwanted details. Secondly, The shape of the structuring element used in the opening operation can influence the final result, with different shapes producing different levels of detail and overall image quality. It happened in the first, where those input images had either small unwanted details or noise. However, when applying opening operation on the second picture, the result came out as worse. It is hard to see the details and almost majority of the picture is black. 
 
 Overall, the opening operation is a valuable tool in image processing, with a wide range of applications in fields such as computer vision and medical imaging.
 
@@ -770,7 +801,7 @@ After applying the closing operation on 1-bit images the results are presented b
     \caption{Results of applying closing operation}
 \end{figure}  
 
-Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, The closing operation is effective at filling small holes or gaps in an image, such as those caused by noise or other types of image degradation. Secondly, The shape of the structuring element used in the closing operation can influence the final result, with different shapes producing different levels of detail and overall image quality. Contrary to the opening result images, the first and third image came our as worse and the second picture came out as better. The woman in the second picture thanks to closing operation has more visually noticeable details  on her face. The first and last picture however lost all the details and it is hard to notice anything from them.
+Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, The closing operation is effective at filling small holes or gaps in an image, such as those caused by noise or other types of image degradation. Secondly, The shape of the structuring element used in the closing operation can influence the final result, with different shapes producing different levels of detail and overall image quality. Contrary to the opening result images, the first image came out as worse and the second picture came out as better. The woman in the second picture thanks to closing operation has more visually noticeable details  on her face. The first and last picture however lost all the details and it is hard to notice anything from them.
 
 Overall, the closing operation is a valuable tool in image processing, with the same usefulness in computer vision and medical imaging just like opening operation.
 \subsection{Hit-or-miss transform}
@@ -1044,7 +1075,7 @@ To perform region growing, the image is first divided into a set of small, conne
 
 Region growing is useful for separating objects or regions within an image that have similar characteristics, such as intensity or color. It is a popular technique in image processing because it is relatively simple to implement and can be used to segment images of various types, including binary, grayscale, and color images.
 
-Our implementation uses a breadth-first search algorithm to expand the region from the seed point. It maintains a queue of pixels to visit and adds the neighboring pixels of each pixel to the queue if they have a similar intensity value to the seed point, within a specified tolerance. The resulting image is a binary image with the region of interest marked in white and the rest of the image marked in black.
+Our implementation uses a breadth-first search algorithm to expand the region from the seed point. It maintains a queue of pixels to visit and adds the neighboring pixels of each pixel to the queue if they have a similar intensity value to the seed point, within a specified tolerance. The resulting image is a binary image with the region of interest marked in white and the rest of the image marked in black. For the images in color, the program takes only the first channel - red for processing the image.
 
 \subsection{Implementation}
 
@@ -1059,30 +1090,44 @@ Below the implementation of the \lstinline{Transformation} trait for \lstinline{
 
 \begin{lstlisting}
     
-/* ensure seed_x and seed_y are within image */
+impl Transformation for RegionGrowing {
+    fn apply(&self, image: &mut RgbImage) {
+        if self.seed_x.get() >= image.width() {
+            self.seed_x.set(image.width() - 1);
+        }
+        if self.seed_y.get() >= image.height() {
+            self.seed_y.set(image.height() - 1);
+        }
+        let seed_pixel = 
+        image.get_pixel(self.seed_x.get(), self.seed_y.get());
+        let mut new_image: GrayImage = 
+        ImageBuffer::new(image.width(), image.height());
+        let mut queue = VecDeque::new();
+        queue.push_back((self.seed_x.get(), self.seed_y.get()));
 
-let mut new_image: GrayImage = 
-    ImageBuffer::new(image.width(), image.height());
-let seed_pixel = 
-    image.get_pixel(self.seed_x.get(), self.seed_y.get());
-let mut queue = VecDeque::new();
-queue.push_back((self.seed_x.get(), self.seed_y.get()));
+        while let Some((x, y)) = queue.pop_front() {
+            if x >= image.width() || y >= image.height() {
+                continue;
+            }
+            let pixel = image.get_pixel(x as u32, y as u32);
+            let new_image_pixel = new_image.get_pixel(x as u32, y as u32);
 
-while let Some((x, y)) = queue.pop_front() {
-    if x >= image.width() || y >= image.height() {
-        continue;
-    }
-    let pixel = image.get_pixel(x as u32, y as u32);
-    let new_image_pixel = new_image.get_pixel(x as u32, y as u32);
+            if new_image_pixel[0] == 
+            0 && is_similar(pixel, seed_pixel, self.tolerance) {
+                new_image.put_pixel(x as u32, y as u32, Luma([255]));
 
-    if new_image_pixel[0] == 0 
-        && is_similar(pixel, seed_pixel, self.tolerance) {
-        new_image.put_pixel(x as u32, y as u32, Luma([255]));
+                queue.push_back((x + 1, y));
+                queue.push_back((x, y + 1));
+                if x > 0 {
+                    queue.push_back((x - 1, y));
+                }
+                if y > 0 {
+                    queue.push_back((x, y - 1));
+                }
+            }
+        }
 
-        queue.push_back((x + 1, y));
-        queue.push_back((x, y + 1));
-        queue.push_back((x - 1, y));
-        queue.push_back((x, y - 1));
+        *image = DynamicImage::from(new_image).to_rgb8();
     }
 }
 *image = DynamicImage::from(new_image).to_rgb8();
@@ -1096,12 +1141,11 @@ and the seed pixel and returns true if the difference is less than or equal
 to the tolerance value. Below the implementation of the \lstinline{is_similar} function:
 
 \begin{lstlisting}
-fn is_similar(
-    pixel: &Rgb<u8>, 
-    seed_pixel: &Rgb<u8>, 
-    tolerance: u8
-) -> bool {
-    (pixel[0] as i32 - seed_pixel[0] as i32) <= tolerance as i32
+fn is_similar(pixel: &Rgb<u8>, seed_pixel: &Rgb<u8>, tolerance: u8) 
+-> bool {
+    let diff: i16 = 
+    (pixel[0] as i16 - seed_pixel[0] as i16).abs() as i16;
+    diff <= tolerance as i16
 }
 \end{lstlisting}
 
@@ -1161,6 +1205,12 @@ The results of applying the region merging are presented below:
 As we can clearly see, depending on a user input, the output picture can change. In both cases, the program did indeed 'merged' pixels of the same value and produced the pictures above. Overall, the success of a region merging operation will depend on the specific input of the data by a user and an input image. By carefully selecting appropriate criteria for merging and carefully evaluating the results, it is possible to achieve good results with region merging in many image processing applications.
 
 The results of a region merging operation can be evaluated in a number of ways. One common metric is the mean squared error (MSE) between the original image and the merged regions. This can be used to measure the accuracy of the region merging operation and to identify any artifacts or distortions that may have been introduced. 
+
+There are various homogeneity criteria that can be used to determine whether two regions should be merged or not. Firstly, the intensity homogeneity. This criterion involves merging regions that have similar intensity values, i.e., the average intensity of the pixels in each region is similar. This can be useful for segmenting objects with uniform color or brightness. Secondly, color homogeneity. This criteria involves merging regions that have similar color values, i.e., the average color of the pixels in each region is similar. This can be useful for segmenting objects with uniform color or for separating different colors in an image. This criteria was applied in our project. And thirdly, texture homogeneity. This criteria involves merging regions that have similar texture patterns, i.e., the spatial distribution of intensity or color values in each region is similar. This can be useful for segmenting objects with distinct texture patterns, such as wood grain or fabric.
+
+There are visual differences when analysing the result images of region merging. Those input values used for this experiment are random. However, choosing the right seed pixel and smaller tolerance might result in better looking pictures for a user. Those presented above are only experimental for the analysis with the same parameters. 
+
+Overall, the effectiveness of region merging in image processing depends on the specific task and the desired output. Choosing the appropriate homogeneity criteria and algorithm parameters can help improve the accuracy and efficiency of the operation.
 
 
 \section{Description of other changes which took place in the application}
