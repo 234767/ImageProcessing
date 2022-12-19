@@ -333,7 +333,7 @@ In our result images we used the mask below for processing them.
 
 \subsection{Hit-or-miss transform}
 
-The HMT of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_{hit},B_{miss})$, is defined as
+The \textsc{hmt} of $A$ with $\mathbf{B}$ where $\mathbf{B} = (B_{hit},B_{miss})$, is defined as
 \begin{equation}
     A \otimes \mathbf{B} = \left\{ p \mid \biggerforall\limits_{\substack{b_{hit} \in B_{hit} \\ b_{miss} \in B_{miss}}}\; p + b_{hit} \in A \land p + b_{miss} \notin A  \right\}
 \end{equation}
@@ -385,8 +385,8 @@ Which we can rewrite to make use of the binary operators as the following:
     \right\}
 \end{equation}
 
-The core of our HMT transform implementation is a helper function \lstinline{get_matching_pixels}, which operates on an iterator.
-It takes a reference to the image, and outputs the $(x,y)$ coordinates of the pixels that fullfill the conditions of the HMT.
+The core of our \textsc{hmt} transform implementation is a helper function \lstinline{get_matching_pixels}, which operates on an iterator.
+It takes a reference to the image, and outputs the $(x,y)$ coordinates of the pixels that fullfill the conditions of the \textsc{hmt}.
 
 We could just use a for-loop and check the condition inside of it, however,
 a helper function operating on an iterator will prove to be very useful when implementing the convex hull in section \ref{sec:convex-hull-impl}.
@@ -421,13 +421,13 @@ where
     Although the function signature might look a bit intimidating due to annotations such as \lstinline{'img}, \lstinline{'s}, and \lstinline{'out},
     it is actually very straightforward.
     These are so-called \emph{lifetime annotations} that helps the rust compiler ensure the memory safety at compile time.
-    Since the function result operates on the data from the image, and the HMT struct holding the structring elements,
-    we have to constraint the lifetime of the result, such that the HMT struct and the image both have to be valid for at least
+    Since the function result operates on the data from the image, and the \textsc{hmt} struct holding the structring elements,
+    we have to constraint the lifetime of the result, such that the \textsc{hmt} struct and the image both have to be valid for at least
     as long as the result of the function.
 \end{remark}
 
-Finally, the implementation of the HMT is very straightforward, we just allocate a buffer for the new image
-and set all the pixels that match the HMT conditions as foreground.
+Finally, the implementation of the \textsc{hmt} is very straightforward, we just allocate a buffer for the new image
+and set all the pixels that match the \textsc{hmt} conditions as foreground.
 
 \begin{lstlisting}
 let mut new_image: GrayImage = /* ... */
@@ -806,10 +806,10 @@ Based on the results of applying the opening operation, it is possible to draw t
 Overall, the closing operation is a valuable tool in image processing, with the same usefulness in computer vision and medical imaging just like opening operation.
 \subsection{Hit-or-miss transform}
 
-For testing the HMT, we came up with a mask, that should detect right edges of the shape.
-If they are in fact detected, we will know that the HMT works correctly.
+For testing the \textsc{hmt}, we came up with a mask, that should detect right edges of the shape.
+If they are in fact detected, we will know that the \textsc{hmt} works correctly.
 
-In addtion, the HMT will be tested much more, while analyzing the convex hull in sec.~\ref{sec:convex-hull-analysis}.
+In addtion, the \textsc{hmt} will be tested much more, while analyzing the convex hull in sec.~\ref{sec:convex-hull-analysis}.
 
 \begin{figure}[H]\centering
     \begin{tikzpicture}[baseline=(A.base)]
@@ -820,7 +820,7 @@ In addtion, the HMT will be tested much more, while analyzing the convex hull in
         & & \\
         };
     \end{tikzpicture}
-    \caption{The structuring element used for testing the HMT.}
+    \caption{The structuring element used for testing the \textsc{hmt}.}
 \end{figure}
 
 \begin{figure}[H]\centering
@@ -831,7 +831,7 @@ In addtion, the HMT will be tested much more, while analyzing the convex hull in
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/hmt-left.png}
-        \caption{after HMT}
+        \caption{after \textsc{hmt}}
     \end{subfigure}\\[1em]
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/image2.png}
@@ -840,12 +840,12 @@ In addtion, the HMT will be tested much more, while analyzing the convex hull in
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}
         \includegraphics[width=\textwidth]{img/hmt2-left.png}
-        \caption{after HMT}
+        \caption{after \textsc{hmt}}
     \end{subfigure}
 \end{figure}
 
 As we can see in the above figure, the right edges of the shape were succesfully detected.
-Therefore we conclude that the HMT works correctly.
+Therefore we conclude that the \textsc{hmt} works correctly.
 
 \section{Description of the implementation of the assigned variant of morphological algorithm}
 
@@ -856,7 +856,7 @@ It is used to eliminate any concavities from the shape.
 The calculation of a convex hull of some image $A$ works as follows:
 
 For each structuring element $\mathbf{B}^i$ from elements shown on fig. \ref{fig:convex-hull-kernels},
-we repeatedly apply the HMT, until there is no change.
+we repeatedly apply the \textsc{hmt}, until there is no change.
 
 For calculating the subsequent iterations of applying the HMTs, we have formula
 \begin{equation}
@@ -1010,14 +1010,14 @@ The first one is calculating $D^i$ for a given $\mathbf{B}^i$.
 We will refer to this step as ``saturating'' the image with the hit-or-miss transformation.
 The second step is merging all of the resulting images into one.
 
-With standard implementation, we would have to loop over the entire image to calculate the HMT.
+With standard implementation, we would have to loop over the entire image to calculate the \textsc{hmt}.
 Then, we would need to loop again to perform the image union with $X^i_{k-1}$.
 This would have to be performed $k$ times for each structuring element.
 Finally we would have to loop over the entire image once again to merge all of $D^i$.
 
 However, we are able to perform major optimization by removing the need of applying the union altogether.
-We can acomplish this by, instead of using standard HMT, making use of the abovementioned function that returns an iterator to all of the pixels that fullfill the HMT conditions.
-We do this by not allocating a clear image buffer for the output of HMT, but instead output the result directy to the image in place.
+We can acomplish this by, instead of using standard \textsc{hmt}, making use of the abovementioned function that returns an iterator to all of the pixels that fullfill the \textsc{hmt} conditions.
+We do this by not allocating a clear image buffer for the output of \textsc{hmt}, but instead output the result directy to the image in place.
 This firstly, reduces the number of operations significantly, and secondly, drastically reduces the memory complexity, as we will not allocate any aditional buffers.
 
 This also applies to union of $D^i$, because we can redefine the initial conditions from eq.~\eqref{eq:convex-hull-final-condition} as the following:
