@@ -460,7 +460,7 @@ for (x, y) in self.get_matching_pixels(image) {
 \subsection{Dilation}
 
 The result of running dilation with different kernels are presented below.
-The operation seems to behave correctly, 
+The operation seems to behave correctly,
 adding pixels to the image exactly as expected.
 
 As the morphological operations are very simple, there is not much possibility for conclusions.
@@ -715,6 +715,9 @@ They both removed pixels from all of the sides of the image, with only differenc
 and $B_4$ being more subtle, leaving the result with less straight lines, overall looking more ``smooth'' for lack of a better word.
 
 \subsection{Opening}
+
+After applying the opening operation on 1-bit images the results are presented below.
+
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
         \includegraphics[width=\textwidth]{img/magda/boatbw.png}
@@ -722,7 +725,7 @@ and $B_4$ being more subtle, leaving the result with less straight lines, overal
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{img/magda/output1.png}
+         \includegraphics[width=\textwidth]{img/magda/output1.png}
         \caption{after}
     \end{subfigure}\\[1em]
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -731,13 +734,20 @@ and $B_4$ being more subtle, leaving the result with less straight lines, overal
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        \includegraphics[width=\textwidth]{img/magda/output2.png}
+         \includegraphics[width=\textwidth]{img/magda/output2.png}
         \caption{after}
     \end{subfigure}
     \caption{Results of applying opening operation}
 \end{figure}  
 
+Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, the opening operation is effective at removing small objects from an image, such as noise or small unwanted details. Secondly, The shape of the structuring element used in the opening operation can influence the final result, with different shapes producing different levels of detail and overall image quality. It happened in the first, third picture, where those input images had either small unwanted details or noise. However, when applying opening operation on the second picture, the result came out as worse. It is hard to see the details and almost majority of the picture is black. 
+
+Overall, the opening operation is a valuable tool in image processing, with a wide range of applications in fields such as computer vision and medical imaging.
+
 \subsection{Closing}
+
+After applying the closing operation on 1-bit images the results are presented below.
+
 \begin{figure}[H]\centering
     \begin{subfigure}[t]{\subfiguresize}\centering
         \includegraphics[width=\textwidth]{img/magda/boatbw.png}
@@ -745,7 +755,7 @@ and $B_4$ being more subtle, leaving the result with less straight lines, overal
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        % \includegraphics[width=\textwidth]{img/magda/output3.png}
+         \includegraphics[width=\textwidth]{img/magda/output6.png}
         \caption{after}
     \end{subfigure}\\[1em]
     \begin{subfigure}[t]{\subfiguresize}\centering
@@ -754,12 +764,15 @@ and $B_4$ being more subtle, leaving the result with less straight lines, overal
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{\subfiguresize}\centering
-        % \includegraphics[width=\textwidth]{img/magda/output4.png}
+         \includegraphics[width=\textwidth]{img/magda/output5.png}
         \caption{after}
     \end{subfigure}
     \caption{Results of applying closing operation}
 \end{figure}  
 
+Based on the results of applying the opening operation, it is possible to draw the following conclusions. Firstly, The closing operation is effective at filling small holes or gaps in an image, such as those caused by noise or other types of image degradation. Secondly, The shape of the structuring element used in the closing operation can influence the final result, with different shapes producing different levels of detail and overall image quality. Contrary to the opening result images, the first and third image came our as worse and the second picture came out as better. The woman in the second picture thanks to closing operation has more visually noticeable details  on her face. The first and last picture however lost all the details and it is hard to notice anything from them.
+
+Overall, the closing operation is a valuable tool in image processing, with the same usefulness in computer vision and medical imaging just like opening operation.
 \subsection{Hit-or-miss transform}
 
 \section{Description of the implementation of the assigned variant of morphological algorithm}
