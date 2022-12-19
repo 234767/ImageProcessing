@@ -806,6 +806,47 @@ Based on the results of applying the opening operation, it is possible to draw t
 Overall, the closing operation is a valuable tool in image processing, with the same usefulness in computer vision and medical imaging just like opening operation.
 \subsection{Hit-or-miss transform}
 
+For testing the HMT, we came up with a mask, that should detect right edges of the shape.
+If they are in fact detected, we will know that the HMT works correctly.
+
+In addtion, the HMT will be tested much more, while analyzing the convex hull in sec.~\ref{sec:convex-hull-analysis}.
+
+\begin{figure}[H]\centering
+    \begin{tikzpicture}[baseline=(A.base)]
+        \matrix[square matrix]
+        {
+        &  & \\
+        & |[fill=green]|$\odot$ & |[fill=red]| \\
+        & & \\
+        };
+    \end{tikzpicture}
+    \caption{The structuring element used for testing the HMT.}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/image1.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/hmt-left.png}
+        \caption{after HMT}
+    \end{subfigure}\\[1em]
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/image2.png}
+        \caption{original}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}
+        \includegraphics[width=\textwidth]{img/hmt2-left.png}
+        \caption{after HMT}
+    \end{subfigure}
+\end{figure}
+
+As we can see in the above figure, the right edges of the shape were succesfully detected.
+Therefore we conclude that the HMT works correctly.
+
 \section{Description of the implementation of the assigned variant of morphological algorithm}
 
 \subsection{Description}
@@ -1009,6 +1050,7 @@ for (hit, miss) in &STRUCTURAL_ELEMENTS {
 \end{lstlisting}
 
 \section{Analysis of the results of the assigned variant of morphological algorithm}
+\label{sec:convex-hull-analysis}
 
 The results of applying the convex hull are presented below:
 
