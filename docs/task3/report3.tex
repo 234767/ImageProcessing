@@ -53,7 +53,18 @@ Therefore, for a $3\times3$ mask, it will be represented in the following way
     $\; \Longleftrightarrow \; (100010011)_2$
 \end{center}
 
-\vfill
+The struct to hold the data is implemented as the following:
+
+\begin{lstlisting}
+#[derive(Clone, Eq, PartialEq)]
+pub struct Mask {
+    data: u16,
+}
+\end{lstlisting}
+
+Note that we use \lstinline{u16}, because for a $3\times3$ element, we only need 9 bits, so 2 bytes.
+Our implementation currently suppports $3\times3$ structuring elements only, however, it would be very easy to extend for bigger elemens, as all the operations happen internally inside this struct,
+so the implementations of the morphological operations would not need to be changed.
 
 However, since the input is in the image form, we need a function to convert between the image and binary representations.
 This function will take the image, as well as a set of $(x,y)$ coordinates, and construct the mask from the pixels neighboring $(x,y)$.
@@ -64,7 +75,7 @@ This function will take the image, as well as a set of $(x,y)$ coordinates, and 
 
 \begin{center}
     \begin{tikzpicture}[baseline=(Center.base)]
-        \matrix[square matrix]
+        \matrix[square matrix=1em]
         {
         |[fill=gray]|&&|[fill=gray]|&&|[fill=gray]|\\
         |[fill=gray]|&|[fill=gray]| & |[fill=gray]| && \\
@@ -75,7 +86,7 @@ This function will take the image, as well as a set of $(x,y)$ coordinates, and 
     \end{tikzpicture}
     $\; \mapsto \; $
     \begin{tikzpicture}[baseline=(Center.base)]
-        \matrix[square matrix]
+        \matrix[square matrix=1em]
         {
         |[fill=gray]| & |[fill=gray]| & \\
         & |(Center)[fill=gray]| & \\
@@ -84,8 +95,6 @@ This function will take the image, as well as a set of $(x,y)$ coordinates, and 
     \end{tikzpicture}
 \end{center}
 
-\vfill
-\pagebreak[2]
 
 \begin{lstlisting}
 pub fn from_image(image: &GrayImage, x: u32, y: u32) -> Mask {
