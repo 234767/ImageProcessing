@@ -12,7 +12,7 @@
 Histogram based image enhancements work by assigning new values to the luminosity levels, to match the histogram to some function.
 The old luminosities will be denoted as $f$, and the new ones, as $g$.
 The histogram of the image is denoted as $H$, and $H(f)$ means the number of pixels with luminosity $f$.
-Finally, $N$ will mean the total number of pixels in the image.
+Finally, $n$ will mean the total number of pixels in the image.
 
 \subsection{Mathematical description}
 
@@ -21,7 +21,7 @@ The equation for calculating the new luminosity values were given as:
     g(f) = g_{min} +\sqrt{
         2 \alpha^2 \cdot \ln\left[
             \left(
-            \frac{1}{N} \sum\limits_{k=0}^f H(k)
+            \frac{1}{n} \sum\limits_{k=0}^f H(k)
             \right)^{-1}
             \right]
     }
@@ -39,24 +39,24 @@ Equation (\ref{eq:rayleigh-initial}) then takes form:
     g(f) = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln
         \left(
-        \frac{N}{ps(f)}
+        \frac{n}{ps(f)}
         \right)}
 \end{equation}
 
 Note that,
 \(
-\bigforall_{f \in \langle f_{min},f_{max}\rangle} : 0 < ps(f) \leq N
+\bigforall_{f \in \langle f_{min},f_{max}\rangle} : 0 < ps(f) \leq n
 \), and $ps(f)$ is monotonically non-decreasing.
-That means that $\frac{N}{ps(f)}$ is monotonically non-increasing, and as follows, $g(f)$ is also non-increasing.
+That means that $\frac{n}{ps(f)}$ is monotonically non-increasing, and as follows, $g(f)$ is also non-increasing.
 
 However, this is not what we want from image transformation, as it would produce a negative image.
-Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offsetting it by $N$, to keep the domain the same.
+Therefore, we flip the function horizontally, by changing the sign of $ps(f)$, and offsetting it by $n$, to keep the domain the same.
 
 \begin{equation}
     g(f) = g_{min} + \sqrt{
         2 \alpha^2 \cdot \ln
         \left(
-        \frac{N}{N - ps(f) + 1}
+        \frac{n}{n - ps(f) + 1}
         \right)}
     \label{eq:rayleigh-corrected}
 \end{equation}
@@ -76,18 +76,18 @@ For the first case:
 
 The second case is more interesting:
 \begin{align*}
-    ps(f_{max}) & = N                \\[1ex]
+    ps(f_{max}) & = n                \\[1ex]
     g(f_{max})  & = g_{min} + \sqrt{
-        2 \alpha^2 \cdot \ln(N)
+        2 \alpha^2 \cdot \ln(n)
     }
 \end{align*}
 Substituting $g(f_{max}) = g_{max}$,
 \begin{align}
     g_{max} & = g_{min} + \sqrt{
-        2 \alpha^2 \cdot \ln(N)
+        2 \alpha^2 \cdot \ln(n)
     }\nonumber                                                                     \\[1ex]
-    g_{max} & = g_{min} + \alpha \cdot \sqrt{2\ln(N)} \nonumber                    \\[1ex]
-    \alpha  & = \frac{g_{max} - g_{min}}{\sqrt{2\ln(N)}} \label{eq:rayleigh-alpha}
+    g_{max} & = g_{min} + \alpha \cdot \sqrt{2\ln(n)} \nonumber                    \\[1ex]
+    \alpha  & = \frac{g_{max} - g_{min}}{\sqrt{2\ln(n)}} \label{eq:rayleigh-alpha}
 \end{align}
 
 \subsection{Implementation}
@@ -152,7 +152,7 @@ We are interested in filling the lookup table only for values of $f \in \langle 
 Therefore, we check if $ps(f) = 0$. If it is, then $f < f_{min}$, and we need not perform the calculation, so we continue looping
 until we encounter some $ps(f) > 0$.
 
-Similarly, we do not need to perform calculations for $f > f_{max}$. We know that $ps(f) = N \Leftrightarrow f \geq f_{max}$,
+Similarly, we do not need to perform calculations for $f > f_{max}$. We know that $ps(f) = n \Leftrightarrow f \geq f_{max}$,
 so if we reach that point, we do not need to perform any calculations for further values of $f$, and can safely break out of the loop.
 
 This is a small optimization compensating for the fact that we cannot create a smaller lookup table, adjusted to the size of $\langle f_{min}, f_{max}\rangle$, because these values are unknown at compile time.
@@ -213,10 +213,10 @@ In this project we implemented and tested all 8 different characteristics for im
 \begin{itemize}
     \item Mean and Variance
           \[
-              \bar{b} = \frac{1}{N}\sum\limits_{m=0}^{255} m H(m)
+              \bar{b} = \frac{1}{n}\sum\limits_{m=0}^{255} m H(m)
           \]
           \[
-              \sigma^2 = \frac{1}{N}
+              \sigma^2 = \frac{1}{n}
               \sum\limits_{m=0}^{255} \left[ \left(m-\bar{b}\right)^2 H(m) \right]
           \]
     \item Standard deviation and Variation coefficient I
@@ -228,23 +228,23 @@ In this project we implemented and tested all 8 different characteristics for im
           \]
     \item Asymmetry coefficient
           \[
-              b_S = \frac{1}{N\sigma^3}
+              b_S = \frac{1}{n\sigma^3}
               \sum\limits_{m=0}^{255} \left[ \left(m-\bar{b}\right)^3 H(m) \right]
           \]
     \item Flattening coefficient
           \[
-              b_K = \frac{1}{N\sigma^3}
+              b_K = \frac{1}{n\sigma^3}
               \sum\limits_{m=0}^{255} \left[ \left(m-\bar{b}\right)^4 \cdot H(m)-3 \right]
           \]
     \item Variation coefficient II
           \[
-              b_N = \frac{1}{N^2}
+              b_N = \frac{1}{n^2}
               \sum\limits_{m=0}^{255} H(m)^2
           \]
     \item Information source entropy
           \[
-              b_I = -\frac{1}{N}
-              \sum\limits_{m=0}^{255} \left[ H(m) \cdot \log_2\left(\frac{H(m)}{N}\right) \right]
+              b_I = -\frac{1}{n}
+              \sum\limits_{m=0}^{255} \left[ H(m) \cdot \log_2\left(\frac{H(m)}{n}\right) \right]
           \]
 \end{itemize}
 
@@ -440,7 +440,7 @@ Each implementation was run 3 times, and the average execution time was calculat
 \begin{table}[ht]\centering
     \begin{tabular}{ccc}
         \toprule
-        Test N\textsuperscript{\underline{o}} & unoptimized & optimized \\\midrule
+        Test n\textsuperscript{\underline{o}} & unoptimized & optimized \\\midrule
         1                                     & 12.983      & 3.555     \\
         2                                     & 12.996      & 3.465     \\
         3                                     & 12.975      & 3.453     \\\midrule
