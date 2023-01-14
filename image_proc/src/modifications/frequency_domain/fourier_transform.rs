@@ -1,5 +1,4 @@
 use num::complex::Complex;
-use num::traits::Inv;
 use std::f64::consts::PI;
 use std::ops::Mul;
 
@@ -70,12 +69,30 @@ where
     let horizontal_pass: Vec2D<_> = samples.iter().map(|x| dft(x)).collect();
     let mut result = vec![vec![Complex::default(); size_x]; size_y];
 
-    let normalization_factor = (size_x as TData * size_y as TData).sqrt().inv();
-
     for column in 0..size_x {
         let data: Vec<_> = horizontal_pass.iter().map(|row| row[column]).collect();
         for (row, value) in dft(&data).into_iter().enumerate() {
-            result[row][column] = value * normalization_factor;
+            result[row][column] = value;
+        }
+    }
+
+    debug_assert_eq!(result.len(), size_y);
+    debug_assert!(result.iter().all(|x| Vec::len(x) == size_x));
+    return result;
+}
+
+pub fn inverse_dft_2f(samples: &[&[Complex<TData>]]) -> Vec2D<Complex<TData>> {
+    let size_y = samples.len();
+    let size_x = samples[0].len();
+    assert!(samples.iter().all(|x| x.len() == size_x));
+
+    let horizontal_pass: Vec2D<_> = samples.iter().map(|x| inverse_dft(x)).collect();
+    let mut result = vec![vec![Complex::default(); size_x]; size_y];
+
+    for column in 0..size_x {
+        let data: Vec<_> = horizontal_pass.iter().map(|row| row[column]).collect();
+        for (row, value) in inverse_dft(&data).into_iter().enumerate() {
+            result[row][column] = value;
         }
     }
 
