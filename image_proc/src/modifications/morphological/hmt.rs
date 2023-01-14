@@ -20,7 +20,7 @@ impl HitOrMissTransform {
     ) -> impl Iterator<Item = (u32, u32)> + 'out
     where
         'img: 'out,
-        's: 'out
+        's: 'out,
     {
         image
             .enumerate_pixels()

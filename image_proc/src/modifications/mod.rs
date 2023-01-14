@@ -2,11 +2,11 @@ use image::{Pixel, RgbImage};
 use std::ops::Deref;
 pub mod elementary;
 pub mod filters;
+pub mod frequency_domain;
 pub mod geometric;
 pub mod histogram_modifications;
 pub mod morphological;
 pub mod segmentation;
-pub mod frequency_domain;
 
 pub mod prelude {
     pub use super::elementary::*;

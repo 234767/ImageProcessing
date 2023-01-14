@@ -78,7 +78,10 @@ pub fn try_parse_kernel(args: &Args) -> Result<Vec<i32>, String> {
             let mask: Vec<Result<i32, ParseIntError>> =
                 mask_string.split(";").map(|s| s.parse()).collect();
             if mask.len() != 9 {
-                return Err(format!("Expected kernel of length of 9, got {}", mask.len()));
+                return Err(format!(
+                    "Expected kernel of length of 9, got {}",
+                    mask.len()
+                ));
             }
             if let Some(Err(e)) = mask.iter().find(|x| x.is_err()) {
                 return Err(e.to_string());
