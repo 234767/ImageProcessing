@@ -5,3 +5,4 @@ cargo.lock
 .DS_Store
 *.bmp
 /img/
+._*
