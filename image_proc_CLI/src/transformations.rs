@@ -10,6 +10,7 @@ use image_proc::modifications::morphological::{
 };
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
+use image_proc::modifications::frequency_domain::image_transformations::DFT;
 use util::{try_new_raleigh, try_parse_hmt_kernel, try_parse_kernel};
 
 mod histogram;
@@ -115,6 +116,9 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
                 .map(|x| if x > 0 { 1 } else { 0 })
                 .collect();
             Ok(Box::new(Closing::new(Mask::from_raw_bits(&kernel))))
+        }
+        "--dft" => {
+            Ok(Box::new(DFT{}))
         }
         _ => Err(format!("Command {} undefined", args.command)),
     }
