@@ -3,7 +3,7 @@ use crate::modifications::{
     Transformation,
 };
 use image::{DynamicImage, GrayImage, Luma, Rgb, RgbImage};
-use num::{complex::ComplexFloat, pow::Pow, Complex};
+use num::{complex::ComplexFloat, Complex};
 use std::convert::identity;
 
 fn to_grayscale(image: &RgbImage) -> GrayImage {
@@ -14,10 +14,9 @@ fn to_rgb(image: GrayImage) -> RgbImage {
     DynamicImage::from(image).to_rgb8()
 }
 
-fn complex_to_pixel(value: &Complex<f64>, max_value: f64) -> Luma<u8> {
+fn normalize(value: f64, max_value: f64) -> Luma<u8> {
     let normalization_factor = u8::MAX as f64 / f64::ln(1.0 + max_value);
-    let magnitude = f64::sqrt(value.re.pow(2) + value.im.pow(2));
-    let value = (normalization_factor * f64::ln(1.0 + magnitude)).clamp(0.0, u8::MAX as f64);
+    let value = (normalization_factor * f64::ln(1.0 + value)).clamp(0.0, u8::MAX as f64);
     Luma([value as u8])
 }
 
@@ -26,29 +25,20 @@ fn assert_pow_2(num: &u32) {
     assert!(log - log.floor() < 1e-5, "Number must be a power of 2");
 }
 
-fn swap_image_parts(image: &mut RgbImage) {
-    let w = image.width();
-    let h = image.height();
-
-    for x in 0..w / 2 {
-        for y in 0..h / 2 {
-            unsafe {
-                let first_pixel = image.get_pixel(x, y) as *const Rgb<u8>;
-                let second_pixel = image.get_pixel(x + w / 2, y + h / 2) as *const Rgb<u8>;
-                std::ptr::swap(first_pixel as *mut Rgb<u8>, second_pixel as *mut Rgb<u8>);
-
-                let first_pixel = image.get_pixel(x, y + h / 2) as *const Rgb<u8>;
-                let second_pixel = image.get_pixel(x + w / 2, y) as *const Rgb<u8>;
-                std::ptr::swap(first_pixel as *mut Rgb<u8>, second_pixel as *mut Rgb<u8>);
-            }
-        }
+fn get_swapped_coordinates(x: u32, y: u32, width: u32, height: u32) -> (u32, u32) {
+    use core::cmp::Ordering::*;
+    match (x.cmp(&(width / 2)), y.cmp(&(height / 2))) {
+        (Less, Less) => (x + width / 2, y + height / 2),
+        (Less, _) => (x + width / 2, y - height / 2),
+        (_, Less) => (x - width / 2, y + height / 2),
+        (_, _) => (x - width / 2, y - height / 2),
     }
 }
 
 pub struct DFT;
 
-impl Transformation for DFT {
-    fn apply(&self, image: &mut RgbImage) {
+impl DFT {
+    fn apply(image: &RgbImage) -> Vec<Vec<Complex<f64>>> {
         assert_pow_2(&image.height());
         assert_pow_2(&image.width());
 
@@ -60,7 +50,13 @@ impl Transformation for DFT {
 
         let pixels_as_slice: Vec<_> = pixels.iter().map(|x| x.as_slice()).collect();
 
-        let transformed = dft_2d(pixels_as_slice.as_slice(), FFTDirection::Forward);
+        dft_2d(pixels_as_slice.as_slice(), FFTDirection::Forward)
+    }
+}
+
+impl Transformation for DFT {
+    fn apply(&self, image: &mut RgbImage) {
+        let transformed = Self::apply(image);
 
         let max_value = {
             let mut max = 0.0;
@@ -72,11 +68,11 @@ impl Transformation for DFT {
             max
         };
 
-        let result = GrayImage::from_fn(image.width(), image.height(), |x, y| {
-            complex_to_pixel(&transformed[y as usize][x as usize], max_value)
+        let magnitude = GrayImage::from_fn(image.width(), image.height(), |x, y| {
+            let (x,y) = get_swapped_coordinates(x,y,image.width(), image.height());
+            normalize(transformed[y as usize][x as usize].abs(), max_value)
         });
 
-        *image = to_rgb(result);
-        swap_image_parts(image);
+        *image = to_rgb(magnitude);
     }
 }
