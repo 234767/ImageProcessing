@@ -81,7 +81,7 @@ where
     return result;
 }
 
-pub fn inverse_dft_2f(samples: &[&[Complex<TData>]]) -> Vec2D<Complex<TData>> {
+pub fn inverse_dft_2d(samples: &[&[Complex<TData>]]) -> Vec2D<Complex<TData>> {
     let size_y = samples.len();
     let size_x = samples[0].len();
     assert!(samples.iter().all(|x| x.len() == size_x));
