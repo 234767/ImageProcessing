@@ -1,21 +1,23 @@
 use crate::parsing::Args;
-use crate::transformations::util::try_new_region_grow;
-use image_proc::modifications::filters::basic::gpu::*;
-use image_proc::modifications::filters::RobertsOperator1;
-use image_proc::modifications::filters::SobelOperator;
-use image_proc::modifications::morphological::closing::Closing;
-use image_proc::modifications::morphological::opening::Opening;
-use image_proc::modifications::morphological::{
-    convex_hull::ConvexHull, dilation::Dilation, erosion::Erosion, hmt::HitOrMissTransform, Mask,
+use image_proc::modifications::{
+    filters::{basic::gpu::*, RobertsOperator1, SobelOperator},
+    frequency_domain::image_transformations::{
+        filtration::LowPassFilter, image_fourier_transforms::DFT,
+    },
+    morphological::{
+        closing::Closing, convex_hull::ConvexHull, dilation::Dilation, erosion::Erosion,
+        hmt::HitOrMissTransform, opening::Opening, Mask,
+    },
+    prelude::*,
+    IdTransform, Transformation,
 };
-use image_proc::modifications::prelude::*;
-use image_proc::modifications::{IdTransform, Transformation};
-use image_proc::modifications::frequency_domain::image_transformations::filtration::LowPassFilter;
-use image_proc::modifications::frequency_domain::image_transformations::image_fourier_transforms::DFT;
-use util::{try_new_raleigh, try_parse_hmt_kernel, try_parse_kernel};
 
+use construction_helpers::{
+    try_new_raleigh, try_new_region_grow, try_parse_hmt_kernel, try_parse_kernel,
+};
+
+mod construction_helpers;
 mod histogram;
-mod util;
 
 pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String> {
     match args.command.as_str() {
@@ -28,14 +30,14 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--hflip" => Ok(Box::new(HorizontalFlip {})),
         "--vflip" => Ok(Box::new(VerticalFlip {})),
         "--dflip" => Ok(Box::new(DiagonalFlip {})),
-        "--shrink" => Ok(Box::new(util::try_new_shrink(args)?)),
-        "--enlarge" => Ok(Box::new(util::try_new_enlarge(args)?)),
+        "--shrink" => Ok(Box::new(construction_helpers::try_new_shrink(args)?)),
+        "--enlarge" => Ok(Box::new(construction_helpers::try_new_enlarge(args)?)),
         "--median" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             Ok(Box::new(MedianFilter::new(width, height)))
         }
         "--median-gpu" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             match MedianFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
@@ -46,11 +48,11 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             }
         }
         "--gmean" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             Ok(Box::new(GeometricMeanFilter::new(width, height)))
         }
         "--gmean-gpu" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             match GMeanFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
@@ -61,7 +63,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             }
         }
         "--max-gpu" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             match MaxFilterGPU::try_new(width, height) {
                 Ok(filter) => Ok(Box::new(filter)),
                 Err(e) => {
@@ -71,12 +73,14 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             }
         }
         "--minimum" => {
-            let (width, height) = util::get_width_and_height(args)?;
+            let (width, height) = construction_helpers::get_width_and_height(args)?;
             Ok(Box::new(MinFilter::new(width, height)))
         }
-        "--histogram" => Ok(Box::new(util::get_histogram_modifier(args)?)),
-        "--lowpass" => Ok(Box::new(util::try_new_linear(args)?)),
-        "--lowpass-gpu" => Ok(Box::new(util::try_new_linear_gpu(args)?)),
+        "--histogram" => Ok(Box::new(construction_helpers::get_histogram_modifier(
+            args,
+        )?)),
+        "--lowpass" => Ok(Box::new(construction_helpers::try_new_linear(args)?)),
+        "--lowpass-gpu" => Ok(Box::new(construction_helpers::try_new_linear_gpu(args)?)),
         "--hraleigh" => Ok(Box::new(try_new_raleigh(args)?)),
         "--uolis" => Ok(Box::new(UolisOperator {})),
         "--orobertsi" => Ok(Box::new(RobertsOperator1 {})),
@@ -118,9 +122,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
                 .collect();
             Ok(Box::new(Closing::new(Mask::from_raw_bits(&kernel))))
         }
-        "--dft" => {
-            Ok(Box::new(DFT{}))
-        }
+        "--dft" => Ok(Box::new(DFT {})),
         "--freq-lowpass" => {
             let radius: u32 = args.try_get_arg("radius")?;
             Ok(Box::new(LowPassFilter::new(radius)))
