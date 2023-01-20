@@ -1,10 +1,18 @@
-const ACCURACY: f64 = 1e-6;
+const ACCURACY: f64 = 1e-5;
 
 macro_rules! assert_delta {
-    ($x:expr, $y:expr, $d:expr) => {
-        if !($x - $y < $d || $y - $x < $d) {
-            panic!();
-        }
+    ($a:expr, $b:expr, $d:expr) => {
+        let (a, b) = (&$a, &$b);
+        let eps = $d;
+        assert!(
+            (*a - *b).abs() < eps,
+            "assertion failed: `(left != right)` \
+             (left: `{:?}`, right: `{:?}`, expect diff: `{:?}`, real diff: `{:?}`)",
+            *a,
+            *b,
+            eps,
+            (*a - *b).abs()
+        );
     };
 }
 

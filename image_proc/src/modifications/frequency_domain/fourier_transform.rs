@@ -38,6 +38,10 @@ where
                 .map(|(j, &sample)| sample * twiddle_factor(j, k, n, direction))
                 .sum()
         })
+        .map(|x| match direction {
+            Forward => x,
+            Inverse => x / n as f64
+        })
         .collect();
 
     debug_assert_eq!(n, result.len());
