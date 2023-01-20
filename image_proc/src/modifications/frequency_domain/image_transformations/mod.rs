@@ -1,4 +1,5 @@
 pub mod image_fourier_transforms;
+pub mod filtration;
 
 mod util {
     use image::{DynamicImage, GrayImage, Luma, RgbImage};

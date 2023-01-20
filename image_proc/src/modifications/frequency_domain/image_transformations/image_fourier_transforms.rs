@@ -6,10 +6,15 @@ use num::complex::ComplexFloat;
 use num::Complex;
 use std::convert::identity;
 
+pub trait ImageFourierTransform {
+    fn transform(image: &RgbImage) -> Vec<Vec<Complex<f64>>>;
+    fn inverse(data: &Vec<Vec<Complex<f64>>>) -> Vec<Vec<Complex<f64>>>;
+}
+
 pub struct DFT;
 
-impl DFT {
-    fn apply(image: &RgbImage) -> Vec<Vec<Complex<f64>>> {
+impl ImageFourierTransform for DFT {
+    fn transform(image: &RgbImage) -> Vec<Vec<Complex<f64>>> {
         assert_pow_2(&image.height());
         assert_pow_2(&image.width());
 
@@ -23,11 +28,16 @@ impl DFT {
 
         dft_2d(pixels_as_slice.as_slice(), FFTDirection::Forward)
     }
+
+    fn inverse(data: &Vec<Vec<Complex<f64>>>) -> Vec<Vec<Complex<f64>>> {
+        let data_as_slice: Vec<_> = data.iter().map(|x| x.as_slice()).collect();
+        dft_2d(data_as_slice.as_slice(), FFTDirection::Forward)
+    }
 }
 
 impl Transformation for DFT {
     fn apply(&self, image: &mut RgbImage) {
-        let transformed = Self::apply(image);
+        let transformed = Self::transform(image);
 
         let max_value = {
             let mut max = 0.0;
