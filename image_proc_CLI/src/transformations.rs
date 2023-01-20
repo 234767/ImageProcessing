@@ -10,7 +10,7 @@ use image_proc::modifications::morphological::{
 };
 use image_proc::modifications::prelude::*;
 use image_proc::modifications::{IdTransform, Transformation};
-use image_proc::modifications::frequency_domain::image_transformations::DFT;
+use image_proc::modifications::frequency_domain::image_transformations::image_fourier_transforms::DFT;
 use util::{try_new_raleigh, try_parse_hmt_kernel, try_parse_kernel};
 
 mod histogram;
