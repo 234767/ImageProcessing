@@ -1,15 +1,6 @@
 use image_proc::modifications::frequency_domain::fourier_transform::{dft, FFTDirection};
 use num::Complex;
-
-const ACCURACY: f64 = 1e-6;
-
-macro_rules! assert_delta {
-    ($x:expr, $y:expr, $d:expr) => {
-        if !($x - $y < $d || $y - $x < $d) {
-            panic!();
-        }
-    };
-}
+use super::ACCURACY;
 
 fn test_dft_1d(input: &[f64], expected: &[(f64, f64)]) {
     let expected: Vec<_> = expected
