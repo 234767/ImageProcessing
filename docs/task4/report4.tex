@@ -3,6 +3,9 @@
 \input{../prelude.tex}
 \graphicspath{{img},{../img}}
 
+\newcommand*{\fft}{\textsc{fft}}
+\newcommand*{\dft}{\textsc{dft}}
+
 \title{Task No.~4}
 
 \begin{document}
@@ -11,7 +14,65 @@
 
 \section{Description of the implementation of the assigned transform variant}
 
+We decided to implement the \fft\ using the radix-2 decimation in time variant of the Cooley-Turkey algorithm.
+It uses the divide-and-conquer approach to divide a \dft\ of length $N$ into two \dft{}s of length $\frac{N}{2}$. 
+The speed is gained by reusing some computations for multiple \dft\ outputs.
+
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \foreach \i in {0,...,7} {
+            \node[circle, draw=black, inner sep=0pt, minimum size=2pt](start-\i) at (0,-\i) {};
+            \draw[-latex] (start-\i) -- (1,-\i);
+            \draw(1,-\i) -- (2,-\i);
+        }
+        \draw (0, 0) node[left]{$x[0]$};
+        \draw (0,-1) node[left]{$x[2]$};
+        \draw (0,-2) node[left]{$x[4]$};
+        \draw (0,-3) node[left]{$x[6]$};
+
+        \draw (0,-4) node[left]{$x[1]$};
+        \draw (0,-5) node[left]{$x[3]$};
+        \draw (0,-6) node[left]{$x[5]$};
+        \draw (0,-7) node[left]{$x[7]$};
+        
+        \draw (2, 0.25) -| ++(2, -3.5) -| cycle;
+        \draw (2,-3.75) -| ++(2, -3.5) -| cycle;
+
+        \draw (3,-1.5) node[]{\fft};
+        \draw (3,-5.5) node[]{\fft};
+
+        \foreach \i in {0,...,7} {
+            \node[circle, draw=black, inner sep=0pt, minimum size=2pt](left-\i) at (5,-\i) {};
+            \node[circle, draw=black, inner sep=0pt, minimum size=2pt](right-\i) at (7,-\i) {};
+            \draw (7,-\i) node[right]{$X[\i]$};
+            \draw[-latex] (4,-\i) -- (left-\i.west);
+        }
+        \foreach \i in {0,...,3} {
+            \pgfmathtruncatemacro{\j}{\i + 4};
+            \draw[-latex] (left-\i) node[above left]{\scriptsize$E[\i]$} -- (right-\j);
+            \draw[-latex] (left-\j) node[below left]{\scriptsize$O[\i]$}-- (right-\i);
+        }
+        \foreach \i in {2,...,5} {
+            \node[circle, fill=black, inner sep=0pt, minimum size=4pt] at (6,-\i) {};
+        }
+    \end{tikzpicture}
+    \caption{Visualisation of the \fft\ algoritm}
+\end{figure}
+
 \section{Description of the spectrum visualization method}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{.4\textwidth}\centering
+        \includegraphics[width=\textwidth]{lena}
+        \caption{Original image}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{.4\textwidth}\centering
+        \includegraphics[width=\textwidth]{lena_fft}
+        \caption{Frequency spectrum}
+    \end{subfigure}
+    \caption{Image before and after transformation by \fft}
+\end{figure}
 
 \section{Description of the implementation of the filters}
 
