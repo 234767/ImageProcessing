@@ -13,7 +13,9 @@ fn slice_to_complex_vec_2d(input: &[&[(f64,f64)]]) -> Vec<Vec<Complex<f64>>> {
 fn test_dft_2d(input: &[&[f64]], expected: &[&[(f64, f64)]]) {
     let expected = slice_to_complex_vec_2d(expected);
 
-    let result = dft_2d(input, FTDirection::Forward);
+    let input: Vec<Vec<_>> = input.iter().map(|row| row.to_vec()).collect();
+
+    let result = dft_2d(&input, FTDirection::Forward);
 
     for (expected, result) in expected
         .iter()
@@ -28,9 +30,7 @@ fn test_dft_2d(input: &[&[f64]], expected: &[&[(f64, f64)]]) {
 fn test_inverse_dft_2d(input: &[&[(f64, f64)]], expected: &[&[f64]]) {
     let input = slice_to_complex_vec_2d(input);
 
-    let input_as_slice: Vec<&[_]> = input.iter().map(|x|x.as_slice()).collect();
-
-    let result = dft_2d(&input_as_slice, FTDirection::Inverse);
+    let result = dft_2d(&input, FTDirection::Inverse);
 
     for (expected, result) in expected
         .iter()

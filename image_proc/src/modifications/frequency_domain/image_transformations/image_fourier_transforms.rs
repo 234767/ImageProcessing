@@ -1,29 +1,9 @@
+use super::super::fourier_transform::{dft_2d, fft_2d, FTDirection};
 use super::util::*;
-use crate::modifications::frequency_domain::fourier_transform::{dft_2d, fft_2d, FTDirection};
 use crate::modifications::Transformation;
-use image::{GrayImage, Luma, RgbImage};
+use image::{GrayImage, RgbImage};
 use num::complex::ComplexFloat;
 use num::Complex;
-
-mod util {
-    use std::convert::identity;
-    use num::Zero;
-
-    pub fn max<TSource, TResult, TMap>(data: &Vec<Vec<TSource>>, map: TMap) -> TResult
-    where
-        TMap: Fn(&TSource) -> TResult,
-        TResult: PartialOrd + Zero,
-    {
-        let mut max = TResult::zero();
-        for value in data.iter().flat_map(identity) {
-            let value = map(value);
-            if value > max {
-                max = value;
-            }
-        }
-        max
-    }
-}
 
 pub trait ImageFourierTransform {
     fn transform(image: &RgbImage) -> Vec<Vec<Complex<f64>>>;
@@ -37,20 +17,15 @@ impl ImageFourierTransform for DFT {
         assert_pow_2(image.height());
         assert_pow_2(image.width());
 
-        let pixels: Vec<Vec<_>> = to_grayscale(image)
-            .rows()
-            .into_iter()
-            .map(|row| row.map(|Luma([x])| *x as f64 / u8::MAX as f64).collect())
-            .collect();
+        let pixels = image_to_matrix(image);
 
-        let pixels_as_slice: Vec<_> = pixels.iter().map(|x| x.as_slice()).collect();
-
-        dft_2d(pixels_as_slice.as_slice(), FTDirection::Forward)
+        dft_2d(&pixels, FTDirection::Forward)
     }
 
     fn inverse(data: &Vec<Vec<Complex<f64>>>) -> Vec<Vec<Complex<f64>>> {
-        let data_as_slice: Vec<_> = data.iter().map(|x| x.as_slice()).collect();
-        dft_2d(data_as_slice.as_slice(), FTDirection::Forward)
+        assert_pow_2(data.len() as u32);
+        assert_pow_2(data[0].len() as u32);
+        dft_2d(data, FTDirection::Forward)
     }
 }
 
@@ -58,7 +33,7 @@ impl Transformation for DFT {
     fn apply(&self, image: &mut RgbImage) {
         let transformed = Self::transform(image);
 
-        let max_value = util::max(&transformed, |x| x.abs());
+        let max_value = max(&transformed, |x| x.abs());
 
         let magnitude = GrayImage::from_fn(image.width(), image.height(), |x, y| {
             let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());
@@ -76,11 +51,7 @@ impl ImageFourierTransform for FFT {
         assert_pow_2(image.height());
         assert_pow_2(image.width());
 
-        let pixels: Vec<Vec<_>> = to_grayscale(image)
-            .rows()
-            .into_iter()
-            .map(|row| row.map(|Luma([x])| *x as f64 / u8::MAX as f64).collect())
-            .collect();
+        let pixels = image_to_matrix(image);
 
         fft_2d(&pixels, FTDirection::Forward)
     }
@@ -96,7 +67,7 @@ impl Transformation for FFT {
     fn apply(&self, image: &mut RgbImage) {
         let transformed = Self::transform(image);
 
-        let max_value = util::max(&transformed, |x| x.abs());
+        let max_value = max(&transformed, |x| x.abs());
 
         let magnitude = GrayImage::from_fn(image.width(), image.height(), |x, y| {
             let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());

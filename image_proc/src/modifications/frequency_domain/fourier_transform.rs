@@ -50,7 +50,7 @@ where
 
 type Vec2D<T> = Vec<Vec<T>>;
 
-pub fn dft_2d<T>(samples: &[&[T]], direction: FTDirection) -> Vec2D<Complex<TData>>
+pub fn dft_2d<T>(samples: &Vec<Vec<T>>, direction: FTDirection) -> Vec2D<Complex<TData>>
 where
     T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
 {
