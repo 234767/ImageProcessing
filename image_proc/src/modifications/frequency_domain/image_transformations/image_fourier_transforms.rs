@@ -1,5 +1,5 @@
 use super::util::*;
-use crate::modifications::frequency_domain::fourier_transform::{dft_2d, FFTDirection};
+use crate::modifications::frequency_domain::fourier_transform::{dft_2d, FTDirection};
 use crate::modifications::Transformation;
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
@@ -26,12 +26,12 @@ impl ImageFourierTransform for DFT {
 
         let pixels_as_slice: Vec<_> = pixels.iter().map(|x| x.as_slice()).collect();
 
-        dft_2d(pixels_as_slice.as_slice(), FFTDirection::Forward)
+        dft_2d(pixels_as_slice.as_slice(), FTDirection::Forward)
     }
 
     fn inverse(data: &Vec<Vec<Complex<f64>>>) -> Vec<Vec<Complex<f64>>> {
         let data_as_slice: Vec<_> = data.iter().map(|x| x.as_slice()).collect();
-        dft_2d(data_as_slice.as_slice(), FFTDirection::Forward)
+        dft_2d(data_as_slice.as_slice(), FTDirection::Forward)
     }
 }
 

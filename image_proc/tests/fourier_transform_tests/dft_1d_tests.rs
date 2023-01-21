@@ -1,4 +1,4 @@
-use image_proc::modifications::frequency_domain::fourier_transform::{dft, FFTDirection};
+use image_proc::modifications::frequency_domain::fourier_transform::{dft, FTDirection};
 use num::Complex;
 use super::ACCURACY;
 
@@ -8,7 +8,7 @@ fn test_dft_1d(input: &[f64], expected: &[(f64, f64)]) {
         .map(|(re, im)| Complex::new(*re, *im))
         .collect();
 
-    let result = dft(input, FFTDirection::Forward);
+    let result = dft(input, FTDirection::Forward);
 
     for (expected, result) in expected.iter().zip(result) {
         assert_delta!(expected.re, result.re, ACCURACY);
@@ -22,7 +22,7 @@ fn test_inverse_dft_1d(input: &[(f64, f64)], expected: &[f64]) {
         .map(|(re, im)| Complex::new(*re, *im))
         .collect();
 
-    let result = dft(&input, FFTDirection::Inverse).into_iter().map(|x| x.re);
+    let result = dft(&input, FTDirection::Inverse).into_iter().map(|x| x.re);
 
     for (expected, result) in expected.iter().zip(result) {
         assert_delta!(expected, result, ACCURACY);

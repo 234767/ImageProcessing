@@ -1,5 +1,5 @@
 use super::ACCURACY;
-use image_proc::modifications::frequency_domain::fourier_transform::{dft_2d, FFTDirection};
+use image_proc::modifications::frequency_domain::fourier_transform::{dft_2d, FTDirection};
 use num::Complex;
 use std::convert::identity;
 
@@ -13,7 +13,7 @@ fn slice_to_complex_vec_2d(input: &[&[(f64,f64)]]) -> Vec<Vec<Complex<f64>>> {
 fn test_dft_2d(input: &[&[f64]], expected: &[&[(f64, f64)]]) {
     let expected = slice_to_complex_vec_2d(expected);
 
-    let result = dft_2d(input, FFTDirection::Forward);
+    let result = dft_2d(input, FTDirection::Forward);
 
     for (expected, result) in expected
         .iter()
@@ -30,7 +30,7 @@ fn test_inverse_dft_2d(input: &[&[(f64, f64)]], expected: &[&[f64]]) {
 
     let input_as_slice: Vec<&[_]> = input.iter().map(|x|x.as_slice()).collect();
 
-    let result = dft_2d(&input_as_slice, FFTDirection::Inverse);
+    let result = dft_2d(&input_as_slice, FTDirection::Inverse);
 
     for (expected, result) in expected
         .iter()

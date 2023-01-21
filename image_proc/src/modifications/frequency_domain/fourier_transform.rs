@@ -1,19 +1,19 @@
 use num::complex::Complex;
 use std::f64::consts::PI;
 use std::ops::Mul;
-use FFTDirection::*;
+use FTDirection::*;
 
 type TData = f64;
 
 #[derive(Copy, Clone)]
-pub enum FFTDirection {
+pub enum FTDirection {
     Forward,
     Inverse,
 }
 
 #[allow(non_snake_case)]
 #[inline(always)] // inline to allow for loop hoisting
-fn twiddle_factor(n: usize, k: usize, N: usize, direction: FFTDirection) -> Complex<TData> {
+fn twiddle_factor(n: usize, k: usize, N: usize, direction: FTDirection) -> Complex<TData> {
     let angle = match direction {
         Forward => -1.0,
         Inverse => 1.0,
@@ -24,7 +24,7 @@ fn twiddle_factor(n: usize, k: usize, N: usize, direction: FFTDirection) -> Comp
     Complex::new(angle.cos(), angle.sin())
 }
 
-pub fn dft<T>(samples: &[T], direction: FFTDirection) -> Vec<Complex<TData>>
+pub fn dft<T>(samples: &[T], direction: FTDirection) -> Vec<Complex<TData>>
 where
     T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
 {
@@ -40,7 +40,7 @@ where
         })
         .map(|x| match direction {
             Forward => x,
-            Inverse => x / n as f64
+            Inverse => x / n as f64,
         })
         .collect();
 
@@ -50,7 +50,7 @@ where
 
 type Vec2D<T> = Vec<Vec<T>>;
 
-pub fn dft_2d<T>(samples: &[&[T]], direction: FFTDirection) -> Vec2D<Complex<TData>>
+pub fn dft_2d<T>(samples: &[&[T]], direction: FTDirection) -> Vec2D<Complex<TData>>
 where
     T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
 {
@@ -71,4 +71,112 @@ where
     debug_assert_eq!(result.len(), size_y);
     debug_assert!(result.iter().all(|x| Vec::len(x) == size_x));
     return result;
+}
+
+mod helpers {
+    fn ilog2(value: u32) -> u32 {
+        if value == 0 {
+            panic!("Cannot compute logarithm of 0");
+        }
+        let mut value = value;
+        let mut result = 0u32;
+        while value > 1 {
+            value >>= 1;
+            result += 1;
+        }
+        result
+    }
+
+    fn reverse_bits(number: u32, number_of_bits: u32) -> u32 {
+        let mut reversed = 0u32;
+        for i in 0..number_of_bits {
+            if (number & (1 << i)) != 0 {
+                reversed |= 1 << (number_of_bits - i - 1);
+            }
+        }
+        return reversed;
+    }
+
+    pub fn create_indices_rearranging_function(data_length: u32) -> impl Fn(usize) -> usize {
+        let num_bits = ilog2(data_length);
+        return move |x: usize| reverse_bits(x as u32, num_bits) as usize;
+    }
+
+    #[cfg(test)]
+    mod unit_tests {
+        use super::reverse_bits;
+
+        #[test]
+        fn test_reverse_bits() {
+            let value: u32 = 0b0101;
+            let num_bits: u32 = 4;
+            let expected: u32 = 0b1010;
+
+            assert_eq!(expected, reverse_bits(value, num_bits))
+        }
+    }
+}
+
+fn rearrange_data_for_fft<T>(data: &Vec<T>) -> Vec<T>
+where
+    T: Copy,
+{
+    let get_index = helpers::create_indices_rearranging_function(data.len() as u32);
+
+    let mut result = vec![];
+    for i in 0..data.len() {
+        result.push(data[get_index(i)]);
+    }
+
+    result
+}
+
+fn butterfly_operation(
+    a: &Complex<TData>,
+    b: &Complex<TData>,
+    twiddle_factor: Complex<TData>,
+) -> (Complex<TData>, Complex<TData>) {
+    let wb = b * twiddle_factor;
+    (a + wb, a - wb)
+}
+
+fn fft_in_place(data: &mut [Complex<TData>], direction: FTDirection, depth: u32) {
+    if data.len() == 1 {
+        return;
+    }
+
+    let (half_1, half_2) = data.split_at_mut(data.len() / 2);
+    fft_in_place(half_1, direction, depth*2);
+    fft_in_place(half_2, direction, depth*2);
+
+    let angle = 2.0
+        * PI
+        * depth as f64
+        * data.len() as f64
+        * match direction {
+            Forward => -1.0,
+            Inverse => 1.0,
+        };
+
+    let mut twiddle_factor = Complex::new(1.0, 0.0);
+    let delta_twiddle_factor = Complex::from_polar(1.0, angle);
+    for i in 0..data.len() / 2 {
+        let (a, b) = butterfly_operation(&data[i], &data[i + data.len() / 2], twiddle_factor);
+        data[i] = a;
+        data[i + data.len() / 2] = b;
+        twiddle_factor *= delta_twiddle_factor;
+    }
+}
+
+pub fn fft<T>(data: &Vec<T>, direction: FTDirection) -> Vec<Complex<TData>>
+where
+    T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
+{
+    let mut data: Vec<_> = rearrange_data_for_fft(data)
+        .into_iter()
+        .map(|x| x * Complex::new(1.0, 0.0))
+        .collect();
+
+    fft_in_place(data.as_mut_slice(), direction, 1);
+    data
 }
