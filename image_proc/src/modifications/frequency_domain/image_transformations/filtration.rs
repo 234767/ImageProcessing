@@ -1,3 +1,4 @@
+use std::cmp::Ordering::*;
 use super::{
     image_fourier_transforms::{ImageFourierTransform, FFT},
     util::*,
@@ -5,12 +6,12 @@ use super::{
 use crate::modifications::geometric::DiagonalFlip;
 use crate::modifications::Transformation;
 use image::{GrayImage, Luma, RgbImage};
-use std::convert::identity;
 use num::complex::ComplexFloat;
+use std::convert::identity;
 
 mod debug_utils {
-    use num::Complex;
     use super::*;
+    use num::Complex;
 
     pub fn save_image(
         data: &Vec<Vec<Complex<f64>>>,
@@ -134,6 +135,76 @@ impl Transformation for HighPassFilter {
                 1.0
             } else {
                 0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+pub struct BandPassFilter {
+    from_radius: u32,
+    to_radius: u32,
+}
+
+impl BandPassFilter {
+    pub fn new(from: u32, to: u32) -> Self {
+        assert!(from <= to);
+        Self {
+            from_radius: from,
+            to_radius: to,
+        }
+    }
+}
+
+impl Transformation for BandPassFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x*x + y*y;
+            match (distance_squared.cmp(&from_squared), distance_squared.cmp(&to_squared)) {
+                (Less, _) => 0.0,
+                (_, Greater) => 0.0,
+                (_,_) => 1.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+pub struct BandCutFilter {
+    from_radius: u32,
+    to_radius: u32,
+}
+
+impl BandCutFilter {
+    pub fn new(from: u32, to: u32) -> Self {
+        assert!(from <= to);
+        Self {
+            from_radius: from,
+            to_radius: to,
+        }
+    }
+}
+
+impl Transformation for BandCutFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x*x + y*y;
+            match (distance_squared.cmp(&from_squared), distance_squared.cmp(&to_squared)) {
+                (Less, _) => 1.0,
+                (_, Greater) => 1.0,
+                (_,_) => 0.0
             }
         };
         apply_mask_filter::<FFT, _>(image, &mask);
