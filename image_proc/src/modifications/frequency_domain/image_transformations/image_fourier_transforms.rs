@@ -99,7 +99,7 @@ impl Transformation for FFT {
         let max_value = util::max(&transformed, |x| x.abs());
 
         let magnitude = GrayImage::from_fn(image.width(), image.height(), |x, y| {
-            // let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());
+            let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());
             normalize(transformed[y as usize][x as usize].abs(), max_value)
         });
 
