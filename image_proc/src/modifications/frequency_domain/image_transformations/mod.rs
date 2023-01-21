@@ -18,8 +18,8 @@ mod util {
         Luma([value as u8])
     }
 
-    pub fn assert_pow_2(num: &u32) {
-        let log = (*num as f64).log2();
+    pub fn assert_pow_2(num: u32) {
+        let log = (num as f64).log2();
         assert!(log - log.floor() < 1e-5, "Number must be a power of 2");
     }
 

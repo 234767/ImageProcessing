@@ -2,7 +2,7 @@ use crate::parsing::Args;
 use image_proc::modifications::{
     filters::{basic::gpu::*, RobertsOperator1, SobelOperator},
     frequency_domain::image_transformations::{
-        filtration::LowPassFilter, image_fourier_transforms::DFT,
+        filtration::LowPassFilter, image_fourier_transforms::{DFT, FFT},
     },
     morphological::{
         closing::Closing, convex_hull::ConvexHull, dilation::Dilation, erosion::Erosion,
@@ -123,6 +123,7 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             Ok(Box::new(Closing::new(Mask::from_raw_bits(&kernel))))
         }
         "--dft" => Ok(Box::new(DFT {})),
+        "--fft" => Ok(Box::new(FFT {})),
         "--freq-lowpass" => {
             let radius: u32 = args.try_get_arg("radius")?;
             Ok(Box::new(LowPassFilter::new(radius)))

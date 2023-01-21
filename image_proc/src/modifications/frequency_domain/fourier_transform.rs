@@ -180,3 +180,26 @@ where
     fft_in_place(data.as_mut_slice(), direction, 1);
     data
 }
+
+pub fn fft_2d<T>(samples: &Vec2D<T>, direction: FTDirection) -> Vec2D<Complex<TData>>
+    where
+        T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
+{
+    let size_y = samples.len();
+    let size_x = samples[0].len();
+    assert!(samples.iter().all(|x| x.len() == size_x));
+
+    let horizontal_pass: Vec2D<_> = samples.iter().map(|x| fft(x, direction)).collect();
+    let mut result = vec![vec![Complex::default(); size_x]; size_y];
+
+    for column in 0..size_x {
+        let data: Vec<_> = horizontal_pass.iter().map(|row| row[column]).collect();
+        for (row, value) in fft(&data, direction).into_iter().enumerate() {
+            result[row][column] = value;
+        }
+    }
+
+    debug_assert_eq!(result.len(), size_y);
+    debug_assert!(result.iter().all(|x| Vec::len(x) == size_x));
+    return result;
+}
