@@ -5,7 +5,7 @@ use FTDirection::*;
 
 type TData = f64;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum FTDirection {
     Forward,
     Inverse,
@@ -117,7 +117,7 @@ mod helpers {
     }
 }
 
-fn rearrange_data_for_fft<T>(data: &Vec<T>) -> Vec<T>
+fn rearrange_data_for_fft<T>(data: &[T]) -> Vec<T>
 where
     T: Copy,
 {
@@ -149,26 +149,19 @@ fn fft_in_place(data: &mut [Complex<TData>], direction: FTDirection, depth: u32)
     fft_in_place(half_1, direction, depth*2);
     fft_in_place(half_2, direction, depth*2);
 
-    let angle = 2.0
-        * PI
-        * depth as f64
-        * data.len() as f64
-        * match direction {
-            Forward => -1.0,
-            Inverse => 1.0,
-        };
-
-    let mut twiddle_factor = Complex::new(1.0, 0.0);
-    let delta_twiddle_factor = Complex::from_polar(1.0, angle);
-    for i in 0..data.len() / 2 {
+    for i in 0..(data.len() / 2) {
+        let angle = match direction {
+            Forward => -2.0,
+            Inverse => 2.0
+        } * PI * i as f64 / data.len() as f64;
+        let twiddle_factor = Complex::from_polar(1.0, angle);
         let (a, b) = butterfly_operation(&data[i], &data[i + data.len() / 2], twiddle_factor);
         data[i] = a;
         data[i + data.len() / 2] = b;
-        twiddle_factor *= delta_twiddle_factor;
     }
 }
 
-pub fn fft<T>(data: &Vec<T>, direction: FTDirection) -> Vec<Complex<TData>>
+pub fn fft<T>(data: &[T], direction: FTDirection) -> Vec<Complex<TData>>
 where
     T: Mul<Complex<TData>, Output = Complex<TData>> + Copy,
 {
@@ -178,6 +171,14 @@ where
         .collect();
 
     fft_in_place(data.as_mut_slice(), direction, 1);
+
+    if direction == Inverse {
+        let n = data.len() as f64;
+        for d in &mut data {
+            *d /= n
+        }
+    }
+
     data
 }
 

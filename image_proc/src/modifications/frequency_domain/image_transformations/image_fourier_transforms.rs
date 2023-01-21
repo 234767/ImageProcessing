@@ -1,5 +1,5 @@
 use super::util::*;
-use crate::modifications::frequency_domain::fourier_transform::{dft_2d, fft, fft_2d, FTDirection};
+use crate::modifications::frequency_domain::fourier_transform::{dft_2d, fft_2d, FTDirection};
 use crate::modifications::Transformation;
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
@@ -99,7 +99,7 @@ impl Transformation for FFT {
         let max_value = util::max(&transformed, |x| x.abs());
 
         let magnitude = GrayImage::from_fn(image.width(), image.height(), |x, y| {
-            let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());
+            // let (x, y) = swap_quadrant_coordinates(x, y, image.width(), image.height());
             normalize(transformed[y as usize][x as usize].abs(), max_value)
         });
 

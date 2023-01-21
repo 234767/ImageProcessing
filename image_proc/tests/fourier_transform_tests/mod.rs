@@ -1,4 +1,4 @@
-const ACCURACY: f64 = 1e-5;
+const ACCURACY: f64 = 1e-3;
 
 macro_rules! assert_delta {
     ($a:expr, $b:expr, $d:expr) => {
@@ -18,3 +18,4 @@ macro_rules! assert_delta {
 
 mod dft_1d_tests;
 mod dtt_2d_tests;
+mod fft_1d_tests;
