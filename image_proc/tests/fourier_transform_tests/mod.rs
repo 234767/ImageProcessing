@@ -19,3 +19,4 @@ macro_rules! assert_delta {
 mod dft_1d_tests;
 mod dtt_2d_tests;
 mod fft_1d_tests;
+mod fft_2d_tests;
