@@ -3,7 +3,6 @@ use super::{
     image_fourier_transforms::{ImageFourierTransform, FFT},
     util::*,
 };
-use crate::modifications::geometric::DiagonalFlip;
 use crate::modifications::Transformation;
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
@@ -82,7 +81,6 @@ where
     });
 
     *image = to_rgb(result);
-    DiagonalFlip {}.apply(image)
 }
 
 pub struct LowPassFilter {
