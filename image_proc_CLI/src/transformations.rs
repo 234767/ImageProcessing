@@ -15,6 +15,7 @@ use image_proc::modifications::{
 use construction_helpers::{
     try_new_raleigh, try_new_region_grow, try_parse_hmt_kernel, try_parse_kernel,
 };
+use image_proc::modifications::frequency_domain::image_transformations::filtration::HighPassFilter;
 
 mod construction_helpers;
 mod histogram;
@@ -127,6 +128,10 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--freq-lowpass" => {
             let radius: u32 = args.try_get_arg("radius")?;
             Ok(Box::new(LowPassFilter::new(radius)))
+        }
+        "--freq-highpass" => {
+            let radius: u32 = args.try_get_arg("radius")?;
+            Ok(Box::new(HighPassFilter::new(radius)))
         }
         _ => Err(format!("Command {} undefined", args.command)),
     }

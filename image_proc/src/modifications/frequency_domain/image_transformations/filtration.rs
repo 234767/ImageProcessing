@@ -1,5 +1,5 @@
 use super::{
-    image_fourier_transforms::{ImageFourierTransform, DFT},
+    image_fourier_transforms::{ImageFourierTransform, FFT},
     util::*,
 };
 use crate::modifications::geometric::DiagonalFlip;
@@ -108,6 +108,34 @@ impl Transformation for LowPassFilter {
                 0.0
             }
         };
-        apply_mask_filter::<DFT, _>(image, &mask);
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+pub struct HighPassFilter {
+    radius: u32,
+}
+
+impl HighPassFilter {
+    pub fn new(radius: u32) -> Self {
+        Self { radius }
+    }
+}
+
+impl Transformation for HighPassFilter {
+    fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y > radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
     }
 }
