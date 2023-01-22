@@ -3,7 +3,7 @@ use super::{
     image_fourier_transforms::{ImageFourierTransform, FFT},
     util::*,
 };
-use crate::modifications::Transformation;
+use crate::modifications::{is_edge, Transformation};
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
 use std::convert::identity;
@@ -214,41 +214,48 @@ impl Transformation for BandCutFilter {
 }
 
 //(F5) High-pass filter with detection of edge direction
-pub struct EdgeDirectionHighPassFilter{
+pub struct HighPassEdgeFilter{
     radius: u32,
+    direction: EdgeDirection,
+
+}
+pub enum EdgeDirection {
+    X,
+    Y,
+    Both
 }
 
-impl EdgeDirectionHighPassFilter{
-    pub fn new(radius: u32) -> Self {
-        Self { radius }
+impl HighPassEdgeFilter{
+    pub fn new(radius: u32, direction: EdgeDirection) -> Self {
+        Self { radius, direction }
     }
 }
 
-impl Transformation for EdgeDirectionHighPassFilter{
+impl Transformation for HighPassEdgeFilter{
     fn apply(&self, image: &mut RgbImage) {
-        let radius_squared = self.radius * self.radius;
+        let sobel_operator = SobelOperatorEdge {};
+        let (dx, dy) = sobel_operator.apply(image);
+
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let mask = move |x: u32, y: u32| {
+        let radius_squared = self.radius * self.radius;
+        let mask = |x: u32, y: u32| -> f64 {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
-            if x * x + y * y > radius_squared {
-                let angle = (y as f64).atan2(x as f64);
-                if angle > std::f64::consts::FRAC_PI_4 && angle < 3.0 * std::f64::consts::FRAC_PI_4 {
-                    // Horizontal Edge
-                    1.0
-                } else if angle < -std::f64::consts::FRAC_PI_4 && angle > -3.0 * std::f64::consts::FRAC_PI_4 {
-                    // Horizontal Edge
-                    1.0
-                } else {
-                    // Vertical Edge
-                    1.0
+            let distance_squared = x * x + y * y;
+            match self.direction {
+                EdgeDirection::X => dx[(y * image.width() + x) as usize] as f64,
+                EdgeDirection::Y => dy[(y * image.width() + x) as usize] as f64,
+                EdgeDirection::Both => {
+                    if distance_squared > radius_squared {
+                        1.0
+                    } else {
+                        0.0
+                    }
                 }
-            } else {
-                0.0
             }
         };
-        apply_mask_filter::<FFT, _>(image, &mask);
+        //apply_mask_filter::<FFT, _>(image, &mask);
     }
 }
 
@@ -275,5 +282,46 @@ impl Transformation for PhaseFilter{
             angle
         };
         apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+//Didnt want to change the sobel from previous exercise, so we have a new different one.
+//In my implementation SobelOperator is modifying the image in place -> instead of returning the gradient images (dx, dy) that HighPassEdgeFilter expects
+//We can change it in future, but didnt want to destroy the code for now
+
+pub struct SobelOperatorEdge;
+
+impl SobelOperatorEdge {
+    fn gradient(&self, image: &RgbImage, x: u32, y: u32) -> (f64, f64) {
+        let mut sobel_x = 0.0;
+        let mut sobel_y = 0.0;
+        for channel in 0..3 {
+            sobel_x += image.get_pixel(x + 1, y - 1)[channel] as f64
+                + 2.0 * image.get_pixel(x + 1, y)[channel] as f64
+                + image.get_pixel(x + 1, y + 1)[channel] as f64
+                - (image.get_pixel(x - 1, y - 1)[channel] as f64
+                + 2.0 * image.get_pixel(x - 1, y)[channel] as f64
+                + image.get_pixel(x - 1, y + 1)[channel] as f64);
+            sobel_y += image.get_pixel(x - 1, y - 1)[channel] as f64
+                + 2.0 * image.get_pixel(x, y - 1)[channel] as f64
+                + image.get_pixel(x + 1, y - 1)[channel] as f64
+                - (image.get_pixel(x - 1, y + 1)[channel] as f64
+                + 2.0 * image.get_pixel(x, y + 1)[channel] as f64
+                + image.get_pixel(x + 1, y + 1)[channel] as f64);
+        }
+        (sobel_x, sobel_y)
+    }
+    fn apply(&self, image: &RgbImage) -> (Vec<f32>, Vec<f32>) {
+        let mut dx = vec![0.0; (image.width() * image.height()) as usize];
+        let mut dy = vec![0.0; (image.width() * image.height()) as usize];
+        for (x, y, _) in image.enumerate_pixels() {
+            if is_edge(image, x, y) {
+                continue;
+            }
+            let (sobel_x, sobel_y) = self.gradient(image, x, y);
+            dx[(y * image.width() + x) as usize] = sobel_x as f32;
+            dy[(y * image.width() + x) as usize] = sobel_y as f32;
+        }
+        (dx, dy)
     }
 }
