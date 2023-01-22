@@ -2,6 +2,7 @@
 
 \input{../prelude.tex}
 \graphicspath{{img},{../img}}
+\renewcommand*{\subfiguresize}{.35\textwidth}
 
 \newcommand*{\fft}{\textsc{fft}}
 \newcommand*{\dft}{\textsc{dft}}
@@ -132,7 +133,7 @@ We could not avoid the necessary allocation, because firstly our function is gen
 
 Therefore, the memory complexity is $\mathcal{O}(n)$, and computational complexity is $\mathcal{O}(n \log n)$.
 
-The inverse \fft\ is done by changing the sign in the exponential, and dividing all the final values by $N$. 
+The inverse \fft\ is done by changing the sign in the exponential, and dividing all the final values by $N$.
 
 \section{Description of the spectrum visualization method}
 
@@ -161,7 +162,174 @@ The result is presented on the figure below.
 
 \section{Description of the implementation of the filters}
 
+When implementing the filters, we noticed the common functionality between them, and decided to extract it.
+Each filter can be characterized by the following sequence of actions:
+
+\begin{enumerate}
+    \item Apply the fourier transform to the image
+    \item Multiply each pixel by corresponding pixel in the mask
+    \item Apply the inverse fourier transform
+    \item Convert complex numbers to normalized luminosity values
+\end{enumerate}
+
+We noticed that the only part of this process that differs for each filter is the mask, which can be thought of as a function $M: (x, y) \mapsto m$, where $x,y \in \mathbb{N}$ and $m \in \langle 0, 1 \rangle$.
+
+Lastly, we focused on the problem of swapping the quadrants of the image in the frequency domain.
+Normally we would have to do this process twice --- once before and once after applying the mask.
+However, we noticed that we can apply it just once, if instead of swapping quadrants of the image, we perform the swap on the mask.
+
+The conversion from complex values to pixels is trivial, we just take an absolute value and scale it linearly, so that the max value corresponds to the maximum possible luminosity.
+
+The implementation of these steps looks like the following:
+
+\begin{lstlisting}[
+    caption={Implementation of the parametrized filter in the frequency domain},
+    basicstyle=\footnotesize\ttfamily
+]
+fn apply_mask_filter<TFourier, TMask>(
+    image: &mut RgbImage, 
+    mask: &TMask
+)
+where
+    TFourier: ImageFourierTransform,
+    TMask: Fn(u32, u32) -> f64,
+{
+    let mut transform = TFourier::transform(image);
+    for (y, row) in transform.iter_mut().enumerate() {
+        for (x, pixel) in row.iter_mut().enumerate() {
+            let (x, y) =
+                swap_coordinates(x, y, image.width(), image.height());
+            let mask_value: f64 = mask(x, y);
+            *pixel *= mask_value;
+        }
+    }
+
+    let inverse = TFourier::inverse(&transform);
+
+    let max_value = {
+        /* calculate max value ... */
+    };
+
+    let result = GrayImage::from_fn(image.width(), image.height(), 
+        |x, y| {
+            let (x, y) = (x as usize, y as usize);
+            let luma = inverse[y][x].abs() / max_value * u8::MAX as f64;
+            Luma([luma as u8])
+    });
+
+    *image = to_rgb(result);
+}
+\end{lstlisting}
+
+Finally, all we need to do to implement the specific variants of the filters, is to invoke this function with the appropriate mask (which can be done either by a generator function, or loaded from an image file).
+
+\subsection{Low pass filter}
+
+Low pass filter mask is implemented as a function that takes $(x,y)$ coordinates, and calculates the distance from the center.
+If it is greater than some threshold radius $R$, it outputs 1, else 0.
+
+\begin{equation}
+    M_R(x,y) = \begin{cases}
+        1  &\text{if} \ (x^2 + y^2) \leq R^2 \\
+        0  &\text{otherwise}
+    \end{cases}
+\end{equation}
+
+\subsection{High pass filter}
+
+High pass filter was implemented similarly to the low pass filter, except with the opposite sign.
+
+\begin{equation}
+    M_R(x,y) = \begin{cases}
+        1  &\text{if} \ (x^2 + y^2) \geq R^2 \\
+        0  &\text{otherwise}
+    \end{cases}
+\end{equation}
+
+\subsection{Band pass filter}
+
+Band pass filter takes 2 values --- $R_1$ and $R_2$ which denote the lower and upper bound of the frequency band.
+The filter then blocks any frequency that is not between $R_1$ and $R_2$.
+
+\begin{equation}
+    M_{R_1, R_2}(x,y) = \begin{cases}
+        1  &\text{if} \ R_1^2 \leq (x^2 + y^2) \leq R_2^2  \\
+        0  &\text{otherwise}
+    \end{cases}
+\end{equation}
+
+\subsection{Band cut filter}
+
+Band cut filter works similarly to the band pass filter, but instead of passing the frequencies that are part of the band, it blocks them and passes everything else.
+
+\begin{equation}
+    M_{R_1, R_2}(x,y) = \begin{cases}
+        1  &\text{if} \ (x^2 + y^2) \leq R_1^2 \lor (x^2 + y^2) \geq R_2^2  \\
+        0  &\text{otherwise}
+    \end{cases}
+\end{equation}
+
 \section{Analysis of the filtering results}
+
+\subsection{Low pass filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena}
+        \caption{original}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena_lowpass}
+        \caption{filtered}
+    \end{subfigure}
+    \caption{Result of applying the low-pass filter with $R \leq 30$}
+\end{figure}
+
+\subsection{High pass filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena}
+        \caption{original}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena_highpass}
+        \caption{filtered}
+    \end{subfigure}
+    \caption{Result of applying the high-pass filter with $R \geq 30$}
+\end{figure}
+
+\subsection{Band pass filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena}
+        \caption{original}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena_bandpass}
+        \caption{filtered}
+    \end{subfigure}
+    \caption{Result of applying the band-pass filter with $R \in \langle 10, 50 \rangle$}
+\end{figure}
+
+\subsection{Band cut filter}
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena}
+        \caption{original}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{\subfiguresize}
+        \includegraphics[width=\textwidth]{lena_bandcut}
+        \caption{filtered}
+    \end{subfigure}
+    \caption{Result of applying the band-cut filter with $R \notin \langle 10, 50 \rangle$}
+\end{figure}
 
 \section{Description of other changes which took place in the application}
 
