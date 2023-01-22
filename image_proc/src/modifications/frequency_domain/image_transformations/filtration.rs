@@ -3,7 +3,7 @@ use super::{
     image_fourier_transforms::{ImageFourierTransform, FFT},
     util::*,
 };
-use crate::modifications::{is_edge, Transformation};
+use crate::modifications::{Transformation};
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
 use std::convert::identity;
@@ -309,40 +309,3 @@ impl Transformation for PhaseFilter{
 //Didnt want to change the sobel from previous exercise, so we have a new different one.
 //In my implementation SobelOperator is modifying the image in place -> instead of returning the gradient images (dx, dy) that HighPassEdgeFilter expects
 //We can change it in future, but didnt want to destroy the code for now
-
-pub struct SobelOperatorEdge;
-
-impl SobelOperatorEdge {
-    fn gradient(&self, image: &RgbImage, x: u32, y: u32) -> (f64, f64) {
-        let mut sobel_x = 0.0;
-        let mut sobel_y = 0.0;
-        for channel in 0..3 {
-            sobel_x += image.get_pixel(x + 1, y - 1)[channel] as f64
-                + 2.0 * image.get_pixel(x + 1, y)[channel] as f64
-                + image.get_pixel(x + 1, y + 1)[channel] as f64
-                - (image.get_pixel(x - 1, y - 1)[channel] as f64
-                + 2.0 * image.get_pixel(x - 1, y)[channel] as f64
-                + image.get_pixel(x - 1, y + 1)[channel] as f64);
-            sobel_y += image.get_pixel(x - 1, y - 1)[channel] as f64
-                + 2.0 * image.get_pixel(x, y - 1)[channel] as f64
-                + image.get_pixel(x + 1, y - 1)[channel] as f64
-                - (image.get_pixel(x - 1, y + 1)[channel] as f64
-                + 2.0 * image.get_pixel(x, y + 1)[channel] as f64
-                + image.get_pixel(x + 1, y + 1)[channel] as f64);
-        }
-        (sobel_x, sobel_y)
-    }
-    fn apply(&self, image: &RgbImage) -> (Vec<f32>, Vec<f32>) {
-        let mut dx = vec![0.0; (image.width() * image.height()) as usize];
-        let mut dy = vec![0.0; (image.width() * image.height()) as usize];
-        for (x, y, _) in image.enumerate_pixels() {
-            if is_edge(image, x, y) {
-                continue;
-            }
-            let (sobel_x, sobel_y) = self.gradient(image, x, y);
-            dx[(y * image.width() + x) as usize] = sobel_x as f32;
-            dy[(y * image.width() + x) as usize] = sobel_y as f32;
-        }
-        (dx, dy)
-    }
-}

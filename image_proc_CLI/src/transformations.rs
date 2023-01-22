@@ -146,13 +146,14 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         }
         // "--edge-direction" => {
         //     let radius: u32 = args.try_get_arg("radius")?;
-        //     let direction = match args.try_get_arg("direction")? {
-        //         "X" => EdgeDirection::X,
-        //         "Y" => EdgeDirection::Y,
-        //         "Both" => EdgeDirection::Both,
-        //         _ => return Err(format!("Invalid direction value, must be one of X, Y, Both")),
-        //     };
-        //     Ok(Box::new(HighPassEdgeFilter::new(radius, direction)))
+        //     let direction: EdgeDirection = args.try_get_arg("direction")?;
+        //     match direction {
+        //         EdgeDirection::North => Ok(Box::new(HighPassEdgeFilter::new(radius, EdgeDirection::North))),
+        //         EdgeDirection::South => Ok(Box::new(HighPassEdgeFilter::new(radius, EdgeDirection::South))),
+        //         EdgeDirection::East  => Ok(Box::new(HighPassEdgeFilter::new(radius, EdgeDirection::East))),
+        //         EdgeDirection::West  => Ok(Box::new(HighPassEdgeFilter::new(radius, EdgeDirection::West))),
+        //         _ => Err("Invalid direction for high-pass edge filter".parse().unwrap())
+        //     }
         // }
         "--phase-modify" => {
             let angle: f64 = args.try_get_arg("angle")?;
@@ -161,3 +162,4 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         _ => Err(format!("Command {} undefined", args.command)),
     }
 }
+
