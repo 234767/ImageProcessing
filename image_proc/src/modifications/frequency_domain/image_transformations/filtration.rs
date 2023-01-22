@@ -7,6 +7,7 @@ use crate::modifications::{Transformation};
 use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
 use std::convert::identity;
+use num::Complex;
 
 mod debug_utils {
     use super::*;
@@ -82,6 +83,45 @@ where
 
     *image = to_rgb(result);
 }
+
+fn apply_mask_filter_complex<TFourier, TMask>(image: &mut RgbImage, mask: &TMask)
+    where
+        TFourier: ImageFourierTransform,
+        TMask: Fn(u32, u32) -> Complex<f64>,
+{
+    let mut transform = TFourier::transform(image);
+    for (y, row) in transform.iter_mut().enumerate() {
+        for (x, pixel) in row.iter_mut().enumerate() {
+            let (x, y) = swap_quadrant_coordinates(x as u32, y as u32, image.width(), image.height());
+            let mask_value = mask(x as u32, y as u32);
+            *pixel *= mask_value;
+        }
+    }
+
+    if cfg!(debug_assertions) {
+        debug_utils::save_image(&transform, "_mask.debug.bmp", true);
+    }
+
+    let inverse = TFourier::inverse(&transform);
+
+    let max_value = {
+        let mut max = 0.0;
+        for value in inverse.iter().flat_map(identity) {
+            if value.abs() > max {
+                max = value.abs();
+            }
+        }
+        max
+    };
+
+    let result = GrayImage::from_fn(image.width(), image.height(), |x, y| {
+        let (x,y) = (x as usize, y as usize);
+        let luma = inverse[y][x].abs() / max_value * u8::MAX as f64;
+        Luma([luma as u8])
+    });
+    *image = to_rgb(result);
+}
+
 
 //(F1) Low-pass filter (high-cut filter)
 pub struct LowPassFilter {
@@ -282,30 +322,29 @@ impl Transformation for HighPassEdgeFilter{
 
 //(F6) Phase modifying filter
 pub struct PhaseFilter{
-    angle: f64,
+    k: f64,
+    l: f64,
 }
 
 impl PhaseFilter{
-    pub fn new(angle: f64) -> Self {
-        Self { angle }
+    pub fn new(k: f64, l: f64) -> Self {
+        Self { k, l }
     }
 }
 
 impl Transformation for PhaseFilter{
     fn apply(&self, image: &mut RgbImage) {
-        let half_width = image.width() / 2;
-        let half_height = image.height() / 2;
+        let height = image.height() as f64;
+        let width = image.width() as f64;
         let mask = move |x: u32, y: u32| {
-            let x = u32::abs_diff(x, half_width);
-            let y = u32::abs_diff(y, half_height);
-            let angle = (y as f64).atan2(x as f64) + self.angle;
-            //Complex::new(angle.cos(), angle.sin()).re
-            angle
+            Complex::exp(Complex::i() * (-1.0 * (x as f64 * self.k * 2.0 * std::f64::consts::PI) / height + -1.0 * (y as f64 * self.l * 2.0 * std::f64::consts::PI) / width + (self.k + self.l) * std::f64::consts::PI))
         };
-        apply_mask_filter::<FFT, _>(image, &mask);
+        let mut image_clone = image.clone();
+        apply_mask_filter_complex::<FFT, _>(&mut image_clone, &mask);
+        *image = image_clone;
     }
 }
 
-//Didnt want to change the sobel from previous exercise, so we have a new different one.
-//In my implementation SobelOperator is modifying the image in place -> instead of returning the gradient images (dx, dy) that HighPassEdgeFilter expects
-//We can change it in future, but didnt want to destroy the code for now
+
+
+

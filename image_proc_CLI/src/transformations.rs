@@ -156,8 +156,9 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         //     }
         // }
         "--phase-modify" => {
-            let angle: f64 = args.try_get_arg("angle")?;
-            Ok(Box::new(PhaseFilter::new(angle)))
+            let k: f64 = args.try_get_arg("k")?;
+            let l: f64 = args.try_get_arg("l")?;
+            Ok(Box::new(PhaseFilter::new(k, l)))
         }
         _ => Err(format!("Command {} undefined", args.command)),
     }
