@@ -220,9 +220,10 @@ pub struct HighPassEdgeFilter{
 
 }
 pub enum EdgeDirection {
-    X,
-    Y,
-    Both
+    North,
+    South,
+    East,
+    West,
 }
 
 impl HighPassEdgeFilter{
@@ -233,29 +234,49 @@ impl HighPassEdgeFilter{
 
 impl Transformation for HighPassEdgeFilter{
     fn apply(&self, image: &mut RgbImage) {
-        let sobel_operator = SobelOperatorEdge {};
-        let (dx, dy) = sobel_operator.apply(image);
-
+        let radius_squared = self.radius * self.radius;
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let radius_squared = self.radius * self.radius;
-        let mask = |x: u32, y: u32| -> f64 {
+        let mask = move |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
-            let distance_squared = x * x + y * y;
-            match self.direction {
-                EdgeDirection::X => dx[(y * image.width() + x) as usize] as f64,
-                EdgeDirection::Y => dy[(y * image.width() + x) as usize] as f64,
-                EdgeDirection::Both => {
-                    if distance_squared > radius_squared {
-                        1.0
-                    } else {
-                        0.0
+            let distance_squared = x*x + y*y;
+            if distance_squared > radius_squared {
+                match self.direction {
+                    EdgeDirection::North => {
+                        if y < x {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    },
+                    EdgeDirection::South => {
+                        if y > x {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    },
+                    EdgeDirection::East => {
+                        if x > y {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    },
+                    EdgeDirection::West => {
+                        if x < y {
+                            1.0
+                        } else {
+                            0.0
+                        }
                     }
                 }
+            } else {
+                0.0
             }
         };
-        //apply_mask_filter::<FFT, _>(image, &mask);
+        apply_mask_filter::<FFT, _>(image, &mask);
     }
 }
 
