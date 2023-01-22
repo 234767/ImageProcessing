@@ -83,6 +83,7 @@ where
     *image = to_rgb(result);
 }
 
+//(F1) Low-pass filter (high-cut filter)
 pub struct LowPassFilter {
     radius: u32,
 }
@@ -111,6 +112,7 @@ impl Transformation for LowPassFilter {
     }
 }
 
+//(F2) High-pass filter (low-cut filter)
 pub struct HighPassFilter {
     radius: u32,
 }
@@ -139,6 +141,7 @@ impl Transformation for HighPassFilter {
     }
 }
 
+//(F3) Band-pass filter
 pub struct BandPassFilter {
     from_radius: u32,
     to_radius: u32,
@@ -174,6 +177,7 @@ impl Transformation for BandPassFilter {
     }
 }
 
+//(F4) Band-cut filter
 pub struct BandCutFilter {
     from_radius: u32,
     to_radius: u32,
@@ -204,6 +208,71 @@ impl Transformation for BandCutFilter {
                 (_, Greater) => 1.0,
                 (_,_) => 0.0
             }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+//(F5) High-pass filter with detection of edge direction
+pub struct EdgeDirectionHighPassFilter{
+    radius: u32,
+}
+
+impl EdgeDirectionHighPassFilter{
+    pub fn new(radius: u32) -> Self {
+        Self { radius }
+    }
+}
+
+impl Transformation for EdgeDirectionHighPassFilter{
+    fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y > radius_squared {
+                let angle = (y as f64).atan2(x as f64);
+                if angle > std::f64::consts::FRAC_PI_4 && angle < 3.0 * std::f64::consts::FRAC_PI_4 {
+                    // Horizontal Edge
+                    1.0
+                } else if angle < -std::f64::consts::FRAC_PI_4 && angle > -3.0 * std::f64::consts::FRAC_PI_4 {
+                    // Horizontal Edge
+                    1.0
+                } else {
+                    // Vertical Edge
+                    1.0
+                }
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+}
+
+//(F6) Phase modifying filter
+pub struct PhaseFilter{
+    angle: f64,
+}
+
+impl PhaseFilter{
+    pub fn new(angle: f64) -> Self {
+        Self { angle }
+    }
+}
+
+impl Transformation for PhaseFilter{
+    fn apply(&self, image: &mut RgbImage) {
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let angle = (y as f64).atan2(x as f64) + self.angle;
+            //Complex::new(angle.cos(), angle.sin()).re
+            angle
         };
         apply_mask_filter::<FFT, _>(image, &mask);
     }
