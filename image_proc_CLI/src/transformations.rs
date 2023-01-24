@@ -144,10 +144,12 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
             let to: u32 = args.try_get_arg("to")?;
             Ok(Box::new(BandCutFilter::new(from, to)))
         }
-        "--edge-direction" => {
-            let radius: u32 = args.try_get_arg("radius")?;
-            Ok(Box::new(HighPassFilterWithEdgeDetection::new(radius)))
-        }
+        // "--edge-direction" => {
+        //     let radius: u32 = args.try_get_arg("radius")?;
+        //     let path = args.try_get_arg("mask")?;
+        //     let mask = construction_helpers::get_mask_for_filter(path)?;
+        //     Ok(Box::new(HighPassFilterWithEdgeDetection::new(radius, mask)))
+        // }
         "--phase-modify" => {
             let k: f64 = args.try_get_arg("k")?;
             let l: f64 = args.try_get_arg("l")?;

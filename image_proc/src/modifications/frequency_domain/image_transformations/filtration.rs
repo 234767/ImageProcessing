@@ -256,11 +256,12 @@ impl Transformation for BandCutFilter {
 //(F5) High-pass filter with detection of edge direction
 pub struct HighPassFilterWithEdgeDetection {
     radius: u32,
+    mask: GrayImage,
 }
 
 impl HighPassFilterWithEdgeDetection {
-    pub fn new(radius: u32) -> Self {
-        Self { radius }
+    pub fn new(radius: u32, mask: GrayImage) -> Self {
+        Self { radius, mask }
     }
 }
 
@@ -279,7 +280,6 @@ impl Transformation for HighPassFilterWithEdgeDetection {
                 0.0
             }
         };
-
         apply_mask_filter::<FFT, _>(image, &mask);
 
         // Edge detection
@@ -295,7 +295,6 @@ impl Transformation for HighPassFilterWithEdgeDetection {
                 edges.put_pixel(x, y, Rgb([edge, edge, edge]));
             }
         }
-
 
         *image = edges;
     }

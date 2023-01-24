@@ -7,6 +7,18 @@ use image_proc::modifications::prelude::*;
 use image_proc::modifications::segmentation::RegionGrowing;
 use num::Integer;
 use std::num::{ParseFloatError, ParseIntError};
+use std::path::Path;
+use image::GrayImage;
+
+pub fn get_mask_for_filter(path: &Path) -> Result<GrayImage, String> {
+    match image::open(path) {
+        Ok(img) => {
+            let gray_img = img.to_luma8();
+            Ok(gray_img)
+        },
+        Err(e) => Err(e.to_string())
+    }
+}
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
     let factor = args.try_get_arg("amount")?;
