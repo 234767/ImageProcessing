@@ -160,12 +160,98 @@ The result is presented on the figure below.
 \end{figure}
 
 \section{Description of the implementation of the filters}
+At the end of each filter there is a function called apply_mask_filter or apply_mask_filter_complex for complex numbers. Those functions are implemented before the filters, becuase they are responsible for applying the Fourier Transformation and saving processed images to the output files.
 \subsection{Low-pass filter}
+The low-pass filter 
+\begin{lstlisting}
+fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y <= radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+\end{lstlisting}
 \subsection{High-pass filter}
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y > radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+\end{lstlisting}
 \subsection{Band-pass filter}
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x*x + y*y;
+            match (distance_squared.cmp(&from_squared), distance_squared.cmp(&to_squared)) {
+                (Less, _) => 0.0,
+                (_, Greater) => 0.0,
+                (_,_) => 1.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+\end{lstlisting}
 \subsection{Band-cut filter}
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x*x + y*y;
+            match (distance_squared.cmp(&from_squared), distance_squared.cmp(&to_squared)) {
+                (Less, _) => 1.0,
+                (_, Greater) => 1.0,
+                (_,_) => 0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+\end{lstlisting}
 \subsection{High-pass filter with detection of edge direction filter}
 \subsection{Phase modifying filter}
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let height = image.height() as f64;
+        let width = image.width() as f64;
+        let mask = move |x: u32, y: u32| {
+            Complex::exp(Complex::i() * (-1.0 * (x as f64 * self.k * 2.0 * std::f64::consts::PI) / height + -1.0 * (y as f64 * self.l * 2.0 * std::f64::consts::PI) / width + (self.k + self.l) * std::f64::consts::PI))
+        };
+        let mut image_clone = image.clone();
+        apply_mask_filter_complex::<FFT, _>(&mut image_clone, &mask);
+        *image = image_clone;
+    }
+\end{lstlisting}
 
 \section{Analysis of the filtering results}
 \subsection{Low-pass filter}
