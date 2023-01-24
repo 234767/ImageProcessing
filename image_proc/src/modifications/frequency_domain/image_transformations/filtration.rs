@@ -4,7 +4,7 @@ use super::{
     util::*,
 };
 use crate::modifications::{Transformation};
-use image::{GrayImage, Luma, RgbImage};
+use image::{GrayImage, Luma, Rgb, RgbImage};
 use num::complex::ComplexFloat;
 use std::convert::identity;
 use num::Complex;
@@ -254,71 +254,53 @@ impl Transformation for BandCutFilter {
 }
 
 //(F5) High-pass filter with detection of edge direction
-pub struct HighPassEdgeFilter{
+pub struct HighPassFilterWithEdgeDetection {
     radius: u32,
-    direction: EdgeDirection,
-
-}
-pub enum EdgeDirection {
-    North,
-    South,
-    East,
-    West,
 }
 
-impl HighPassEdgeFilter{
-    pub fn new(radius: u32, direction: EdgeDirection) -> Self {
-        Self { radius, direction }
+impl HighPassFilterWithEdgeDetection {
+    pub fn new(radius: u32) -> Self {
+        Self { radius }
     }
 }
 
-impl Transformation for HighPassEdgeFilter{
+impl Transformation for HighPassFilterWithEdgeDetection {
     fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
+
         let mask = move |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
-            let distance_squared = x*x + y*y;
-            if distance_squared > radius_squared {
-                match self.direction {
-                    EdgeDirection::North => {
-                        if y < x {
-                            1.0
-                        } else {
-                            0.0
-                        }
-                    },
-                    EdgeDirection::South => {
-                        if y > x {
-                            1.0
-                        } else {
-                            0.0
-                        }
-                    },
-                    EdgeDirection::East => {
-                        if x > y {
-                            1.0
-                        } else {
-                            0.0
-                        }
-                    },
-                    EdgeDirection::West => {
-                        if x < y {
-                            1.0
-                        } else {
-                            0.0
-                        }
-                    }
-                }
+            if x * x + y * y > radius_squared {
+                1.0
             } else {
                 0.0
             }
         };
+
         apply_mask_filter::<FFT, _>(image, &mask);
+
+        // Edge detection
+        let mut edges = RgbImage::new(image.width(), image.height());
+        for x in 1..image.width()-1 {
+            for y in 1..image.height()-1 {
+                let pixel = image.get_pixel(x, y);
+                let (dx, dy) = (
+                    (image.get_pixel(x + 1, y)[0] as f32 - image.get_pixel(x - 1, y)[0] as f32),
+                    (image.get_pixel(x, y + 1)[0] as f32 - image.get_pixel(x, y - 1)[0] as f32)
+                );
+                let edge = (dx.powi(2) + dy.powi(2)).sqrt().round() as u8;
+                edges.put_pixel(x, y, Rgb([edge, edge, edge]));
+            }
+        }
+
+
+        *image = edges;
     }
 }
+
 
 //(F6) Phase modifying filter
 pub struct PhaseFilter{
