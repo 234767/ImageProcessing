@@ -160,9 +160,9 @@ The result is presented on the figure below.
 \end{figure}
 
 \section{Description of the implementation of the filters}
-At the end of each filter there is a function called apply_mask_filter or apply_mask_filter_complex for complex numbers. Those functions are implemented before the filters, becuase they are responsible for applying the Fourier Transformation and saving processed images to the output files.
+At the end of each filter there is a function called $apply mask filter$ or $apply mask filter complex$ for complex numbers. Those functions are implemented before the filters, becuase they are responsible for applying the Fourier Transformation and saving processed images to the output files.
 \subsection{Low-pass filter}
-The low-pass filter 
+A low-pass filter is a filter that passes signals with a frequency lower than a selected cutoff frequency and attenuates signals with frequencies higher than the cutoff frequency. The exact frequency response of the filter depends on the filter design. The filter is sometimes called a high-cut filter, or treble-cut filter in audio applications. A low-pass filter is the complement of a high-pass filter.
 \begin{lstlisting}
 fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
@@ -181,6 +181,7 @@ fn apply(&self, image: &mut RgbImage) {
     }
 \end{lstlisting}
 \subsection{High-pass filter}
+A high-pass filter (HPF) is an electronic filter that passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. The amount of attenuation for each frequency depends on the filter design. A high-pass filter is usually modeled as a linear time-invariant system. It is sometimes called a low-cut filter or bass-cut filter.
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
@@ -199,6 +200,8 @@ fn apply(&self, image: &mut RgbImage) {
     }
 \end{lstlisting}
 \subsection{Band-pass filter}
+What is band in band pass filter?
+Bandpass filters are used primarily in wireless transmitters and receivers. The main function of such a filter in a transmitter is to limit the bandwidth of the output signal to the minimum necessary to convey data at the desired speed and in the desired form.
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let from_squared = self.from_radius.pow(2);
@@ -219,6 +222,7 @@ fn apply(&self, image: &mut RgbImage) {
     }
 \end{lstlisting}
 \subsection{Band-cut filter}
+In signal processing, a band-stop filter or band-rejection filter is a filter that passes most frequencies unaltered, but attenuates those in a specific range to very low levels. It is the opposite of a band-pass filter. A notch filter is a band-stop filter with a narrow stopband (high Q factor).
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let from_squared = self.from_radius.pow(2);
@@ -239,6 +243,14 @@ fn apply(&self, image: &mut RgbImage) {
     }
 \end{lstlisting}
 \subsection{High-pass filter with detection of edge direction filter}
+The magnitude of the detected edge (magnitude of the gradient) is given by:
+\begin{equation}
+magnitude = \sqrt{\left ( sobel_x \right )^{^{2}}\left ( sobel_y \right )^{^{2}}}
+\end{equation}
+The direction of the gradient is defined by:
+\begin{equation}
+angle = tan^{-1}\left ( \frac{sobel_y}{sobel_x} \right )
+\end{equation}
 \subsection{Phase modifying filter}
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
@@ -312,7 +324,19 @@ The result of running the band-cut filter on the sample image is presented below
 \end{figure}  
 \subsection{High-pass filter with detection of edge direction filter}
 \subsection{Phase modifying filter}
- 
+ The result of running the phase-detection filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_phase.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying phase-detection filter ok k=200 and l=200}
+\end{figure}  
 \section{Description of other changes which took place in the application}
 
 No additional changes took place in the application.
