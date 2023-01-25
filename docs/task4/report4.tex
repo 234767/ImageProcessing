@@ -188,7 +188,11 @@ fn apply(&self, image: &mut RgbImage) {
     }
 \end{lstlisting}
 \subsection{High-pass filter}
-A high-pass filter (HPF) is an electronic filter that passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. The amount of attenuation for each frequency depends on the filter design. A high-pass filter is usually modeled as a linear time-invariant system. It is sometimes called a low-cut filter or bass-cut filter.
+The method apply is used to apply a high-pass filter to an image. A high-pass filter is a type of filter that allows high frequency signals to pass through while attenuating (reducing) low frequency signals. The filter is defined by a radius, which determines the cutoff frequency.
+
+The method first calculates the square of the radius, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 1.0 if the distance of the pixel from the center of the image is greater than the filter radius, otherwise it returns 0.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
@@ -207,8 +211,11 @@ A high-pass filter (HPF) is an electronic filter that passes signals with a freq
     }
 \end{lstlisting}
 \subsection{Band-pass filter}
-What is band in band pass filter?
-Bandpass filters are used primarily in wireless transmitters and receivers. The main function of such a filter in a transmitter is to limit the bandwidth of the output signal to the minimum necessary to convey data at the desired speed and in the desired form.
+This method applies a band-pass filter to an image. A band-pass filter is a type of filter that allows a specific range of frequencies to pass through while attenuating (reducing) frequencies outside of that range. The filter is defined by two radii, from radius and to radius, which determine the cutoff frequencies for the high-pass and low-pass filters that make up the band-pass filter.
+
+The first method is the same as in previous implementations.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let from_squared = self.from_radius.pow(2);
@@ -232,7 +239,11 @@ Bandpass filters are used primarily in wireless transmitters and receivers. The 
     }
 \end{lstlisting}
 \subsection{Band-cut filter}
-In signal processing, a band-stop filter or band-rejection filter is a filter that passes most frequencies unaltered, but attenuates those in a specific range to very low levels. It is the opposite of a band-pass filter. A notch filter is a band-stop filter with a narrow stopband (high Q factor).
+This method applies a band-stop filter to an image. A band-stop filter is a type of filter that attenuates (reduces) a specific range of frequencies while allowing frequencies outside of that range to pass through. The filter is defined by two radii, from radius and to radius, which determine the cutoff frequencies for the high-pass and low-pass filters that make up the band-stop filter.
+
+The method first calculates the squares of the radii, from squared and to squared, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 0.0 if the distance of the pixel from the center of the image is between the two radii. Otherwise it returns 1.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image. 
 \begin{lstlisting}
  fn apply(&self, image: &mut RgbImage) {
         let from_squared = self.from_radius.pow(2);
@@ -256,14 +267,12 @@ In signal processing, a band-stop filter or band-rejection filter is a filter th
     }
 \end{lstlisting}
 \subsection{High-pass filter with detection of edge direction filter}
-The magnitude of the detected edge (magnitude of the gradient) is given by:
+The method applies a high-pass filter to an image and then detects the edges in the filtered image. The high-pass filter was previously explained. After applying high-pass filter, the method then performs edge detection on the image. It creates a new image called edges with the same dimensions as the original image. It then iterates over all pixels in the image (excluding the boundary pixels) and calculates the gradient of the pixel using the Sobel operator, which is a common technique for edge detection. The gradient is then used to determine the intensity of the edge at that pixel and the intensity is set as the value of the corresponding pixel in the edges image. Finally, the original image is replaced with the edges image.
+The magnitude of the gradient is calculated by:
 \begin{equation}
-magnitude = \sqrt{\left ( sobel_x \right )^{^{2}}\left ( sobel_y \right )^{^{2}}}
+edge = \left\lfloor\sqrt{dx^{2} + dy^{2}}\right\rfloor
 \end{equation}
-The direction of the gradient is defined by:
-\begin{equation}
-angle = tan^{-1}\left ( \frac{sobel_y}{sobel_x} \right )
-\end{equation}
+In our implementation the mask is generated and not taken as an input file by a user.
 \begin{lstlisting}
      fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
@@ -300,6 +309,15 @@ angle = tan^{-1}\left ( \frac{sobel_y}{sobel_x} \right )
     }
 \end{lstlisting}
 \subsection{Phase modifying filter}
+Phase Modyfing filter takes two fields: k and l. 
+The method first defines the height and width of the image as f64 variables. Then, it defines a closure (or anonymous function) called mask that takes in the x and y coordinates of a pixel in the image, and returns a complex number with a polar form. The polar form of a complex number is represented by its magnitude and angle. The magnitude of the complex number is 0 and the angle is calculated as:
+\begin{equation}
+-1.0 * (x as f64 * self.k * 2.0 * PI) / height + -1.0 * (y as f64 * self.l * 2.0 * PI) / width + (self.k + self.l) * PI
+\end{equation}
+
+where k and l are the fields of the struct and are passed as arguments to the constructor method.
+
+It then creates a clone of the original image, applies the mask filter and assigns the clone to the original image effectively applying the filter on the original image.
 \begin{lstlisting}
 fn apply(&self, image: &mut RgbImage) {
         let height = image.height() as f64;
