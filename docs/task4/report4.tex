@@ -160,9 +160,16 @@ The result is presented on the figure below.
 \end{figure}
 
 \section{Description of the implementation of the filters}
-At the end of each filter there is a function called $apply mask filter$ or $apply mask filter complex$ for complex numbers. Those functions are implemented before the filters, becuase they are responsible for applying the Fourier Transformation and saving processed images to the output files.
+At the end of each filter there is a function called $apply mask filter$.This function is implemented before the filters, becuase it is responsible for applying the Fourier Transformation and and modifying the image in place. Then, the mask is applied to the transform by multiplying each pixel value by the result of the mask function. The inverse Fourier transform is then computed, and the result is converted back to an RgbImage. The result is also saved to an image file if the program is compiled with debug assertions. The output image is scaled so that the maximum value is equal to the maximum value of 8-bit grayscale image.
 \subsection{Low-pass filter}
-A low-pass filter is a filter that passes signals with a frequency lower than a selected cutoff frequency and attenuates signals with frequencies higher than the cutoff frequency. The exact frequency response of the filter depends on the filter design. The filter is sometimes called a high-cut filter, or treble-cut filter in audio applications. A low-pass filter is the complement of a high-pass filter.
+The struct LowPassFilter is an implementation of a low-pass filter, also known as a high-cut filter. A low-pass filter is a type of filter that allows low frequency signals to pass through while attenuating (reducing) high frequency signals. The filter is defined by a radius, which determines the cutoff frequency.
+
+The struct has a single field, radius, which represents the radius of the filter. The struct has a new method new() which initializes the filter with a given radius.
+
+The method first calculates the square of the radius, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 1.0 if the distance of the pixel from the center of the image is less than or equal to the filter radius, otherwise it returns 0.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
+
 \begin{lstlisting}
 fn apply(&self, image: &mut RgbImage) {
         let radius_squared = self.radius * self.radius;
