@@ -8,6 +8,7 @@ use num::complex::ComplexFloat;
 use num::Complex;
 use std::cmp::Ordering::*;
 use std::convert::identity;
+use std::f64::consts::PI;
 use std::ops::Mul;
 
 mod debug_utils {
@@ -285,12 +286,12 @@ impl Transformation for PhaseFilter {
     fn apply(&self, image: &mut RgbImage) {
         let height = image.height() as f64;
         let width = image.width() as f64;
-        let mask = move |x: u32, y: u32| {
-            Complex::exp(
-                Complex::i()
-                    * (-1.0 * (x as f64 * self.k * 2.0 * std::f64::consts::PI) / height
-                        + -1.0 * (y as f64 * self.l * 2.0 * std::f64::consts::PI) / width
-                        + (self.k + self.l) * std::f64::consts::PI),
+        let mask = |x,y| {
+            Complex::from_polar(
+                1.0,
+                -1.0 * (x as f64 * self.k * 2.0 * PI) / height
+                    + -1.0 * (y as f64 * self.l * 2.0 * PI) / width
+                    + (self.k + self.l) * PI
             )
         };
         let mut image_clone = image.clone();
