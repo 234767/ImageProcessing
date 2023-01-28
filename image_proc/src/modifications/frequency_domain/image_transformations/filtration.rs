@@ -228,26 +228,25 @@ impl Transformation for BandCutFilter {
 
 //(F5) High-pass filter with detection of edge direction
 pub struct HighPassFilterWithEdgeDetection {
-    radius: u32,
     mask: GrayImage,
 }
 
 impl HighPassFilterWithEdgeDetection {
-    pub fn new(radius: u32, mask: GrayImage) -> Self {
-        Self { radius, mask }
+    pub fn new(mask: GrayImage) -> Self {
+        Self { mask }
     }
 }
 
 impl Transformation for HighPassFilterWithEdgeDetection {
     fn apply(&self, image: &mut RgbImage) {
-        let radius_squared = self.radius * self.radius;
-        let half_width = image.width() / 2;
-        let half_height = image.height() / 2;
 
-        let mask = move |x: u32, y: u32| {
-            let x = u32::abs_diff(x, half_width);
-            let y = u32::abs_diff(y, half_height);
-            if x * x + y * y > radius_squared {
+        if image.width() != self.mask.width() || image.height() != self.mask.height() {
+            panic!("Image is different size than mask");
+        }
+
+        let mask = |x: u32, y: u32| {
+            let &Luma([luma]) = self.mask.get_pixel(x,y);
+            if luma > 128 {
                 1.0
             } else {
                 0.0
