@@ -7,36 +7,34 @@ use image_proc::modifications::prelude::*;
 use image_proc::modifications::segmentation::RegionGrowing;
 use num::Integer;
 use std::num::{ParseFloatError, ParseIntError};
-use std::path::Path;
 use image::GrayImage;
 
-pub fn get_mask_for_filter(path: &Path) -> Result<GrayImage, String> {
+pub fn try_open_grayscale_image(path: &str) -> Result<GrayImage, String> {
     match image::open(path) {
         Ok(img) => {
-            let gray_img = img.to_luma8();
-            Ok(gray_img)
+            Ok(img.to_luma8())
         },
         Err(e) => Err(e.to_string())
     }
 }
 
 pub fn try_new_enlarge(args: &Args) -> Result<Scale, String> {
-    let factor = args.try_get_arg("amount")?;
+    let factor = args.try_get_num_arg("amount")?;
     Ok(Scale::new(factor, factor))
 }
 
 pub fn try_new_shrink(args: &Args) -> Result<Scale, String> {
     // invert the factor - shrink x2 = scale x0.5
-    let factor = 1f64 / args.try_get_arg::<f64>("amount")?;
+    let factor = 1f64 / args.try_get_num_arg::<f64>("amount")?;
     Ok(Scale::new(factor, factor))
 }
 
 pub fn get_width_and_height(args: &Args) -> Result<(u32, u32), String> {
-    let mut width: u32 = args.try_get_arg("-w")?;
+    let mut width: u32 = args.try_get_num_arg("-w")?;
     if width.is_even() {
         width += 1
     }
-    let mut height: u32 = args.try_get_arg("-h")?;
+    let mut height: u32 = args.try_get_num_arg("-h")?;
     if height.is_even() {
         height += 1
     }
@@ -60,8 +58,8 @@ pub fn get_histogram_modifier(args: &Args) -> Result<HistogramConverter, String>
 }
 
 pub fn try_new_raleigh(args: &Args) -> Result<RayleighModification, String> {
-    let gmin: u8 = args.try_get_arg("-gmin")?;
-    let gmax: u8 = args.try_get_arg("-gmax")?;
+    let gmin: u8 = args.try_get_num_arg("-gmin")?;
+    let gmax: u8 = args.try_get_num_arg("-gmax")?;
     Ok(RayleighModification::new(gmin, gmax))
 }
 
@@ -190,8 +188,8 @@ pub fn try_new_linear_gpu(args: &Args) -> Result<LinearFilterGPU, String> {
 }
 
 pub fn try_new_region_grow(args: &Args) -> Result<RegionGrowing, String> {
-    let seed_x: u32 = args.try_get_arg("-x")?;
-    let seed_y: u32 = args.try_get_arg("-y")?;
-    let tolerance: u8 = args.try_get_arg("-tolerance")?;
+    let seed_x: u32 = args.try_get_num_arg("-x")?;
+    let seed_y: u32 = args.try_get_num_arg("-y")?;
+    let tolerance: u8 = args.try_get_num_arg("-tolerance")?;
     Ok(RegionGrowing::new(seed_x, seed_y, tolerance))
 }

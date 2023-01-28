@@ -229,11 +229,12 @@ impl Transformation for BandCutFilter {
 //(F5) High-pass filter with detection of edge direction
 pub struct HighPassFilterWithEdgeDetection {
     radius: u32,
+    mask: GrayImage,
 }
 
 impl HighPassFilterWithEdgeDetection {
-    pub fn new(radius: u32) -> Self {
-        Self { radius }
+    pub fn new(radius: u32, mask: GrayImage) -> Self {
+        Self { radius, mask }
     }
 }
 

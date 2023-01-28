@@ -26,9 +26,9 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--id" => Ok(Box::new(IdTransform {})),
         "--negative" => Ok(Box::new(Negative {})),
         "--brightness" => Ok(Box::new(Brightness::new(
-            args.try_get_arg::<i32>("amount")?,
+            args.try_get_num_arg::<i32>("amount")?,
         ))),
-        "--contrast" => Ok(Box::new(Contrast::new(args.try_get_arg::<f64>("amount")?))),
+        "--contrast" => Ok(Box::new(Contrast::new(args.try_get_num_arg::<f64>("amount")?))),
         "--hflip" => Ok(Box::new(HorizontalFlip {})),
         "--vflip" => Ok(Box::new(VerticalFlip {})),
         "--dflip" => Ok(Box::new(DiagonalFlip {})),
@@ -127,32 +127,32 @@ pub fn get_transformation(args: &Args) -> Result<Box<dyn Transformation>, String
         "--dft" => Ok(Box::new(DFT {})),
         "--fft" => Ok(Box::new(FFT {})),
         "--freq-lowpass" => {
-            let radius: u32 = args.try_get_arg("radius")?;
+            let radius: u32 = args.try_get_num_arg("radius")?;
             Ok(Box::new(LowPassFilter::new(radius)))
         }
         "--freq-highpass" => {
-            let radius: u32 = args.try_get_arg("radius")?;
+            let radius: u32 = args.try_get_num_arg("radius")?;
             Ok(Box::new(HighPassFilter::new(radius)))
         }
         "--freq-bandpass" => {
-            let from: u32 = args.try_get_arg("from")?;
-            let to: u32 = args.try_get_arg("to")?;
+            let from: u32 = args.try_get_num_arg("from")?;
+            let to: u32 = args.try_get_num_arg("to")?;
             Ok(Box::new(BandPassFilter::new(from, to)))
         }
         "--freq-bandcut" => {
-            let from: u32 = args.try_get_arg("from")?;
-            let to: u32 = args.try_get_arg("to")?;
+            let from: u32 = args.try_get_num_arg("from")?;
+            let to: u32 = args.try_get_num_arg("to")?;
             Ok(Box::new(BandCutFilter::new(from, to)))
         }
         "--edge-direction" => {
-            let radius: u32 = args.try_get_arg("radius")?;
-            // let path = args.try_get_arg("mask")?;
-            // let mask = construction_helpers::get_mask_for_filter(path)?;
-            Ok(Box::new(HighPassFilterWithEdgeDetection::new(radius)))
+            let radius: u32 = args.try_get_num_arg("radius")?;
+            let path: String = args.try_get_arg("mask")?;
+            let mask = construction_helpers::try_open_grayscale_image(&path)?;
+            Ok(Box::new(HighPassFilterWithEdgeDetection::new(radius, mask)))
         }
         "--phase-modify" => {
-            let k: f64 = args.try_get_arg("k")?;
-            let l: f64 = args.try_get_arg("l")?;
+            let k: f64 = args.try_get_num_arg("k")?;
+            let l: f64 = args.try_get_num_arg("l")?;
             Ok(Box::new(PhaseFilter::new(k, l)))
         }
         _ => Err(format!("Command {} undefined", args.command)),

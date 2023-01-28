@@ -1,5 +1,6 @@
 use num::Num;
 use std::collections::HashMap;
+use std::f32::consts::E;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -16,17 +17,25 @@ impl Args {
     /// Result<T, String>
     /// * Ok - when value for specified argument is found and successfully parsed as a positive value
     /// * Err - when value was not found, or it was not a positive number
-    pub fn try_get_arg<T: FromStr + Num + PartialOrd>(&self, arg_name: &str) -> Result<T, String> {
+    pub fn try_get_num_arg<T: FromStr + Num + PartialOrd>(
+        &self,
+        arg_name: &str,
+    ) -> Result<T, String> {
+        let value_text = self.try_get_arg(arg_name)?;
+        match value_text.parse::<T>() {
+            Ok(value) if value >= T::zero() => Ok(value),
+            _ => Err(format!("Value {} is not a positive number", value_text)),
+        }
+    }
+
+    pub fn try_get_arg(&self, arg_name: &str) -> Result<String, String> {
         let search_value: String = match arg_name.starts_with("-") {
             true => arg_name.to_string(),
             false => format!("-{}", arg_name),
         };
         let value_text_option = self.args.get(&search_value);
         match value_text_option {
-            Some(value_text) => match value_text.parse::<T>() {
-                Ok(value) if value >= T::zero() => Ok(value),
-                _ => Err(format!("Value {} is not a positive number", value_text)),
-            },
+            Some(value) => Ok(value.clone()),
             None => Err(format!("Missing {} argument", arg_name)),
         }
     }
