@@ -57,6 +57,9 @@ where
         for (x, pixel) in row.iter_mut().enumerate() {
             let (x, y) =
                 swap_quadrant_coordinates(x as u32, y as u32, image.width(), image.height());
+            if x == image.width() / 2 && y == image.height() / 2 {
+                continue;
+            }
             let mask_value = mask(x as u32, y as u32);
             *pixel = mask_value * (*pixel);
         }
@@ -286,12 +289,12 @@ impl Transformation for PhaseFilter {
     fn apply(&self, image: &mut RgbImage) {
         let height = image.height() as f64;
         let width = image.width() as f64;
-        let mask = |x,y| {
+        let mask = |x, y| {
             Complex::from_polar(
                 1.0,
                 -1.0 * (x as f64 * self.k * 2.0 * PI) / height
                     + -1.0 * (y as f64 * self.l * 2.0 * PI) / width
-                    + (self.k + self.l) * PI
+                    + (self.k + self.l) * PI,
             )
         };
         let mut image_clone = image.clone();
