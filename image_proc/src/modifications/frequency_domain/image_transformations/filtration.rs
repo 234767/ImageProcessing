@@ -106,7 +106,7 @@ impl Transformation for LowPassFilter {
         let radius_squared = self.radius * self.radius;
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let mask = move |x: u32, y: u32| {
+        let mask = |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
             if x * x + y * y <= radius_squared {
@@ -135,7 +135,7 @@ impl Transformation for HighPassFilter {
         let radius_squared = self.radius * self.radius;
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let mask = move |x: u32, y: u32| {
+        let mask = |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
             if x * x + y * y > radius_squared {
@@ -170,7 +170,7 @@ impl Transformation for BandPassFilter {
         let to_squared = self.to_radius.pow(2);
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let mask = move |x: u32, y: u32| {
+        let mask = |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
             let distance_squared = x * x + y * y;
@@ -209,7 +209,7 @@ impl Transformation for BandCutFilter {
         let to_squared = self.to_radius.pow(2);
         let half_width = image.width() / 2;
         let half_height = image.height() / 2;
-        let mask = move |x: u32, y: u32| {
+        let mask = |x: u32, y: u32| {
             let x = u32::abs_diff(x, half_width);
             let y = u32::abs_diff(y, half_height);
             let distance_squared = x * x + y * y;
