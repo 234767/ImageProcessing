@@ -254,22 +254,6 @@ impl Transformation for HighPassFilterWithEdgeDetection {
         };
 
         apply_mask_filter::<FFT, _, _>(image, &mask);
-
-        // Edge detection
-        let mut edges = RgbImage::new(image.width(), image.height());
-        for x in 1..image.width() - 1 {
-            for y in 1..image.height() - 1 {
-                let _pixel = image.get_pixel(x, y);
-                let (dx, dy) = (
-                    (image.get_pixel(x + 1, y)[0] as f32 - image.get_pixel(x - 1, y)[0] as f32),
-                    (image.get_pixel(x, y + 1)[0] as f32 - image.get_pixel(x, y - 1)[0] as f32),
-                );
-                let edge = (dx.powi(2) + dy.powi(2)).sqrt().round() as u8;
-                edges.put_pixel(x, y, Rgb([edge, edge, edge]));
-            }
-        }
-
-        *image = edges;
     }
 }
 
