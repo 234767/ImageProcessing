@@ -1,6 +1,5 @@
 use num::Num;
 use std::collections::HashMap;
-use std::f32::consts::E;
 use std::str::FromStr;
 
 #[derive(Debug)]
