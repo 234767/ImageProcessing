@@ -3,7 +3,7 @@ use super::{
     util::*,
 };
 use crate::modifications::Transformation;
-use image::{GrayImage, Luma, Rgb, RgbImage};
+use image::{GrayImage, Luma, RgbImage};
 use num::complex::ComplexFloat;
 use num::Complex;
 use std::cmp::Ordering::*;
