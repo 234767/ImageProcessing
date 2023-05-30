@@ -1,0 +1,437 @@
+\documentclass[12pt]{article}
+
+\input{../prelude.tex}
+\graphicspath{{img},{../img}}
+
+\newcommand*{\fft}{\textsc{fft}}
+\newcommand*{\dft}{\textsc{dft}}
+
+\title{Task No.~4}
+
+\begin{document}
+
+\maketitle
+
+\section{Description of the implementation of the assigned transform variant}
+
+We decided to implement the \fft\ using the radix-2 decimation in time variant of the Cooley-Turkey algorithm.
+It uses the divide-and-conquer approach to divide a \dft\ of length $N$ into two \dft{}s of length $\frac{N}{2}$.
+The speed is gained by reusing some computations for multiple \dft\ outputs.
+
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \foreach \i in {0,...,7} {
+                \node[circle, draw=black, inner sep=0pt, minimum size=2pt](start-\i) at (0,-\i) {};
+                \draw[-latex] (start-\i) -- (1,-\i);
+                \draw(1,-\i) -- (2,-\i);
+            }
+        \draw (0, 0) node[left]{$x[0]$};
+        \draw (0,-1) node[left]{$x[2]$};
+        \draw (0,-2) node[left]{$x[4]$};
+        \draw (0,-3) node[left]{$x[6]$};
+
+        \draw (0,-4) node[left]{$x[1]$};
+        \draw (0,-5) node[left]{$x[3]$};
+        \draw (0,-6) node[left]{$x[5]$};
+        \draw (0,-7) node[left]{$x[7]$};
+
+        \draw (2, 0.25) -| ++(2, -3.5) -| cycle;
+        \draw (2,-3.75) -| ++(2, -3.5) -| cycle;
+
+        \draw (3,-1.5) node[]{\fft};
+        \draw (3,-5.5) node[]{\fft};
+
+        \foreach \i in {0,...,7} {
+                \node[circle, draw=black, inner sep=0pt, minimum size=2pt](left-\i) at (5,-\i) {};
+                \node[circle, draw=black, inner sep=0pt, minimum size=2pt](right-\i) at (7,-\i) {};
+                \draw (7,-\i) node[right]{$X[\i]$};
+                \draw[-latex] (4,-\i) -- (left-\i.west);
+            }
+        \foreach \i in {0,...,3} {
+                \pgfmathtruncatemacro{\j}{\i + 4};
+                \draw[-latex] (left-\i) node[above left]{\scriptsize$E[\i]$} -- (right-\j);
+                \draw[-latex] (left-\j) node[below left]{\scriptsize$O[\i]$}-- (right-\i);
+            }
+        \foreach \i in {2,...,5} {
+                \node[circle, fill=black, inner sep=0pt, minimum size=4pt] at (6,-\i) {};
+            }
+    \end{tikzpicture}
+    \caption{Visualisation of the \fft\ algoritm}
+\end{figure}
+
+The algorithm splits the values into even and odd, and then calls itself recursively on each of them.
+Finally, it merges the result, using the following formula for $k \in \left\langle 0, \frac{N}{2} \right)$:
+
+\begin{align}
+    X_k                 & =  E[k] + e^{-2\pi i\frac{k}{N}} \cdot O[k]  \\
+    X_{k + \frac{N}{2}} & =  E[k] - e^{-2\pi i\frac{k}{N}} \cdot  O[k]
+\end{align}
+
+It can be noticed that, if the splitting between even and odd, is performed ahead of time, the \fft\ can operate in-place, on the array split in half.
+
+Therefore, our implementation firstly performs the necessary rearranging of values, with new indices created by bit inverses.
+Next step is the invocation of the in-place fft, that splits the given array in half, then calls itself recursively on each, and merges the result using abovementioned formulas.
+
+\begin{lstlisting}[
+    basicstyle = \footnotesize\ttfamily, 
+    caption={Code listing for the \fft\ in-place function}
+    ]
+fn fft_in_place(data: &mut [Complex<TData>], direction: FTDirection) {
+    if data.len() == 1 {
+        return;
+    }
+
+    let (half_1, half_2) = data.split_at_mut(data.len() / 2);
+    fft_in_place(half_1, direction);
+    fft_in_place(half_2, direction);
+
+    for i in 0..(data.len() / 2) {
+        let angle = match direction {
+            Forward => -2.0,
+            Inverse => 2.0
+        } * PI * i as f64 / data.len() as f64;
+        let twiddle_factor = Complex::from_polar(1.0, angle);
+        let (a, b) = 
+            butterfly_operation(
+                &data[i], 
+                &data[i + data.len() / 2], 
+                twiddle_factor
+            );
+        data[i] = a;
+        data[i + data.len() / 2] = b;
+    }
+}
+\end{lstlisting}
+
+The \lstinline{butterfly_operation} is a helper function, performing the equations mentioned above.
+Since they differ only by the sign, we can compute them at the same time to reduce the number of multiplications required.
+
+The main \fft\ function can be then implemented in the following way:
+\begin{lstlisting}[
+    basicstyle = \footnotesize\ttfamily, 
+    caption={Code listing for the \fft\ function}
+    ]
+pub fn fft<T>(data: &[T], direction: FTDirection) -> Vec<Complex<TData>>
+where /* ... */
+{
+    let mut data: Vec<_> = rearrange_data_for_fft(data)
+        .into_iter()
+        .map(|x| x * Complex::new(1.0, 0.0))
+        .collect();
+
+    fft_in_place(data.as_mut_slice(), direction);
+    
+    /* handle inverse case ... */
+
+    data
+}
+\end{lstlisting}
+
+We can see that the only place where we allocate memory is the rearranging of data.
+We could not avoid the necessary allocation, because firstly our function is generic, so the initial array could be of different size than needed (e.g.~floats), secondly our API is made such that the function is pure, so we cannot mutate the input value.
+
+Therefore, the memory complexity is $\mathcal{O}(n)$, and computational complexity is $\mathcal{O}(n \log n)$.
+
+The inverse \fft\ is done by changing the sign in the exponential, and dividing all the final values by $N$. 
+
+\section{Description of the spectrum visualization method}
+
+To visualize the result, we take the magnitudes of the values, to convert from complex numbers to real ones, and appply logarithmic normalization, according to the following equation:
+\begin{equation}
+    \hat{T}(x,y) = \frac{255}{\ln(1 + m)} \cdot \ln (1 + T(x,y))
+\end{equation}
+Where $T$ is the result of the \fft\, and $m = \max\limits_{t \in T}\big\{|t|\big\}$.
+
+This normalization allows us to see the values, which would otherwise be too small.
+
+The result is presented on the figure below.
+
+\begin{figure}[H]\centering
+    \begin{subfigure}[ht]{.4\textwidth}\centering
+        \includegraphics[width=\textwidth]{lena}
+        \caption{Original image}
+    \end{subfigure}
+    \hspace*{2em}
+    \begin{subfigure}[ht]{.4\textwidth}\centering
+        \includegraphics[width=\textwidth]{lena_fft}
+        \caption{Frequency spectrum}
+    \end{subfigure}
+    \caption{Image before and after transformation by \fft}
+\end{figure}
+
+\section{Description of the implementation of the filters}
+At the end of each filter there is a function called $apply mask filter$.This function is implemented before the filters, becuase it is responsible for applying the Fourier Transformation and and modifying the image in place. Then, the mask is applied to the transform by multiplying each pixel value by the result of the mask function. The inverse Fourier transform is then computed, and the result is converted back to an RgbImage. The result is also saved to an image file if the program is compiled with debug assertions. The output image is scaled so that the maximum value is equal to the maximum value of 8-bit grayscale image.
+\subsection{Low-pass filter}
+The struct LowPassFilter is an implementation of a low-pass filter, also known as a high-cut filter. A low-pass filter is a type of filter that allows low frequency signals to pass through while attenuating (reducing) high frequency signals. The filter is defined by a radius, which determines the cutoff frequency.
+
+The struct has a single field, radius, which represents the radius of the filter. The struct has a new method new() which initializes the filter with a given radius.
+
+The method first calculates the square of the radius, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 1.0 if the distance of the pixel from the center of the image is less than or equal to the filter radius, otherwise it returns 0.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
+
+\begin{lstlisting}
+fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y <= radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _>(image, &mask);
+    }
+\end{lstlisting}
+\subsection{High-pass filter}
+The method apply is used to apply a high-pass filter to an image. A high-pass filter is a type of filter that allows high frequency signals to pass through while attenuating (reducing) low frequency signals. The filter is defined by a radius, which determines the cutoff frequency.
+
+The method first calculates the square of the radius, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 1.0 if the distance of the pixel from the center of the image is greater than the filter radius, otherwise it returns 0.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y > radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+        apply_mask_filter::<FFT, _, _>(image, &mask);
+    }
+\end{lstlisting}
+\subsection{Band-pass filter}
+This method applies a band-pass filter to an image. A band-pass filter is a type of filter that allows a specific range of frequencies to pass through while attenuating (reducing) frequencies outside of that range. The filter is defined by two radii, from radius and to radius, which determine the cutoff frequencies for the high-pass and low-pass filters that make up the band-pass filter.
+
+The first method is the same as in previous implementations.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image.
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x * x + y * y;
+            match (
+                distance_squared.cmp(&from_squared),
+                distance_squared.cmp(&to_squared),
+            ) {
+                (Less, _) => 0.0,
+                (_, Greater) => 0.0,
+                (_, _) => 1.0,
+            }
+        };
+        apply_mask_filter::<FFT, _, _>(image, &mask);
+    }
+\end{lstlisting}
+\subsection{Band-cut filter}
+This method applies a band-stop filter to an image. A band-stop filter is a type of filter that attenuates (reduces) a specific range of frequencies while allowing frequencies outside of that range to pass through. The filter is defined by two radii, from radius and to radius, which determine the cutoff frequencies for the high-pass and low-pass filters that make up the band-stop filter.
+
+The method first calculates the squares of the radii, from squared and to squared, and the half width and height of the image. It then creates a closure mask, which takes in the x and y coordinates of a pixel and returns a value of 0.0 if the distance of the pixel from the center of the image is between the two radii. Otherwise it returns 1.0.
+
+It then calls the $apply mask filter$ function with the FFT as the first parameter and the mask closure as the second parameter. This applies the filter to the image by multiplying the Fourier transform of the image by the mask. The inverse Fourier transform is then applied to get the filtered image. 
+\begin{lstlisting}
+ fn apply(&self, image: &mut RgbImage) {
+        let from_squared = self.from_radius.pow(2);
+        let to_squared = self.to_radius.pow(2);
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            let distance_squared = x * x + y * y;
+            match (
+                distance_squared.cmp(&from_squared),
+                distance_squared.cmp(&to_squared),
+            ) {
+                (Less, _) => 1.0,
+                (_, Greater) => 1.0,
+                (_, _) => 0.0,
+            }
+        };
+        apply_mask_filter::<FFT, _, _>(image, &mask);
+    }
+\end{lstlisting}
+\subsection{High-pass filter with detection of edge direction filter}
+The method applies a high-pass filter to an image and then detects the edges in the filtered image. The high-pass filter was previously explained. After applying high-pass filter, the method then performs edge detection on the image. It creates a new image called edges with the same dimensions as the original image. It then iterates over all pixels in the image (excluding the boundary pixels) and calculates the gradient of the pixel using the Sobel operator, which is a common technique for edge detection. The gradient is then used to determine the intensity of the edge at that pixel and the intensity is set as the value of the corresponding pixel in the edges image. Finally, the original image is replaced with the edges image.
+The magnitude of the gradient is calculated by:
+\begin{equation}
+edge = \left\lfloor\sqrt{dx^{2} + dy^{2}}\right\rfloor
+\end{equation}
+In our implementation the mask is generated and not taken as an input file by a user.
+\begin{lstlisting}
+     fn apply(&self, image: &mut RgbImage) {
+        let radius_squared = self.radius * self.radius;
+        let half_width = image.width() / 2;
+        let half_height = image.height() / 2;
+
+        let mask = move |x: u32, y: u32| {
+            let x = u32::abs_diff(x, half_width);
+            let y = u32::abs_diff(y, half_height);
+            if x * x + y * y > radius_squared {
+                1.0
+            } else {
+                0.0
+            }
+        };
+
+        apply_mask_filter::<FFT, _, _>(image, &mask);
+
+        // Edge detection
+        let mut edges = RgbImage::new(image.width(), image.height());
+        for x in 1..image.width() - 1 {
+            for y in 1..image.height() - 1 {
+                let _pixel = image.get_pixel(x, y);
+                let (dx, dy) = (
+                    (image.get_pixel(x + 1, y)[0] as f32 - image.get_pixel(x - 1, y)[0] as f32),
+                    (image.get_pixel(x, y + 1)[0] as f32 - image.get_pixel(x, y - 1)[0] as f32),
+                );
+                let edge = (dx.powi(2) + dy.powi(2)).sqrt().round() as u8;
+                edges.put_pixel(x, y, Rgb([edge, edge, edge]));
+            }
+        }
+
+        *image = edges;
+    }
+\end{lstlisting}
+\subsection{Phase modifying filter}
+Phase Modyfing filter takes two fields: k and l. 
+The method first defines the height and width of the image as f64 variables. Then, it defines a closure (or anonymous function) called mask that takes in the x and y coordinates of a pixel in the image, and returns a complex number with a polar form. The polar form of a complex number is represented by its magnitude and angle. The magnitude of the complex number is 0 and the angle is calculated as:
+\begin{equation}
+-1.0 * (x as f64 * self.k * 2.0 * PI) / height + -1.0 * (y as f64 * self.l * 2.0 * PI) / width + (self.k + self.l) * PI
+\end{equation}
+
+where k and l are the fields of the struct and are passed as arguments to the constructor method.
+
+It then creates a clone of the original image, applies the mask filter and assigns the clone to the original image effectively applying the filter on the original image.
+\begin{lstlisting}
+fn apply(&self, image: &mut RgbImage) {
+        let height = image.height() as f64;
+        let width = image.width() as f64;
+        let mask = move |x: u32, y: u32| {
+            Complex::from_polar(
+                0.0,
+                -1.0 * (x as f64 * self.k * 2.0 * PI) / height
+                    + -1.0 * (y as f64 * self.l * 2.0 * PI) / width
+                    + (self.k + self.l) * PI,
+            )
+        };
+        let mut image_clone = image.clone();
+        apply_mask_filter::<FFT, _, _>(&mut image_clone, &mask);
+        *image = image_clone;
+    }
+\end{lstlisting}
+
+\section{Analysis of the filtering results}
+\subsection{Low-pass filter}
+The result of running the low-pass filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_lowpass.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying low-pass filter}
+\end{figure}   
+\subsection{High-pass filter}
+The result of running the high-pass filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_highpass.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying high-pass filter}
+\end{figure}  
+\subsection{Band-pass filter}
+The result of running the band-pass filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_bandpass.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying band-pass filter}
+\end{figure}  
+\subsection{Band-cut filter}
+The result of running the band-cut filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_bandcut.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying band-cut filter}
+\end{figure}  
+\subsection{High-pass filter with detection of edge direction filter}
+ The result of running the High-pass filter with detection of edge direction filter filter on the sample image is presented below on the lena image.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_edge.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying High-pass filter with detection of edge direction filter }
+\end{figure} 
+\subsection{Phase modifying filter}
+ The result of running the phase-detection filter on the sample image is presented below.
+\begin{figure}[H]\centering
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena.png}
+        \caption{before}
+    \end{subfigure}
+    \hspace{2em}
+    \begin{subfigure}[t]{\subfiguresize}\centering
+        \includegraphics[width=\textwidth]{img/lena_phase.png}
+        \caption{after}
+    \end{subfigure}\\[1em]
+    \caption{Results of applying phase-detection filter of k=200 and l=200}
+\end{figure}  
+\section{Description of other changes which took place in the application}
+
+No additional changes took place in the application.
+
+\vfill
+\section*{Teacher's remarks}
+\begin{tabularx}{\textwidth}{|X|}
+    \hline
+    \vspace{7cm}
+    \phantom{.} \\
+    \hline
+\end{tabularx}
+
+\end{document}

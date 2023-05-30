@@ -6,3 +6,4 @@ cargo.lock
 *.bmp
 /img/
 ._*
+/docs/task4/report4.tex

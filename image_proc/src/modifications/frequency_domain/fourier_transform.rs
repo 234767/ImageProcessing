@@ -140,14 +140,14 @@ fn butterfly_operation(
     (a + wb, a - wb)
 }
 
-fn fft_in_place(data: &mut [Complex<TData>], direction: FTDirection, depth: u32) {
+fn fft_in_place(data: &mut [Complex<TData>], direction: FTDirection) {
     if data.len() == 1 {
         return;
     }
 
     let (half_1, half_2) = data.split_at_mut(data.len() / 2);
-    fft_in_place(half_1, direction, depth*2);
-    fft_in_place(half_2, direction, depth*2);
+    fft_in_place(half_1, direction);
+    fft_in_place(half_2, direction);
 
     for i in 0..(data.len() / 2) {
         let angle = match direction {
@@ -170,7 +170,7 @@ where
         .map(|x| x * Complex::new(1.0, 0.0))
         .collect();
 
-    fft_in_place(data.as_mut_slice(), direction, 1);
+    fft_in_place(data.as_mut_slice(), direction);
 
     if direction == Inverse {
         let n = data.len() as f64;
